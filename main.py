@@ -11,6 +11,10 @@ from src.view.TreeView import TreeView
 from src.view.HelpWidget import HelpWidget
 from src.util.AsemblerSintaksa import AsemblerSintaksa
 from src.util.CSyntax import CSyntax
+from src.model.ProjectNode import ProjectNode
+from src.model.AssemblyFileNode import AssemblyFileNode
+from src.model.CFileNode import CFileNode
+from src.model.WorkspaceNode import WorkspaceNode
 
 
 class AsemblerIDE(QMainWindow):
@@ -33,7 +37,7 @@ class AsemblerIDE(QMainWindow):
         self.treeDock.setStyleSheet("background-color: #44423E; color: white;")
         self.treeDock.setFeatures(QDockWidget.DockWidgetMovable)
         self.treeDock.setWidget(self.treeView)
-        self.treeDock.setTitleBarWidget(QLabel("TreeView Placeholder"))
+        self.treeDock.setTitleBarWidget(QLabel("Workspace explorer"))
         self.addDockWidget(Qt.LeftDockWidgetArea, self.treeDock)
         self.setMenuBar(self.menuBar)
         self.setMinimumSize(1200, 800)
@@ -42,6 +46,7 @@ class AsemblerIDE(QMainWindow):
 
         self.addMenuBarEventHandlers()
         self.addToolBarEventHandlers()
+        self.populateTreeView()
         self.statusBar.comboBox.currentTextChanged.connect(self.changeEditorSyntax)
 
     def changeEditorSyntax(self, text):
@@ -50,6 +55,22 @@ class AsemblerIDE(QMainWindow):
         elif text == "C":
             self.editor.sintaksa = CSyntax(self.editor.document())
         self.editor.update()
+
+    def populateTreeView(self):
+        workspace = WorkspaceNode()
+        workspace.setText(0, "My workspace")
+        self.treeView.setRoot(workspace)
+        for i in range(5):
+            project = ProjectNode()
+            project.setText(0, "My Project {}".format(i+1))
+            assemblyFile = AssemblyFileNode()
+            assemblyFile.setText(0, "procedure_{}.S".format(i+1))
+            cFile = CFileNode()
+            cFile.setText(0, "main_{}.c".format(i+1))
+            self.treeView.addNode(workspace, project)
+            self.treeView.addNode(project, assemblyFile)
+            self.treeView.addNode(project, cFile)
+            project.setExpanded(True)
 
     def closeEvent(self, event):
         if self.editor.hasUnsavedChanges:
