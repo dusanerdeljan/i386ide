@@ -1,7 +1,7 @@
 import sys
 import os
-from PySide2.QtWidgets import QMainWindow, QApplication, QFileDialog, QMessageBox, QDockWidget, QLabel
-from PySide2.QtCore import Qt
+from PySide2.QtWidgets import QMainWindow, QLineEdit, QApplication, QFileDialog, QMessageBox, QDockWidget, QLabel, QInputDialog
+from PySide2.QtCore import Qt, QDir
 from src.view.CodeEditor import CodeEditor
 from src.view.MenuBar import MenuBar
 from src.view.Terminal import Terminal
@@ -21,6 +21,7 @@ class AsemblerIDE(QMainWindow):
 
     def __init__(self):
         super(AsemblerIDE, self).__init__()
+        self.workspace = None
         self.editor = CodeEditor()
         self.menuBar = MenuBar()
         self.terminal = Terminal()
@@ -71,6 +72,7 @@ class AsemblerIDE(QMainWindow):
             self.treeView.addNode(project, assemblyFile)
             self.treeView.addNode(project, cFile)
             project.setExpanded(True)
+        self.workspace = workspace
 
     def closeEvent(self, event):
         if self.editor.hasUnsavedChanges:
@@ -95,6 +97,9 @@ class AsemblerIDE(QMainWindow):
         super(AsemblerIDE, self).closeEvent(event)
 
     def addMenuBarEventHandlers(self):
+        self.menuBar.newWorkspaceAction.triggered.connect(self.newWorkspaceAction)
+        self.menuBar.saveWorkspaceAction.triggered.connect(self.saveWorkspaceAction)
+
         self.menuBar.saveAction.triggered.connect(self.saveFileAction)
         self.menuBar.newAction.triggered.connect(self.newFileAction)
         self.menuBar.openAction.triggered.connect(self.openFileAction)
@@ -103,6 +108,17 @@ class AsemblerIDE(QMainWindow):
         self.menuBar.hideTerminal.triggered.connect(lambda: self.terminal.hide())
         self.menuBar.showTree.triggered.connect(lambda: self.treeDock.show())
         self.menuBar.hideTree.triggered.connect(lambda: self.treeDock.hide())
+
+    def newWorkspaceAction(self):
+        workspace = WorkspaceNode()
+        name, entered = QInputDialog.getText(self, "New workspace dialog", "Enter workspace name: ", QLineEdit.Normal, "New workspace")
+        if entered:
+            workspace.setText(0, name)
+            self.workspace = workspace
+            self.treeView.setRoot(self.workspace)
+
+    def saveWorkspaceAction(self):
+        pass
 
     def addToolBarEventHandlers(self):
         self.toolBar.compile.triggered.connect(self.compileAction)

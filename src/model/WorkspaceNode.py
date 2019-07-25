@@ -1,4 +1,4 @@
-from PySide2.QtWidgets import QMenu, QAction
+from PySide2.QtWidgets import QMenu, QAction, QInputDialog, QLineEdit
 from src.model.Node import Node
 from src.model.ProjectNode import ProjectNode
 
@@ -23,6 +23,11 @@ class WorkspaceNode(Node):
         return self.menu
 
     def connectActions(self):
-        item = ProjectNode()
-        item.setText(0, "New project")
-        self.newProjectAction.triggered.connect(lambda: self.addChild(item))
+        self.newProjectAction.triggered.connect(self.createNewProject)
+
+    def createNewProject(self):
+        name, entered = QInputDialog.getText(None, "New project", "Enter project name: ", QLineEdit.Normal, "New project")
+        if entered:
+            project = ProjectNode()
+            project.setText(0, name)
+            self.addChild(project)

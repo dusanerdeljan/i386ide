@@ -18,6 +18,14 @@ class MenuBar(QMenuBar):
         self.createViewMenuItemActions()
 
     def createFileMenuItemActions(self):
+        self.newWorkspaceAction = QAction("New workspace", self)
+        self.newWorkspaceAction.setShortcut(QKeySequence("Ctrl+N"))
+        self.file.addAction(self.newWorkspaceAction)
+
+        self.saveWorkspaceAction = QAction("Save workspace", self)
+        self.saveWorkspaceAction.setShortcut(QKeySequence("Ctrl+Shift+S"))
+        self.file.addAction(self.saveWorkspaceAction)
+
         self.saveAction = QAction("Save file", self)
         self.saveAction.setShortcut(QKeySequence("Ctrl+S"))
         self.file.addAction(self.saveAction)
@@ -27,7 +35,7 @@ class MenuBar(QMenuBar):
         self.file.addAction(self.openAction)
 
         self.newAction = QAction("New file", self)
-        self.newAction.setShortcut(QKeySequence("Ctrl+N"))
+        self.newAction.setShortcut(QKeySequence("Ctrl+F"))
         self.file.addAction(self.newAction)
 
     def createEditMenuItemActions(self):
