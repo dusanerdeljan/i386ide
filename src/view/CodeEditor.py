@@ -4,6 +4,7 @@ from PySide2.QtGui import QColor, QPainter, QTextFormat, QFont
 from src.util.AsemblerSintaksa import AsemblerSintaksa
 from src.view.AutocompleteWidget import AutocompleteWidget
 from src.datastrctures.Trie import Trie
+from src.model.FileNode import FileProxy
 
 
 class QLineNumberArea(QWidget):
@@ -24,9 +25,7 @@ class CodeEditor(QPlainTextEdit):
         super(CodeEditor, self).__init__()
 
         # podaci vezani za asmeblerski fajl
-        self.executablePath = None
-        self.filePath = None
-        self.hasUnsavedChanges = False
+        self.file: FileProxy = None
 
         # snipeti
         self.codeSnipets = {
@@ -90,7 +89,9 @@ kraj:
         self.textChanged.connect(self.setUnsavedChanges)
 
     def setUnsavedChanges(self):
-        self.hasUnsavedChanges = True
+        if self.file:
+            self.file.hasUnsavedChanges = True
+            self.file.text = self.toPlainText()
 
     def insertInstructionsInTrie(self):
         for keyword in AsemblerSintaksa.keywords:
@@ -247,10 +248,8 @@ kraj:
         self.widget = None
 
     def getOpenFileName(self):
-        if not self.filePath:
-            return None
-        lastIndex = str(self.filePath).rindex('/')
-        return self.filePath[lastIndex::]
+        if self.file:
+            return self.file.path
 
     def lineNumberAreaWidth(self):
         digits = 1

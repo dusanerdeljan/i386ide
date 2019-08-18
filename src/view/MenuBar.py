@@ -22,6 +22,10 @@ class MenuBar(QMenuBar):
         self.newWorkspaceAction.setShortcut(QKeySequence("Ctrl+N"))
         self.file.addAction(self.newWorkspaceAction)
 
+        self.openWorkspaceAction = QAction("Open workspace", self)
+        self.openWorkspaceAction.setShortcut(QKeySequence("Ctrl+O"))
+        self.file.addAction(self.openWorkspaceAction)
+
         self.saveWorkspaceAction = QAction("Save workspace", self)
         self.saveWorkspaceAction.setShortcut(QKeySequence("Ctrl+Shift+S"))
         self.file.addAction(self.saveWorkspaceAction)
@@ -31,7 +35,7 @@ class MenuBar(QMenuBar):
         self.file.addAction(self.saveAction)
 
         self.openAction = QAction("Open file", self)
-        self.openAction.setShortcut(QKeySequence("Ctrl+O"))
+        self.openAction.setShortcut(QKeySequence("Ctrl+G"))
         self.file.addAction(self.openAction)
 
         self.newAction = QAction("New file", self)

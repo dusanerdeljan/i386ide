@@ -1,9 +1,12 @@
 from PySide2.QtWidgets import QTreeWidget, QTreeWidgetItem, QMenu, QAction
-from PySide2.QtCore import Qt
+from PySide2.QtCore import Qt, Signal
+from src.model.FileNode import FileNode, FileProxy
 from src.model.ProjectNode import ProjectNode
 
 
 class TreeView(QTreeWidget):
+
+    fileDoubleCliked = Signal(FileProxy)
     
     def __init__(self):
         super(TreeView, self).__init__()
@@ -12,6 +15,14 @@ class TreeView(QTreeWidget):
         self.setHeaderLabel("Workspace explorer")
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.showContextMenu)
+
+    def mouseDoubleClickEvent(self, event):
+        item = self.itemAt(event.pos())
+        if not item:
+            return
+        super(TreeView, self).mouseDoubleClickEvent(event)
+        if isinstance(item, FileNode):
+            self.fileDoubleCliked.emit(item.proxy)
 
     def showContextMenu(self, pos):
         item = self.itemAt(pos)

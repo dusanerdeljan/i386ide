@@ -1,5 +1,6 @@
 import sys
 import os
+import pickle
 from PySide2.QtWidgets import QMainWindow, QLineEdit, QApplication, QFileDialog, QMessageBox, QDockWidget, QLabel, QInputDialog
 from PySide2.QtCore import Qt, QDir
 from src.view.CodeEditor import CodeEditor
@@ -14,7 +15,8 @@ from src.util.CSyntax import CSyntax
 from src.model.ProjectNode import ProjectNode
 from src.model.AssemblyFileNode import AssemblyFileNode
 from src.model.CFileNode import CFileNode
-from src.model.WorkspaceNode import WorkspaceNode
+from src.model.WorkspaceNode import WorkspaceNode, WorkspaceProxy
+from src.model.FileNode import FileProxy
 
 
 class AsemblerIDE(QMainWindow):
@@ -47,6 +49,7 @@ class AsemblerIDE(QMainWindow):
 
         self.addMenuBarEventHandlers()
         self.addToolBarEventHandlers()
+        self.addTreeViewEventHandlers()
         self.populateTreeView()
         self.statusBar.comboBox.currentTextChanged.connect(self.changeEditorSyntax)
 
@@ -56,6 +59,9 @@ class AsemblerIDE(QMainWindow):
         elif text == "C":
             self.editor.sintaksa = CSyntax(self.editor.document())
         self.editor.update()
+
+    def addTreeViewEventHandlers(self):
+        self.treeView.fileDoubleCliked.connect(self.loadFileText)
 
     def populateTreeView(self):
         workspace = WorkspaceNode()
@@ -75,30 +81,32 @@ class AsemblerIDE(QMainWindow):
         self.workspace = workspace
 
     def closeEvent(self, event):
-        if self.editor.hasUnsavedChanges:
-            msg = QMessageBox()
-            self.setParent(None)
-            msg.setModal(True)
-            msg.setWindowTitle("Confirm Exit")
-            msg.setText("The file has been modified.")
-            msg.setInformativeText("Do you want to save changes?")
-            msg.setStandardButtons(QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
-            msg.setDefaultButton(QMessageBox.Save)
-            retValue = msg.exec_()
-            if retValue == QMessageBox.Save:
-                if not self.saveFileAction():
+        if self.editor.file:
+            if self.editor.file.hasUnsavedChanges:
+                msg = QMessageBox()
+                self.setParent(None)
+                msg.setModal(True)
+                msg.setWindowTitle("Confirm Exit")
+                msg.setText("The file has been modified.")
+                msg.setInformativeText("Do you want to save changes?")
+                msg.setStandardButtons(QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
+                msg.setDefaultButton(QMessageBox.Save)
+                retValue = msg.exec_()
+                if retValue == QMessageBox.Save:
+                    if not self.saveFileAction():
+                        event.ignore()
+                        return
+                elif retValue == QMessageBox.Discard:
+                    pass
+                else:
                     event.ignore()
                     return
-            elif retValue == QMessageBox.Discard:
-                pass
-            else:
-                event.ignore()
-                return
         super(AsemblerIDE, self).closeEvent(event)
 
     def addMenuBarEventHandlers(self):
         self.menuBar.newWorkspaceAction.triggered.connect(self.newWorkspaceAction)
         self.menuBar.saveWorkspaceAction.triggered.connect(self.saveWorkspaceAction)
+        self.menuBar.openWorkspaceAction.triggered.connect(self.openWorkspaceAction)
 
         self.menuBar.saveAction.triggered.connect(self.saveFileAction)
         self.menuBar.newAction.triggered.connect(self.newFileAction)
@@ -111,14 +119,37 @@ class AsemblerIDE(QMainWindow):
 
     def newWorkspaceAction(self):
         workspace = WorkspaceNode()
-        name, entered = QInputDialog.getText(self, "New workspace dialog", "Enter workspace name: ", QLineEdit.Normal, "New workspace")
-        if entered:
-            workspace.setText(0, name)
+        #name, entered = QInputDialog.getText(self, "New workspace dialog", "Enter workspace name: ", QLineEdit.Normal, "New workspace")
+        name = QFileDialog.getExistingDirectory(self, "New workspace", "select new workspace directory")
+        if name:
+            workspace.path = name
+            # name ima formu home/user/.../.../{ime_workspace-a}
+            workspace.setText(0, name[name.rindex(os.path.sep)+1:])
             self.workspace = workspace
             self.treeView.setRoot(self.workspace)
 
     def saveWorkspaceAction(self):
-        pass
+        if self.workspace:
+            self.workspace.saveWorkspace()
+
+    def openWorkspaceAction(self):
+        name = QFileDialog.getExistingDirectory(self, "New workspace", "select new workspace directory")
+        if not name:
+            return
+        path = os.path.join(name, ".metadata")
+        if not os.path.exists(path):
+            return
+        with open(path, 'rb') as file:
+            workspace = pickle.load(file)
+        self.workspace = WorkspaceNode()
+        self.workspace.proxy = workspace
+        self.workspace.setText(0, name[name.rindex(os.path.sep)+1:])
+        self.workspace.path = name
+        self.workspace.proxy.path = name
+        self.workspace.loadWorkspace()
+        self.treeView.setRoot(self.workspace)
+        self.treeView.expandAll()
+        self.terminal.executeCommand("cd {}".format(self.workspace.path))
 
     def addToolBarEventHandlers(self):
         self.toolBar.compile.triggered.connect(self.compileAction)
@@ -181,11 +212,20 @@ class AsemblerIDE(QMainWindow):
         if self.terminal.executeCommand(commandStrng):
             self.editor.executablePath = destination
 
+    def loadFileText(self, fileProxy):
+        if fileProxy.text:
+            self.editor.setPlainText(fileProxy.text)
+            self.editor.file = fileProxy
+        else:
+            newText = self.openFileAction(fileProxy)
+            fileProxy.text = newText
+            fileProxy.hasUnsavedChanges = False
+
     def saveFileAction(self):
-        if self.editor.filePath:
-            with open(self.editor.filePath, 'w') as file:
+        if self.editor.file:
+            with open(self.editor.file.getFilePath(), 'w') as file:
                 file.write(self.editor.toPlainText())
-                self.editor.hasUnsavedChanges = False
+                self.editor.file.hasUnsavedChanges = False
                 return True
         else:
             fileName, _ = QFileDialog.getSaveFileName(self, "Choose where you want to save the file.")
@@ -199,16 +239,20 @@ class AsemblerIDE(QMainWindow):
 
     def newFileAction(self):
         self.editor.clear()
-        self.editor.filePath = None
-        self.editor.hasUnsavedChanges = True
 
-    def openFileAction(self):
-        fileName, _ = QFileDialog.getOpenFileName(self, "Choose a file to load", "", "*.S;;*.c")
+    def openFileAction(self, fileName: FileProxy=None):
+        text = None
+        if not fileName:
+            fileName, _ = QFileDialog.getOpenFileName(self, "Choose a file to load", "", "*.S;;*.c")
         if fileName:
-            with open(fileName, 'r') as file:
-                self.editor.setPlainText(file.read())
-        self.editor.filePath = fileName
-        self.editor.hasUnsavedChanges = False
+            with open(fileName.getFilePath(), 'r') as file:
+                text = file.read()
+                self.editor.setPlainText(text)
+            self.editor.file = fileName
+            # self.editor.file = FileProxy()
+            # self.editor.file.path = fileName
+            # self.editor.file.hasUnsavedChanges = False
+        return text
 
 
 if __name__ == '__main__':
