@@ -46,6 +46,7 @@ class TerminalController(QObject):
 
 
     def runShell(self, command: str, useShell):
-        command = "gnome-terminal" + " -e 'bash -c \"{}; sleep 1\"'".format(command)
+        # umesto -- je stajalo -e
+        command = "gnome-terminal" + " -e 'bash -c \"{}; sleep 15\"'".format(command)
         # splitedCommand = command.split(" ") if command.startswith("ddd") else shlex.split(command)
         os.system(command)

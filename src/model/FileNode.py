@@ -20,7 +20,7 @@ class FileNode(Node):
     def __init__(self):
         super(FileNode, self).__init__()
         self.menu = QMenu()
-        self.proxy = None
+        self.proxy: FileProxy = None
         self.saveAction = QAction("Save file")
         self.renameAction = QAction("Rename file")
         self.deleteAction = QAction("Remove file")
@@ -35,6 +35,7 @@ class FileNode(Node):
 
     def connectActions(self):
         self.deleteAction.triggered.connect(self.deleteFile)
+        self.saveAction.triggered.connect(self.saveFile)
 
     def deleteFile(self):
         answer = QMessageBox.question(None, "Delete file",
@@ -43,7 +44,12 @@ class FileNode(Node):
         if not answer == QMessageBox.Yes:
             return
         self.parent().removeChild(self)
-        del self
+        self.proxy.parent.files.remove(self.proxy)
+
+    def saveFile(self):
+        with open(self.proxy.getFilePath(), 'w') as file:
+            file.write(self.proxy.text)
+            self.proxy.hasUnsavedChanges = False
 
     def getFilePath(self):
         return os.path.join(self.proxy.parent.parent.path, self.proxy.parent.path, self.proxy.path)

@@ -1,5 +1,6 @@
 from src.model.Node import Node
 from PySide2.QtGui import QIcon
+from PySide2.QtCore import Signal
 from PySide2.QtWidgets import QMenu, QAction, QMessageBox
 from src.view.NewFileDialog import NewFileDialog
 from src.model.AssemblyFileNode import AssemblyFileNode, AssemblyFileProxy
@@ -17,8 +18,36 @@ class ProjectProxy(object):
     def addFile(self, proxy):
         self.files.append(proxy)
 
+    def getProjectPath(self):
+        return os.path.join(self.parent.path, self.path)
+
+    def getProjectCompileCommand(self):
+        destination = os.path.join(self.getProjectPath(), "{}.out".format(self.path))
+        cFiles = []
+        sFiles = []
+        for file in self.files:
+            if isinstance(file, CFileProxy):
+                cFiles.append(file.getFilePath())
+            elif isinstance(file, AssemblyFileProxy):
+                sFiles.append(file.getFilePath())
+        print(self.files)
+        command = ['gcc', '-g', '-m32', '-o', destination]
+        if cFiles:
+            command.extend(cFiles)
+        if sFiles:
+            command.extend(sFiles)
+        return ' '.join(command)
+
+    def getProjectDebugCommand(self):
+        return "ddd {}.out".format(os.path.join(self.getProjectPath(), self.path))
+
+    def getProjectRunCommand(self):
+        return "{}.out".format(os.path.join(self.getProjectPath(), self.path))
+
 
 class ProjectNode(Node):
+
+    projectCompileRequested = Signal(ProjectProxy)
 
     def __init__(self):
         super(ProjectNode, self).__init__()
@@ -44,9 +73,13 @@ class ProjectNode(Node):
     def getContextMenu(self) -> QMenu:
         return self.menu
 
+    def __str__(self):
+        return self.proxy.path
+
     def connectActions(self):
         self.newFileAction.triggered.connect(self.createNewFile)
         self.deleteAction.triggered.connect(self.deleteProject)
+        self.compileAction.triggered.connect(lambda: self.projectCompileRequested.emit(self.proxy))
 
     def createNewFile(self):
         dialog = NewFileDialog()
@@ -61,11 +94,11 @@ class ProjectNode(Node):
                 msg.setWindowTitle("File creation error")
                 msg.exec_()
                 return
+            node = None
             if dialog.result[-1] == "S":
                 node = AssemblyFileNode()
             else:
                 node = CFileNode()
-            print(node)
             node.setText(0, dialog.result)
             node.path = dialog.result
             if isinstance(node, AssemblyFileNode):
@@ -78,6 +111,7 @@ class ProjectNode(Node):
             os.mknod(rootPath)
             self.proxy.addFile(node.proxy)
 
+
     def deleteProject(self):
         answer = QMessageBox.question(None, "Delete project", "Are you sure you want to delete project {}".format(self.text(0)), QMessageBox.Yes | QMessageBox.No)
         if not answer == QMessageBox.Yes:
@@ -85,7 +119,7 @@ class ProjectNode(Node):
         for child in self.takeChildren():
             del child
         self.parent().removeChild(self)
-        del self
+        self.proxy.parent.projects.remove(self.proxy)
 
     def loadProject(self):
         for proxy in self.proxy.files:
@@ -94,9 +128,31 @@ class ProjectNode(Node):
                 file = AssemblyFileNode()
             elif isinstance(proxy, CFileProxy):
                 file = CFileNode()
-            proxy.parent = self.proxy
-            file.setText(0, proxy.path)
-            file.path = proxy.path
-            file.proxy = proxy
-            self.addChild(file)
+            if file:
+                proxy.parent = self.proxy
+                file.setText(0, proxy.path)
+                file.path = proxy.path
+                file.proxy = proxy
+                self.addChild(file)
+        # load assembly and C files which are not added through the IDE but are the part of project folder
+        projectPath = self.proxy.getProjectPath()
+        for filePath in os.listdir(projectPath):
+            if filePath not in [file.path for file in self.proxy.files]:
+                node = None
+                proxy = None
+                if filePath.lower().endswith(".s"):
+                    node = AssemblyFileNode()
+                    proxy = AssemblyFileProxy()
+                elif filePath.lower().endswith(".c"):
+                    node = CFileNode()
+                    proxy = CFileProxy()
+                if node:
+                    proxy.path = filePath
+                    node.setText(0, filePath)
+                    node.path = filePath
+                    node.proxy = proxy
+                    node.proxy.parent = self.proxy
+                    self.addChild(node)
+                    self.proxy.files.append(node.proxy)
+
 

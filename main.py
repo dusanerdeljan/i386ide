@@ -17,6 +17,7 @@ from src.model.AssemblyFileNode import AssemblyFileNode
 from src.model.CFileNode import CFileNode
 from src.model.WorkspaceNode import WorkspaceNode, WorkspaceProxy
 from src.model.FileNode import FileProxy
+from src.controller.ConfigurationManager import ConfigurationManager
 
 
 class AsemblerIDE(QMainWindow):
@@ -24,12 +25,13 @@ class AsemblerIDE(QMainWindow):
     def __init__(self):
         super(AsemblerIDE, self).__init__()
         self.workspace = None
+        self.configurationManager = ConfigurationManager()
         self.editor = CodeEditor()
         self.menuBar = MenuBar()
         self.terminal = Terminal()
-        self.toolBar = ToolBar()
+        self.toolBar = ToolBar(self.configurationManager)
         self.statusBar = StatusBar()
-        self.treeView = TreeView()
+        self.treeView = TreeView(self.configurationManager)
         self.help = HelpWidget()
         self.setStatusBar(self.statusBar)
         self.addToolBar(self.toolBar)
@@ -62,6 +64,7 @@ class AsemblerIDE(QMainWindow):
 
     def addTreeViewEventHandlers(self):
         self.treeView.fileDoubleCliked.connect(self.loadFileText)
+        self.treeView.newProjectAdded.connect(lambda: self.toolBar.updateComboBox())
 
     def populateTreeView(self):
         workspace = WorkspaceNode()
@@ -109,8 +112,8 @@ class AsemblerIDE(QMainWindow):
         self.menuBar.openWorkspaceAction.triggered.connect(self.openWorkspaceAction)
 
         self.menuBar.saveAction.triggered.connect(self.saveFileAction)
-        self.menuBar.newAction.triggered.connect(self.newFileAction)
-        self.menuBar.openAction.triggered.connect(self.openFileAction)
+        # self.menuBar.newAction.triggered.connect(self.newFileAction)
+        # self.menuBar.openAction.triggered.connect(self.openFileAction)
 
         self.menuBar.showTerminal.triggered.connect(lambda: self.terminal.show())
         self.menuBar.hideTerminal.triggered.connect(lambda: self.terminal.hide())
@@ -123,6 +126,9 @@ class AsemblerIDE(QMainWindow):
         name = QFileDialog.getExistingDirectory(self, "New workspace", "select new workspace directory")
         if name:
             workspace.path = name
+            proxy = WorkspaceProxy()
+            proxy.path = name
+            workspace.proxy = proxy
             # name ima formu home/user/.../.../{ime_workspace-a}
             workspace.setText(0, name[name.rindex(os.path.sep)+1:])
             self.workspace = workspace
@@ -148,6 +154,11 @@ class AsemblerIDE(QMainWindow):
         self.workspace.proxy.path = name
         self.workspace.loadWorkspace()
         self.treeView.setRoot(self.workspace)
+        projects = self.treeView.getProjects()
+        if projects:
+            self.configurationManager.allProjects.clear()
+            self.configurationManager.allProjects.extend(projects)
+        self.toolBar.updateComboBox()
         self.treeView.expandAll()
         self.terminal.executeCommand("cd {}".format(self.workspace.path))
 
@@ -157,35 +168,20 @@ class AsemblerIDE(QMainWindow):
         self.toolBar.debug.triggered.connect(self.debugAction)
 
     def debugAction(self):
-        if not self.editor.executablePath:
-            if self.checkExecutable():
-                self.editor.executablePath = self.editor.filePath[:-1] + "out"
-            else:
-                msg = QMessageBox()
-                msg.setModal(True)
-                msg.setIcon(QMessageBox.Critical)
-                msg.setText("You have to compile the file first.")
-                msg.setWindowTitle("Debugger error.")
-                msg.exec_()
-                return
-        self.terminal.console.setFocus()
-        self.terminal.console.setFocus()
-        self.terminal.executeCommand("ddd {}".format(self.editor.executablePath))
+        currentProject: ProjectNode = self.configurationManager.currentProject
+        if currentProject:
+            commandString = currentProject.proxy.getProjectDebugCommand()
+            self.terminal.console.setFocus()
+            if self.terminal.executeCommand(currentProject.proxy.getProjectCompileCommand()):
+                self.terminal.executeCommand(commandString)
 
     def runAction(self):
-        if not self.editor.executablePath:
-            if self.checkExecutable():
-                self.editor.executablePath = self.editor.filePath[:-1] + "out"
-            else:
-                msg = QMessageBox()
-                msg.setModal(True)
-                msg.setIcon(QMessageBox.Critical)
-                msg.setText("You have to compile the file first.")
-                msg.setWindowTitle("Execution error.")
-                msg.exec_()
-                return
-        self.terminal.console.setFocus()
-        self.terminal.executeCommand("{}".format(self.editor.executablePath))
+        currentProject: ProjectNode = self.configurationManager.currentProject
+        if currentProject:
+            commandString = currentProject.proxy.getProjectRunCommand()
+            self.terminal.console.setFocus()
+            if self.terminal.executeCommand(currentProject.proxy.getProjectCompileCommand()):
+                self.terminal.executeCommand(commandString)
 
     def checkExecutable(self):
         if self.editor.filePath:
@@ -194,64 +190,37 @@ class AsemblerIDE(QMainWindow):
         return None
 
     def compileAction(self):
-        if not self.editor.filePath:
-            msg = QMessageBox()
-            msg.setModal(True)
-            msg.setIcon(QMessageBox.Critical)
-            msg.setText("You have to save the file first.")
-            msg.setWindowTitle("Compilation error.")
-            msg.exec_()
-            return
-        if self.editor.hasUnsavedChanges:
-            self.saveFileAction()
-        destination = self.editor.filePath[:-1] + "out"
-        command = ['gcc', '-g', '-m32', '-o', destination, self.editor.filePath]
-        commandStrng = ' '.join(command)
-        # fileName = self.editor.getOpenFileName()
-        self.terminal.console.setFocus()
-        if self.terminal.executeCommand(commandStrng):
-            self.editor.executablePath = destination
+        currentProject: ProjectNode = self.configurationManager.currentProject
+        if currentProject:
+            commandString = currentProject.proxy.getProjectCompileCommand()
+            self.terminal.console.setFocus()
+            self.terminal.executeCommand(commandString)
 
     def loadFileText(self, fileProxy):
-        if fileProxy.text:
-            self.editor.setPlainText(fileProxy.text)
-            self.editor.file = fileProxy
-        else:
-            newText = self.openFileAction(fileProxy)
-            fileProxy.text = newText
+        if not fileProxy.text:
+            text = self.openFileAction(fileProxy)
+            fileProxy.text = text
             fileProxy.hasUnsavedChanges = False
+        self.editor.setPlainText(fileProxy.text)
+        self.editor.file = fileProxy
+        if fileProxy.getFilePath()[-1].lower() == "c":
+            self.editor.sintaksa = CSyntax(self.editor.document())
+        else:
+            self.editor.sintaksa = AsemblerSintaksa(self.editor.document())
 
     def saveFileAction(self):
         if self.editor.file:
             with open(self.editor.file.getFilePath(), 'w') as file:
-                file.write(self.editor.toPlainText())
+                file.write(self.editor.file.text)
                 self.editor.file.hasUnsavedChanges = False
-                return True
-        else:
-            fileName, _ = QFileDialog.getSaveFileName(self, "Choose where you want to save the file.")
-            if fileName:
-                with open(fileName, 'w') as file:
-                    file.write(self.editor.toPlainText())
-                self.editor.filePath = fileName
-                self.editor.hasUnsavedChanges = False
-                return True
-            return False
 
     def newFileAction(self):
         self.editor.clear()
 
-    def openFileAction(self, fileName: FileProxy=None):
+    def openFileAction(self, fileName: FileProxy):
         text = None
-        if not fileName:
-            fileName, _ = QFileDialog.getOpenFileName(self, "Choose a file to load", "", "*.S;;*.c")
-        if fileName:
-            with open(fileName.getFilePath(), 'r') as file:
-                text = file.read()
-                self.editor.setPlainText(text)
-            self.editor.file = fileName
-            # self.editor.file = FileProxy()
-            # self.editor.file.path = fileName
-            # self.editor.file.hasUnsavedChanges = False
+        with open(fileName.getFilePath(), 'r') as file:
+            text = file.read()
         return text
 
 

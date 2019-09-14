@@ -33,14 +33,14 @@ class MenuBar(QMenuBar):
         self.saveAction = QAction("Save file", self)
         self.saveAction.setShortcut(QKeySequence("Ctrl+S"))
         self.file.addAction(self.saveAction)
-
-        self.openAction = QAction("Open file", self)
-        self.openAction.setShortcut(QKeySequence("Ctrl+G"))
-        self.file.addAction(self.openAction)
-
-        self.newAction = QAction("New file", self)
-        self.newAction.setShortcut(QKeySequence("Ctrl+F"))
-        self.file.addAction(self.newAction)
+        #
+        # self.openAction = QAction("Open file", self)
+        # self.openAction.setShortcut(QKeySequence("Ctrl+G"))
+        # self.file.addAction(self.openAction)
+        #
+        # self.newAction = QAction("New file", self)
+        # self.newAction.setShortcut(QKeySequence("Ctrl+F"))
+        # self.file.addAction(self.newAction)
 
     def createEditMenuItemActions(self):
         self.compileConfiguration = QAction("Compiler configuration", self)

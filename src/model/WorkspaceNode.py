@@ -1,4 +1,5 @@
 from PySide2.QtWidgets import QMenu, QAction, QInputDialog, QLineEdit, QMessageBox
+from PySide2.QtCore import Signal, QObject
 from src.model.Node import Node
 from src.model.ProjectNode import ProjectNode, ProjectProxy
 import os
@@ -15,10 +16,19 @@ class WorkspaceProxy(object):
         self.projects.append(projectProxy)
 
 
+class WorkspaceEventManager(QObject):
+
+    projectAdded = Signal(ProjectNode)
+
+    def __init__(self):
+        super(WorkspaceEventManager, self).__init__()
+
+
 class WorkspaceNode(Node):
     
     def __init__(self):
         super(WorkspaceNode, self).__init__()
+        self.eventManager = WorkspaceEventManager()
         self.menu = QMenu()
         self.proxy = WorkspaceProxy()
         self.newProjectAction = QAction("New project")
@@ -59,17 +69,32 @@ class WorkspaceNode(Node):
             newPath = os.path.join(self.path, name)
             os.mkdir(newPath)
             self.proxy.addProject(project.proxy)
+            self.saveWorkspace()
+            self.eventManager.projectAdded.emit(project)
 
     def saveWorkspace(self):
         with open(os.path.join(self.path, '.metadata'), 'wb') as metadata:
             pickle.dump(self.proxy, metadata, protocol=pickle.HIGHEST_PROTOCOL)
 
     def loadWorkspace(self):
+        toBeDeleted = []
         for projectProxy in self.proxy.projects:
-            projectProxy.parent = self.proxy
-            project = ProjectNode()
-            project.setText(0, projectProxy.path)
-            project.path = projectProxy.path
-            project.proxy = projectProxy
-            project.loadProject()
-            self.addChild(project)
+            if os.path.exists(projectProxy.getProjectPath()):
+                projectProxy.parent = self.proxy
+                project = ProjectNode()
+                project.setText(0, projectProxy.path)
+                project.path = projectProxy.path
+                project.proxy = projectProxy
+                project.loadProject()
+                self.addChild(project)
+            else:
+                msg = QMessageBox()
+                msg.setModal(True)
+                msg.setIcon(QMessageBox.Critical)
+                msg.setText("Failed to import project '{}' because it is deleted from the disk.".format(projectProxy.path))
+                msg.setWindowTitle("Failed to load a project.")
+                msg.exec_()
+                toBeDeleted.append(projectProxy)
+        for proxy in toBeDeleted:
+            self.proxy.projects.remove(proxy)
+        self.saveWorkspace()
