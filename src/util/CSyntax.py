@@ -5,7 +5,7 @@ from src.util.Formater import Formater
 
 class CSyntax(QSyntaxHighlighter):
 
-    keywords = ['int', 'double', 'float', 'char', 'struct', 'typedef', 'for', 'while', 'union', 'return', 'if', 'else', 'break', 'continue']
+    keywords = ['int', 'double', 'float', 'char', 'struct', 'typedef', 'for', 'while', 'union', 'return', 'if', 'else', 'break', 'continue', 'const', 'void']
 
 
     def __init__(self, dokument):

@@ -10,6 +10,7 @@ from src.view.ToolBar import ToolBar
 from src.view.StatusBar import StatusBar
 from src.view.TreeView import TreeView
 from src.view.HelpWidget import HelpWidget
+from src.view.TabWidget import EditorTabWidget
 from src.util.AsemblerSintaksa import AsemblerSintaksa
 from src.util.CSyntax import CSyntax
 from src.model.ProjectNode import ProjectNode
@@ -26,7 +27,7 @@ class AsemblerIDE(QMainWindow):
         super(AsemblerIDE, self).__init__()
         self.workspace = None
         self.configurationManager = ConfigurationManager()
-        self.editor = CodeEditor()
+        self.editorTabs = EditorTabWidget()
         self.menuBar = MenuBar()
         self.terminal = Terminal()
         self.toolBar = ToolBar(self.configurationManager)
@@ -47,8 +48,10 @@ class AsemblerIDE(QMainWindow):
         self.setMenuBar(self.menuBar)
         self.setMinimumSize(1200, 800)
         self.setWindowTitle("i386 Assembly Integrated Development Environment")
-        self.setCentralWidget(self.editor)
+        self.setCentralWidget(self.editorTabs)
+        self.setStyleSheet("background-color:  #566573 ; color: white;")
 
+        self.addTabWidgetEventHandlers()
         self.addMenuBarEventHandlers()
         self.addToolBarEventHandlers()
         self.addTreeViewEventHandlers()
@@ -56,15 +59,27 @@ class AsemblerIDE(QMainWindow):
         self.statusBar.comboBox.currentTextChanged.connect(self.changeEditorSyntax)
 
     def changeEditorSyntax(self, text):
-        if text == "Assembly":
-            self.editor.sintaksa = AsemblerSintaksa(self.editor.document())
-        elif text == "C":
-            self.editor.sintaksa = CSyntax(self.editor.document())
-        self.editor.update()
+        currentTab = self.editorTabs.getCurrentTab()
+        if currentTab:
+            if text == "Assembly":
+                currentTab.editor.sintaksa = AsemblerSintaksa(currentTab.editor.document())
+            elif text == "C":
+                currentTab.editor.sintaksa = CSyntax(currentTab.editor.document())
+            currentTab.editor.update()
+
+    def addTabWidgetEventHandlers(self):
+        self.editorTabs.currentChanged.connect(self.activeTabChanged)
 
     def addTreeViewEventHandlers(self):
         self.treeView.fileDoubleCliked.connect(self.loadFileText)
         self.treeView.newProjectAdded.connect(lambda: self.toolBar.updateComboBox())
+
+    def activeTabChanged(self, index):
+        if index == -1:
+            return
+        syntax = "Assembly" if self.editorTabs.tabs[index].path[-1].lower() == "s" else "C"
+        self.statusBar.comboBox.setCurrentText(syntax)
+        self.changeEditorSyntax(syntax)
 
     def populateTreeView(self):
         workspace = WorkspaceNode()
@@ -84,13 +99,13 @@ class AsemblerIDE(QMainWindow):
         self.workspace = workspace
 
     def closeEvent(self, event):
-        if self.editor.file:
-            if self.editor.file.hasUnsavedChanges:
+        for proxy in self.editorTabs.tabs:
+            if proxy.hasUnsavedChanges:
                 msg = QMessageBox()
-                self.setParent(None)
+                msg.setParent(None)
                 msg.setModal(True)
                 msg.setWindowTitle("Confirm Exit")
-                msg.setText("The file has been modified.")
+                msg.setText("The file {}/{} has been modified.".format(proxy.parent.path, proxy.path))
                 msg.setInformativeText("Do you want to save changes?")
                 msg.setStandardButtons(QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
                 msg.setDefaultButton(QMessageBox.Save)
@@ -112,8 +127,6 @@ class AsemblerIDE(QMainWindow):
         self.menuBar.openWorkspaceAction.triggered.connect(self.openWorkspaceAction)
 
         self.menuBar.saveAction.triggered.connect(self.saveFileAction)
-        # self.menuBar.newAction.triggered.connect(self.newFileAction)
-        # self.menuBar.openAction.triggered.connect(self.openFileAction)
 
         self.menuBar.showTerminal.triggered.connect(lambda: self.terminal.show())
         self.menuBar.hideTerminal.triggered.connect(lambda: self.terminal.hide())
@@ -122,14 +135,12 @@ class AsemblerIDE(QMainWindow):
 
     def newWorkspaceAction(self):
         workspace = WorkspaceNode()
-        #name, entered = QInputDialog.getText(self, "New workspace dialog", "Enter workspace name: ", QLineEdit.Normal, "New workspace")
         name = QFileDialog.getExistingDirectory(self, "New workspace", "select new workspace directory")
         if name:
             workspace.path = name
             proxy = WorkspaceProxy()
             proxy.path = name
             workspace.proxy = proxy
-            # name ima formu home/user/.../.../{ime_workspace-a}
             workspace.setText(0, name[name.rindex(os.path.sep)+1:])
             self.workspace = workspace
             self.treeView.setRoot(self.workspace)
@@ -197,28 +208,32 @@ class AsemblerIDE(QMainWindow):
             self.terminal.executeCommand(commandString)
 
     def loadFileText(self, fileProxy):
-        if not fileProxy.text:
-            text = self.openFileAction(fileProxy)
-            fileProxy.text = text
-            fileProxy.hasUnsavedChanges = False
-        self.editor.setPlainText(fileProxy.text)
-        self.editor.file = fileProxy
+        text = self.openFileAction(fileProxy)
+        fileProxy.text = text
+        fileProxy.hasUnsavedChanges = False
         if fileProxy.getFilePath()[-1].lower() == "c":
-            self.editor.sintaksa = CSyntax(self.editor.document())
+            currentText = "C"
         else:
-            self.editor.sintaksa = AsemblerSintaksa(self.editor.document())
+            currentText = "Assembly"
+        update = True
+        if len(self.editorTabs.tabs) == 0:
+            self.editorTabs.tabs.append(fileProxy)
+            update = False
+        self.editorTabs.addNewTab(fileProxy, update)
+        self.statusBar.comboBox.setCurrentText(currentText)
 
     def saveFileAction(self):
-        if self.editor.file:
-            with open(self.editor.file.getFilePath(), 'w') as file:
-                file.write(self.editor.file.text)
-                self.editor.file.hasUnsavedChanges = False
-
-    def newFileAction(self):
-        self.editor.clear()
+        proxy = self.editorTabs.getCurrentFileProxy()
+        if proxy:
+            with open(proxy.getFilePath(), 'w') as file:
+                file.write(proxy.text)
+                proxy.hasUnsavedChanges = False
+        return True
 
     def openFileAction(self, fileName: FileProxy):
         text = None
+        if fileName.text:
+            return fileName.text
         with open(fileName.getFilePath(), 'r') as file:
             text = file.read()
         return text
@@ -228,5 +243,4 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     ide = AsemblerIDE()
     ide.show()
-    ide.editor.setFocus()
     app.exec_()

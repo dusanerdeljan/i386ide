@@ -86,7 +86,7 @@ kraj:
         self.updateRequest.connect(self.updateLineNumberArea)
         self.cursorPositionChanged.connect(self.highlightCurrentLine)
         self.updateLineNumberAreaWidth(0)
-        self.textChanged.connect(self.setUnsavedChanges)
+        #self.textChanged.connect(self.setUnsavedChanges)
 
     def setUnsavedChanges(self):
         if self.file:
@@ -109,6 +109,7 @@ kraj:
             super(CodeEditor, self).mousePressEvent(e)
 
     def keyPressEvent(self, e):
+        startLength = len(self.toPlainText())
         enterPressed = False
         numSpaces = 0
         if e.key() == Qt.Key_Return:
@@ -174,6 +175,9 @@ kraj:
                 self.updateSuggestions()
         if enterPressed and numSpaces:
             self.insertPlainText(numSpaces * " ")
+        endLength = len(self.toPlainText())
+        if (endLength - startLength) != 0:
+            self.setUnsavedChanges()
 
     def insertLabelInTrie(self):
         currentLineCursorIndex = self.textCursor().positionInBlock()

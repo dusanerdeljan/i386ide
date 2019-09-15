@@ -14,6 +14,11 @@ class FileProxy(object):
     def getFilePath(self):
         return os.path.join(self.parent.parent.path, self.parent.path, self.path)
 
+    def saveFile(self):
+        with open(self.getFilePath(), 'w') as file:
+            file.write(self.text)
+            self.hasUnsavedChanges = False
+
 
 class FileNode(Node):
     
@@ -47,9 +52,7 @@ class FileNode(Node):
         self.proxy.parent.files.remove(self.proxy)
 
     def saveFile(self):
-        with open(self.proxy.getFilePath(), 'w') as file:
-            file.write(self.proxy.text)
-            self.proxy.hasUnsavedChanges = False
+        self.proxy.saveFile()
 
     def getFilePath(self):
         return os.path.join(self.proxy.parent.parent.path, self.proxy.parent.path, self.proxy.path)
