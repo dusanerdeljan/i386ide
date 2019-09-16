@@ -1,6 +1,7 @@
 import sys
 import os
 import pickle
+import re
 from PySide2.QtWidgets import QMainWindow, QLineEdit, QApplication, QFileDialog, QMessageBox, QDockWidget, QLabel, QInputDialog
 from PySide2.QtCore import Qt, QDir
 from src.view.CodeEditor import CodeEditor
@@ -11,6 +12,8 @@ from src.view.StatusBar import StatusBar
 from src.view.TreeView import TreeView
 from src.view.HelpWidget import HelpWidget
 from src.view.TabWidget import EditorTabWidget
+from src.view.WorkspaceConfigurationEditor import WorkspaceConfigurationEditor
+from src.view.DefaultWorkspaceEditor import DefaultWorkspaceEditor
 from src.util.AsemblerSintaksa import AsemblerSintaksa
 from src.util.CSyntax import CSyntax
 from src.model.ProjectNode import ProjectNode
@@ -19,6 +22,7 @@ from src.model.CFileNode import CFileNode
 from src.model.WorkspaceNode import WorkspaceNode, WorkspaceProxy
 from src.model.FileNode import FileProxy
 from src.controller.ConfigurationManager import ConfigurationManager
+from src.controller.WorkspaceConfiguration import WorkspaceConfiguration
 
 
 class AsemblerIDE(QMainWindow):
@@ -26,6 +30,7 @@ class AsemblerIDE(QMainWindow):
     def __init__(self):
         super(AsemblerIDE, self).__init__()
         self.workspace = None
+        self.workspaceConfiguration = WorkspaceConfiguration.loadConfiguration()
         self.configurationManager = ConfigurationManager()
         self.editorTabs = EditorTabWidget()
         self.menuBar = MenuBar()
@@ -55,7 +60,8 @@ class AsemblerIDE(QMainWindow):
         self.addMenuBarEventHandlers()
         self.addToolBarEventHandlers()
         self.addTreeViewEventHandlers()
-        self.populateTreeView()
+        self.checkWorkspaceConfiguration()
+        #self.populateTreeView()
         self.statusBar.comboBox.currentTextChanged.connect(self.changeEditorSyntax)
 
     def changeEditorSyntax(self, text):
@@ -66,6 +72,18 @@ class AsemblerIDE(QMainWindow):
             elif text == "C":
                 currentTab.editor.sintaksa = CSyntax(currentTab.editor.document())
             currentTab.editor.update()
+
+    def checkWorkspaceConfiguration(self):
+        defaultWorkspace = self.workspaceConfiguration.getDefaultWorkspace()
+        if defaultWorkspace:
+            self.openWorkspaceAction(defaultWorkspace)
+            self.show()
+        else:
+            dialog = WorkspaceConfigurationEditor(self.workspaceConfiguration, self)
+            if dialog.exec_():
+                self.show()
+            else:
+                sys.exit(0)
 
     def addTabWidgetEventHandlers(self):
         self.editorTabs.currentChanged.connect(self.activeTabChanged)
@@ -119,45 +137,82 @@ class AsemblerIDE(QMainWindow):
                 else:
                     event.ignore()
                     return
+        self.workspaceConfiguration.saveConfiguration()
         super(AsemblerIDE, self).closeEvent(event)
 
     def addMenuBarEventHandlers(self):
         self.menuBar.newWorkspaceAction.triggered.connect(self.newWorkspaceAction)
         self.menuBar.saveWorkspaceAction.triggered.connect(self.saveWorkspaceAction)
         self.menuBar.openWorkspaceAction.triggered.connect(self.openWorkspaceAction)
+        self.menuBar.switchWorkspaceAction.triggered.connect(self.switchWorkspaceAction)
 
         self.menuBar.saveAction.triggered.connect(self.saveFileAction)
+        self.menuBar.editDefaultWorkspace.triggered.connect(self.editDefaultWorkspaceConfiguration)
 
         self.menuBar.showTerminal.triggered.connect(lambda: self.terminal.show())
         self.menuBar.hideTerminal.triggered.connect(lambda: self.terminal.hide())
         self.menuBar.showTree.triggered.connect(lambda: self.treeDock.show())
         self.menuBar.hideTree.triggered.connect(lambda: self.treeDock.hide())
 
+    def switchWorkspaceAction(self):
+        dialog = WorkspaceConfigurationEditor(self.workspaceConfiguration, self, switch=True)
+        if dialog.exec_() and dialog.workspaceDirectory:
+            if not self.editorTabs.closeAllTabs():
+                return
+            self.openWorkspaceAction(dialog.workspaceDirectory)
+
+    def editDefaultWorkspaceConfiguration(self):
+        editor = DefaultWorkspaceEditor(self.workspaceConfiguration)
+        if editor.exec_():
+            self.workspaceConfiguration.saveConfiguration()
+
     def newWorkspaceAction(self):
+        if not self.editorTabs.closeAllTabs():
+            return False
         workspace = WorkspaceNode()
         name = QFileDialog.getExistingDirectory(self, "New workspace", "select new workspace directory")
         if name:
+            wsname = name[name.rindex(os.path.sep)+1:]
+            regex = re.compile('[@_!#$%^&*()<>?/\|}{~:]')
+            if ' ' in name or regex.search(wsname):
+                msg = QMessageBox()
+                msg.setModal(True)
+                msg.setIcon(QMessageBox.Critical)
+                msg.setText("Workspace path/name cannot contain whitespace special characters.")
+                msg.setWindowTitle("Workspace creation error")
+                msg.exec_()
+                return False
             workspace.path = name
             proxy = WorkspaceProxy()
             proxy.path = name
             workspace.proxy = proxy
-            workspace.setText(0, name[name.rindex(os.path.sep)+1:])
+            workspace.setText(0, wsname)
             self.workspace = workspace
             self.treeView.setRoot(self.workspace)
+            self.saveWorkspaceAction()
+            self.terminal.executeCommand("cd {}".format(self.workspace.path))
+            self.workspaceConfiguration.addWorkspace(self.workspace.proxy.path)
+            return True
+        return False
 
     def saveWorkspaceAction(self):
         if self.workspace:
             self.workspace.saveWorkspace()
 
-    def openWorkspaceAction(self):
-        name = QFileDialog.getExistingDirectory(self, "New workspace", "select new workspace directory")
-        if not name:
+    def openWorkspaceAction(self, workspacePath=None):
+        if not self.editorTabs.closeAllTabs():
             return
+        if not workspacePath:
+            name = QFileDialog.getExistingDirectory(self, "Open workspace", "select new workspace directory")
+            if not name:
+                return
+        else:
+            name = workspacePath
+        workspace = WorkspaceProxy()
         path = os.path.join(name, ".metadata")
-        if not os.path.exists(path):
-            return
-        with open(path, 'rb') as file:
-            workspace = pickle.load(file)
+        if os.path.exists(path):
+            with open(path, 'rb') as file:
+                workspace = pickle.load(file)
         self.workspace = WorkspaceNode()
         self.workspace.proxy = workspace
         self.workspace.setText(0, name[name.rindex(os.path.sep)+1:])
@@ -172,6 +227,9 @@ class AsemblerIDE(QMainWindow):
         self.toolBar.updateComboBox()
         self.treeView.expandAll()
         self.terminal.executeCommand("cd {}".format(self.workspace.path))
+        self.workspaceConfiguration.addWorkspace(self.workspace.proxy.path)
+        if workspacePath:
+            self.workspace.saveWorkspace()
 
     def addToolBarEventHandlers(self):
         self.toolBar.compile.triggered.connect(self.compileAction)
@@ -242,5 +300,4 @@ class AsemblerIDE(QMainWindow):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ide = AsemblerIDE()
-    ide.show()
     app.exec_()

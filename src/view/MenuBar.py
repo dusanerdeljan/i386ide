@@ -10,7 +10,7 @@ class MenuBar(QMenuBar):
         self.file = self.addMenu("File")
         self.edit = self.addMenu("Edit")
         self.view = self.addMenu("View")
-        self.run = self.addMenu("Run")
+        # self.run = self.addMenu("Run")
         self.help = self.addMenu("Help")
 
         self.createFileMenuItemActions()
@@ -25,6 +25,10 @@ class MenuBar(QMenuBar):
         self.openWorkspaceAction = QAction("Open workspace", self)
         self.openWorkspaceAction.setShortcut(QKeySequence("Ctrl+O"))
         self.file.addAction(self.openWorkspaceAction)
+
+        self.switchWorkspaceAction = QAction("Switch workspace", self)
+        self.switchWorkspaceAction.setShortcut((QKeySequence("Ctrl+W")))
+        self.file.addAction(self.switchWorkspaceAction)
 
         self.saveWorkspaceAction = QAction("Save workspace", self)
         self.saveWorkspaceAction.setShortcut(QKeySequence("Ctrl+Shift+S"))
@@ -43,17 +47,8 @@ class MenuBar(QMenuBar):
         # self.file.addAction(self.newAction)
 
     def createEditMenuItemActions(self):
-        self.compileConfiguration = QAction("Compiler configuration", self)
-        self.compileConfiguration.setShortcut(QKeySequence("Ctrl+Shift+C"))
-        self.edit.addAction(self.compileConfiguration)
-
-        self.debugConfiguration = QAction("Debug configuration", self)
-        self.debugConfiguration.setShortcut(QKeySequence("Ctrl+Shift+D"))
-        self.edit.addAction(self.debugConfiguration)
-
-        self.runConfiguration = QAction("Run configuration", self)
-        self.runConfiguration.setShortcut(QKeySequence("Ctrl+Shift+R"))
-        self.edit.addAction(self.runConfiguration)
+        self.editDefaultWorkspace = QAction("Edit default workspace", self)
+        self.edit.addAction(self.editDefaultWorkspace)
 
     def createViewMenuItemActions(self):
         self.showTerminal = QAction("Show terminal", self)

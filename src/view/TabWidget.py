@@ -46,6 +46,12 @@ class EditorTabWidget(QTabWidget):
             return self.projectTabs[key]
         return None
 
+    def closeAllTabs(self):
+        for index in range(len(self.tabs)-1, -1, -1):
+            if not self.closeTab(index):
+                return False
+        return True
+
     def closeTab(self, index):
         proxy: FileProxy = self.tabs[index]
         key = "{}/{}".format(proxy.parent.path, proxy.path)
@@ -64,7 +70,8 @@ class EditorTabWidget(QTabWidget):
             elif retValue == QMessageBox.Discard:
                 pass
             else:
-                return
+                return False
         self.tabs.pop(index)
         del self.projectTabs[key]
         self.removeTab(index)
+        return True

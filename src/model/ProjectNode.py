@@ -6,6 +6,7 @@ from src.view.NewFileDialog import NewFileDialog
 from src.model.AssemblyFileNode import AssemblyFileNode, AssemblyFileProxy
 from src.model.CFileNode import CFileNode, CFileProxy
 import os
+import re
 
 
 class ProjectProxy(object):
@@ -86,6 +87,15 @@ class ProjectNode(Node):
         dialog.exec_()
         if dialog.result:
             rootPath = os.path.join(self.parent().path, self.path, dialog.result)
+            regex = re.compile('[@_!#$%^&*()<>?/\|}{~:]')
+            if " " in dialog.result or regex.search(dialog.result):
+                msg = QMessageBox()
+                msg.setModal(True)
+                msg.setIcon(QMessageBox.Critical)
+                msg.setText("File name cannot contain whitespace or special characters.")
+                msg.setWindowTitle("File creation error")
+                msg.exec_()
+                return
             if os.path.exists(rootPath):
                 msg = QMessageBox()
                 msg.setModal(True)

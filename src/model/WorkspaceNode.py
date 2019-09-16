@@ -4,6 +4,7 @@ from src.model.Node import Node
 from src.model.ProjectNode import ProjectNode, ProjectProxy
 import os
 import pickle
+import re
 
 
 class WorkspaceProxy(object):
@@ -52,6 +53,15 @@ class WorkspaceNode(Node):
     def createNewProject(self):
         name, entered = QInputDialog.getText(None, "New project", "Enter project name: ", QLineEdit.Normal, "New project")
         if entered:
+            regex = re.compile('[@_!#$%^&*()<>?/\|}{~:]')
+            if " " in name or regex.search(name):
+                msg = QMessageBox()
+                msg.setModal(True)
+                msg.setIcon(QMessageBox.Critical)
+                msg.setText("Project name cannot contain whitespace or special characters.")
+                msg.setWindowTitle("Project creation error")
+                msg.exec_()
+                return
             if os.path.exists(os.path.join(self.path, name)):
                 msg = QMessageBox()
                 msg.setModal(True)
