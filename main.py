@@ -90,7 +90,11 @@ class AsemblerIDE(QMainWindow):
 
     def addTreeViewEventHandlers(self):
         self.treeView.fileDoubleCliked.connect(self.loadFileText)
+        self.treeView.workspaceReload.connect(lambda wsProxy: self.openWorkspaceAction(wsProxy.path))
         self.treeView.newProjectAdded.connect(lambda: self.toolBar.updateComboBox())
+        self.treeView.projectCompile.connect(lambda proxy: self.compileAction(proxy))
+        self.treeView.projectDebug.connect(lambda proxy: self.debugAction(proxy))
+        self.treeView.projectRun.connect(lambda proxy: self.runAction(proxy))
 
     def activeTabChanged(self, index):
         if index == -1:
@@ -236,34 +240,55 @@ class AsemblerIDE(QMainWindow):
         self.toolBar.run.triggered.connect(self.runAction)
         self.toolBar.debug.triggered.connect(self.debugAction)
 
-    def debugAction(self):
+    def debugAction(self, projectProxy=None):
         currentProject: ProjectNode = self.configurationManager.currentProject
-        if currentProject:
-            commandString = currentProject.proxy.getProjectDebugCommand()
+        proxy = None
+        if projectProxy:
+            proxy = projectProxy
+        else:
+            if currentProject:
+                proxy = currentProject.proxy
+        if proxy:
+            commandString = proxy.getProjectDebugCommand()
             self.terminal.console.setFocus()
-            if self.terminal.executeCommand(currentProject.proxy.getProjectCompileCommand()):
+            if self.terminal.executeCommand(proxy.getProjectCompileCommand()):
                 self.terminal.executeCommand(commandString)
+            self.toolBar.projectComboBox.setCurrentText(proxy.path)
 
-    def runAction(self):
+    def runAction(self, projectProxy=None):
         currentProject: ProjectNode = self.configurationManager.currentProject
-        if currentProject:
-            commandString = currentProject.proxy.getProjectRunCommand()
+        proxy = None
+        if projectProxy:
+            proxy = projectProxy
+        else:
+            if currentProject:
+                proxy = currentProject.proxy
+        if proxy:
+            commandString = proxy.getProjectRunCommand()
             self.terminal.console.setFocus()
-            if self.terminal.executeCommand(currentProject.proxy.getProjectCompileCommand()):
+            if self.terminal.executeCommand(proxy.getProjectCompileCommand()):
                 self.terminal.executeCommand(commandString)
+            self.toolBar.projectComboBox.setCurrentText(proxy.path)
+
+    def compileAction(self, projectProxy=None):
+        currentProject: ProjectNode = self.configurationManager.currentProject
+        proxy = None
+        if projectProxy:
+            proxy = projectProxy
+        else:
+            if currentProject:
+                proxy = currentProject.proxy
+        if proxy:
+            commandString = proxy.getProjectCompileCommand()
+            self.terminal.console.setFocus()
+            self.terminal.executeCommand(commandString)
+            self.toolBar.projectComboBox.setCurrentText(proxy.path)
 
     def checkExecutable(self):
         if self.editor.filePath:
             destination = self.editor.filePath[:-1] + "out"
             return os.path.exists(destination)
         return None
-
-    def compileAction(self):
-        currentProject: ProjectNode = self.configurationManager.currentProject
-        if currentProject:
-            commandString = currentProject.proxy.getProjectCompileCommand()
-            self.terminal.console.setFocus()
-            self.terminal.executeCommand(commandString)
 
     def loadFileText(self, fileProxy):
         text = self.openFileAction(fileProxy)
@@ -281,12 +306,13 @@ class AsemblerIDE(QMainWindow):
         self.statusBar.comboBox.setCurrentText(currentText)
 
     def saveFileAction(self):
-        proxy = self.editorTabs.getCurrentFileProxy()
-        if proxy:
-            with open(proxy.getFilePath(), 'w') as file:
-                file.write(proxy.text)
-                proxy.hasUnsavedChanges = False
-        return True
+        if len(self.editorTabs.tabs):
+            proxy = self.editorTabs.getCurrentFileProxy()
+            if proxy:
+                with open(proxy.getFilePath(), 'w') as file:
+                    file.write(proxy.text)
+                    proxy.hasUnsavedChanges = False
+            return True
 
     def openFileAction(self, fileName: FileProxy):
         text = None

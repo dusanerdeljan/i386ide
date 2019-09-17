@@ -2,13 +2,18 @@ from PySide2.QtWidgets import QTreeWidget, QTreeWidgetItem, QMenu, QAction
 from PySide2.QtCore import Qt, Signal
 from src.model.WorkspaceNode import WorkspaceNode, WorkspaceProxy
 from src.model.FileNode import FileNode, FileProxy
-from src.model.ProjectNode import ProjectNode
+from src.model.ProjectNode import ProjectNode, ProjectProxy
 from src.controller.ConfigurationManager import ConfigurationManager
 
 class TreeView(QTreeWidget):
 
     fileDoubleCliked = Signal(FileProxy)
     newProjectAdded = Signal(ProjectNode)
+    workspaceReload = Signal(WorkspaceProxy)
+
+    projectCompile = Signal(ProjectProxy)
+    projectDebug = Signal(ProjectProxy)
+    projectRun = Signal(ProjectProxy)
     
     def __init__(self, configurationManager: ConfigurationManager):
         super(TreeView, self).__init__()
@@ -51,10 +56,17 @@ class TreeView(QTreeWidget):
         self.configurationManager.allProjects.append(project)
         self.newProjectAdded.emit(project)
 
+    def connectWorkspaceEventHandlers(self):
+        self.rootNode.eventManager.projectAdded.connect(self.newProject)
+        self.rootNode.eventManager.projectCompile.connect(lambda proxy: self.projectCompile.emit(proxy))
+        self.rootNode.eventManager.projectDebug.connect(lambda proxy: self.projectDebug.emit(proxy))
+        self.rootNode.eventManager.projectRun.connect(lambda proxy: self.projectRun.emit(proxy))
+        self.rootNode.eventManager.workspaceReload.connect(lambda wsProxy: self.workspaceReload.emit(wsProxy))
+
     def setRoot(self, item: QTreeWidgetItem):
         self.clear()
         self.rootNode = item
         self.addTopLevelItem(item)
         self.setHeaderLabel(item.text(0))
-        self.rootNode.eventManager.projectAdded.connect(self.newProject)
+        self.connectWorkspaceEventHandlers()
         item.setExpanded(True)

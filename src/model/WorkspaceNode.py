@@ -20,6 +20,11 @@ class WorkspaceProxy(object):
 class WorkspaceEventManager(QObject):
 
     projectAdded = Signal(ProjectNode)
+    workspaceReload = Signal(WorkspaceProxy)
+
+    projectCompile = Signal(ProjectProxy)
+    projectDebug = Signal(ProjectProxy)
+    projectRun = Signal(ProjectProxy)
 
     def __init__(self):
         super(WorkspaceEventManager, self).__init__()
@@ -36,10 +41,12 @@ class WorkspaceNode(Node):
         self.saveAction = QAction("Save workspace")
         self.renameAction = QAction("Rename workspace")
         self.switchAction = QAction("Switch workspace")
+        self.updateAction = QAction("Update workspace")
         self.menu.addAction(self.newProjectAction)
         self.menu.addAction(self.saveAction)
         self.menu.addAction(self.switchAction)
         self.menu.addAction(self.renameAction)
+        self.menu.addAction(self.updateAction)
 
         self.connectActions()
 
@@ -49,6 +56,7 @@ class WorkspaceNode(Node):
     def connectActions(self):
         self.newProjectAction.triggered.connect(self.createNewProject)
         self.saveAction.triggered.connect(self.saveWorkspace)
+        self.updateAction.triggered.connect(lambda: self.eventManager.workspaceReload.emit(self.proxy))
 
     def createNewProject(self):
         name, entered = QInputDialog.getText(None, "New project", "Enter project name: ", QLineEdit.Normal, "New project")
@@ -80,11 +88,17 @@ class WorkspaceNode(Node):
             os.mkdir(newPath)
             self.proxy.addProject(project.proxy)
             self.saveWorkspace()
+            self.connectProjectEventHandlers(project)
             self.eventManager.projectAdded.emit(project)
 
     def saveWorkspace(self):
         with open(os.path.join(self.path, '.metadata'), 'wb') as metadata:
             pickle.dump(self.proxy, metadata, protocol=pickle.HIGHEST_PROTOCOL)
+
+    def connectProjectEventHandlers(self, project: ProjectNode):
+        project.eventManager.projectCompileRequested.connect(lambda proxy: self.eventManager.projectCompile.emit(proxy))
+        project.eventManager.projectDebugRequested.connect(lambda proxy: self.eventManager.projectDebug.emit(proxy))
+        project.eventManager.projectRunRequested.connect(lambda proxy: self.eventManager.projectRun.emit(proxy))
 
     def loadWorkspace(self):
         toBeDeleted = []
@@ -97,6 +111,7 @@ class WorkspaceNode(Node):
                 project.proxy = projectProxy
                 project.loadProject()
                 self.addChild(project)
+                self.connectProjectEventHandlers(project)
             else:
                 msg = QMessageBox()
                 msg.setModal(True)

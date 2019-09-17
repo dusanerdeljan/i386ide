@@ -14,12 +14,14 @@ class WorkspaceConfiguration(object):
 
     def addWorkspace(self, workspace):
         self.workspaces.add(workspace)
+        self.saveConfiguration()
 
     def getDefaultWorkspace(self):
         return self.defaultWorkspace
 
     def setDefaultWorkspace(self, workspace):
         self.defaultWorkspace = workspace
+        self.saveConfiguration()
 
     def getWorkspaces(self):
         return self.workspaces

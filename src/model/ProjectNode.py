@@ -1,6 +1,6 @@
 from src.model.Node import Node
 from PySide2.QtGui import QIcon
-from PySide2.QtCore import Signal
+from PySide2.QtCore import Signal, QObject
 from PySide2.QtWidgets import QMenu, QAction, QMessageBox
 from src.view.NewFileDialog import NewFileDialog
 from src.model.AssemblyFileNode import AssemblyFileNode, AssemblyFileProxy
@@ -46,12 +46,21 @@ class ProjectProxy(object):
         return "{}.out".format(os.path.join(self.getProjectPath(), self.path))
 
 
-class ProjectNode(Node):
+class ProjectEventManager(QObject):
 
     projectCompileRequested = Signal(ProjectProxy)
+    projectDebugRequested = Signal(ProjectProxy)
+    projectRunRequested = Signal(ProjectProxy)
+
+    def __init__(self):
+        super(ProjectEventManager, self).__init__()
+
+
+class ProjectNode(Node):
 
     def __init__(self):
         super(ProjectNode, self).__init__()
+        self.eventManager = ProjectEventManager()
         self.menu = QMenu()
         self.proxy = ProjectProxy()
         self.saveAction = QAction("Save project")
@@ -59,9 +68,11 @@ class ProjectNode(Node):
         self.renameAction = QAction("Rename project")
         self.compileAction = QAction("Compile project")
         self.runAction = QAction("Run project")
+        self.debugAction = QAction("Debug project")
         self.newFileAction = QAction("New file")
         self.menu.addAction(self.saveAction)
         self.menu.addAction(self.compileAction)
+        self.menu.addAction(self.debugAction)
         self.menu.addAction(self.runAction)
         self.menu.addSeparator()
         self.menu.addAction(self.newFileAction)
@@ -80,7 +91,9 @@ class ProjectNode(Node):
     def connectActions(self):
         self.newFileAction.triggered.connect(self.createNewFile)
         self.deleteAction.triggered.connect(self.deleteProject)
-        self.compileAction.triggered.connect(lambda: self.projectCompileRequested.emit(self.proxy))
+        self.compileAction.triggered.connect(lambda: self.eventManager.projectCompileRequested.emit(self.proxy))
+        self.debugAction.triggered.connect(lambda: self.eventManager.projectDebugRequested.emit(self.proxy))
+        self.runAction.triggered.connect(lambda: self.eventManager.projectRunRequested.emit(self.proxy))
 
     def createNewFile(self):
         dialog = NewFileDialog()
