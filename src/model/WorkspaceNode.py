@@ -155,4 +155,8 @@ class WorkspaceNode(Node):
                 toBeDeleted.append(projectProxy)
         for proxy in toBeDeleted:
             self.proxy.projects.remove(proxy)
-        self.saveWorkspace()
+        try:
+            self.saveWorkspace()
+            return True
+        except:
+            return False

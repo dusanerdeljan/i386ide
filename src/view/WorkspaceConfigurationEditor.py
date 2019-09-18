@@ -19,9 +19,7 @@ class WorkspaceConfigurationEditor(QDialog):
         self.setWindowFlag(Qt.WindowStaysOnTopHint, True)
         self.setFixedSize(500, 150)
         self.comboBox = QComboBox()
-        self.comboBox.addItems(list(self.workspaceConfiguration.getWorkspaces()))
-        if self.workspaceConfiguration.defaultWorkspace:
-            self.comboBox.setCurrentText(self.workspaceConfiguration.getDefaultWorkspace())
+        self.updateComboBox()
         self.btnOpen = QPushButton("Open workspace")
         self.cbDefault = QCheckBox("Set as default workspace")
         self.btnBrowse = QPushButton("Browse...")
@@ -41,6 +39,12 @@ class WorkspaceConfigurationEditor(QDialog):
         self.btnOpen.setFocus()
         if len(self.workspaceConfiguration.getWorkspaces()) == 0:
             self.btnOpen.setEnabled(False)
+
+    def updateComboBox(self):
+        self.comboBox.clear()
+        self.comboBox.addItems(list(self.workspaceConfiguration.getWorkspaces()))
+        if self.workspaceConfiguration.defaultWorkspace:
+            self.comboBox.setCurrentText(self.workspaceConfiguration.getDefaultWorkspace())
 
     def browseWorkspace(self):
         directory = QFileDialog.getExistingDirectory()
@@ -66,7 +70,17 @@ class WorkspaceConfigurationEditor(QDialog):
         if self.cbDefault.isChecked():
             self.workspaceConfiguration.setDefaultWorkspace(self.comboBox.currentText())
         if not self.switch:
-            self.mainApplication.openWorkspaceAction(self.comboBox.currentText())
+            success = self.mainApplication.openWorkspaceAction(self.comboBox.currentText())
+            if not success:
+                msg = QMessageBox()
+                msg.setModal(True)
+                msg.setIcon(QMessageBox.Critical)
+                msg.setText("Failed to load '{}' because it is deleted from the disk.".format(self.comboBox.currentText()))
+                msg.setWindowTitle("Failed to load workspace.")
+                msg.exec_()
+                self.workspaceConfiguration.removeWorkspace(self.comboBox.currentText())
+                self.updateComboBox()
+                return
         else:
             self.workspaceDirectory = self.comboBox.currentText()
         self.accept()

@@ -16,6 +16,12 @@ class WorkspaceConfiguration(object):
         self.workspaces.add(workspace)
         self.saveConfiguration()
 
+    def removeWorkspace(self, workspace):
+        self.workspaces.remove(workspace)
+        if workspace == self.defaultWorkspace:
+            self.defaultWorkspace = None
+        self.saveConfiguration()
+
     def getDefaultWorkspace(self):
         return self.defaultWorkspace
 

@@ -76,14 +76,16 @@ class AsemblerIDE(QMainWindow):
     def checkWorkspaceConfiguration(self):
         defaultWorkspace = self.workspaceConfiguration.getDefaultWorkspace()
         if defaultWorkspace:
-            self.openWorkspaceAction(defaultWorkspace)
+            if self.openWorkspaceAction(defaultWorkspace):
+                self.show()
+                return
+            else:
+                self.workspaceConfiguration.removeWorkspace(defaultWorkspace)
+        dialog = WorkspaceConfigurationEditor(self.workspaceConfiguration, self)
+        if dialog.exec_():
             self.show()
         else:
-            dialog = WorkspaceConfigurationEditor(self.workspaceConfiguration, self)
-            if dialog.exec_():
-                self.show()
-            else:
-                sys.exit(0)
+            sys.exit(0)
 
     def addTabWidgetEventHandlers(self):
         self.editorTabs.currentChanged.connect(self.activeTabChanged)
@@ -235,7 +237,9 @@ class AsemblerIDE(QMainWindow):
         self.workspace.setText(0, name[name.rindex(os.path.sep)+1:])
         self.workspace.path = name
         self.workspace.proxy.path = name
-        self.workspace.loadWorkspace()
+        success = self.workspace.loadWorkspace()
+        if not success:
+            return False
         self.treeView.setRoot(self.workspace)
         projects = self.treeView.getProjects()
         if projects:
@@ -247,6 +251,7 @@ class AsemblerIDE(QMainWindow):
         self.workspaceConfiguration.addWorkspace(self.workspace.proxy.path)
         if workspacePath:
             self.workspace.saveWorkspace()
+        return True
 
     def addToolBarEventHandlers(self):
         self.toolBar.compile.triggered.connect(self.compileAction)
