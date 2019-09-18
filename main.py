@@ -16,7 +16,7 @@ from src.view.WorkspaceConfigurationEditor import WorkspaceConfigurationEditor
 from src.view.DefaultWorkspaceEditor import DefaultWorkspaceEditor
 from src.util.AsemblerSintaksa import AsemblerSintaksa
 from src.util.CSyntax import CSyntax
-from src.model.ProjectNode import ProjectNode
+from src.model.ProjectNode import ProjectNode, ProjectProxy
 from src.model.AssemblyFileNode import AssemblyFileNode
 from src.model.CFileNode import CFileNode
 from src.model.WorkspaceNode import WorkspaceNode, WorkspaceProxy
@@ -95,6 +95,19 @@ class AsemblerIDE(QMainWindow):
         self.treeView.projectCompile.connect(lambda proxy: self.compileAction(proxy))
         self.treeView.projectDebug.connect(lambda proxy: self.debugAction(proxy))
         self.treeView.projectRun.connect(lambda proxy: self.runAction(proxy))
+        self.treeView.projectRemove.connect(lambda proxy: self.removeProject(proxy))
+        self.treeView.fileRemove.connect(lambda fileProxy: self.removeFile(fileProxy))
+
+    def removeFile(self, proxy: FileProxy):
+        key = "{}/{}".format(proxy.parent.path, proxy.path)
+        if key in self.editorTabs.projectTabs:
+            self.editorTabs.closeTab(self.editorTabs.tabs.index(proxy), askToSave=False)
+
+    def removeProject(self, proxy: ProjectProxy):
+        for file in proxy.files:
+            if file in self.editorTabs.tabs:
+                self.editorTabs.closeTab(self.editorTabs.tabs.index(file), askToSave=False)
+        self.toolBar.updateComboBox()
 
     def activeTabChanged(self, index):
         if index == -1:

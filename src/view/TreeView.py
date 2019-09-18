@@ -14,6 +14,9 @@ class TreeView(QTreeWidget):
     projectCompile = Signal(ProjectProxy)
     projectDebug = Signal(ProjectProxy)
     projectRun = Signal(ProjectProxy)
+    projectRemove = Signal(ProjectProxy)
+
+    fileRemove = Signal(FileProxy)
     
     def __init__(self, configurationManager: ConfigurationManager):
         super(TreeView, self).__init__()
@@ -56,12 +59,18 @@ class TreeView(QTreeWidget):
         self.configurationManager.allProjects.append(project)
         self.newProjectAdded.emit(project)
 
+    def removeProject(self, project: ProjectNode):
+        self.configurationManager.allProjects.remove(project)
+        self.projectRemove.emit(project.proxy)
+
     def connectWorkspaceEventHandlers(self):
         self.rootNode.eventManager.projectAdded.connect(self.newProject)
         self.rootNode.eventManager.projectCompile.connect(lambda proxy: self.projectCompile.emit(proxy))
         self.rootNode.eventManager.projectDebug.connect(lambda proxy: self.projectDebug.emit(proxy))
         self.rootNode.eventManager.projectRun.connect(lambda proxy: self.projectRun.emit(proxy))
+        self.rootNode.eventManager.projectRemove.connect(self.removeProject)
         self.rootNode.eventManager.workspaceReload.connect(lambda wsProxy: self.workspaceReload.emit(wsProxy))
+        self.rootNode.eventManager.fileRemove.connect(lambda fileProxy: self.fileRemove.emit(fileProxy))
 
     def setRoot(self, item: QTreeWidgetItem):
         self.clear()

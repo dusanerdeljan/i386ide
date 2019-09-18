@@ -5,6 +5,7 @@ from PySide2.QtWidgets import QMenu, QAction, QMessageBox
 from src.view.NewFileDialog import NewFileDialog
 from src.model.AssemblyFileNode import AssemblyFileNode, AssemblyFileProxy
 from src.model.CFileNode import CFileNode, CFileProxy
+from src.model.FileNode import FileNode, FileProxy
 import os
 import re
 
@@ -45,17 +46,6 @@ class ProjectProxy(object):
     def getProjectRunCommand(self):
         return "{}.out".format(os.path.join(self.getProjectPath(), self.path))
 
-
-class ProjectEventManager(QObject):
-
-    projectCompileRequested = Signal(ProjectProxy)
-    projectDebugRequested = Signal(ProjectProxy)
-    projectRunRequested = Signal(ProjectProxy)
-
-    def __init__(self):
-        super(ProjectEventManager, self).__init__()
-
-
 class ProjectNode(Node):
 
     def __init__(self):
@@ -65,6 +55,7 @@ class ProjectNode(Node):
         self.proxy = ProjectProxy()
         self.saveAction = QAction("Save project")
         self.deleteAction = QAction("Remove project")
+        self.eraseAction = QAction("Delete project from disk")
         self.renameAction = QAction("Rename project")
         self.compileAction = QAction("Compile project")
         self.runAction = QAction("Run project")
@@ -79,6 +70,7 @@ class ProjectNode(Node):
         self.menu.addSeparator()
         self.menu.addAction(self.renameAction)
         self.menu.addAction(self.deleteAction)
+        self.menu.addAction(self.eraseAction)
 
         self.connectActions()
 
@@ -88,12 +80,28 @@ class ProjectNode(Node):
     def __str__(self):
         return self.proxy.path
 
+    def connectFileEventHandlers(self, file: FileNode):
+        file.eventManager.fileRemoveRequsted.connect(self.removeFile)
+
     def connectActions(self):
         self.newFileAction.triggered.connect(self.createNewFile)
         self.deleteAction.triggered.connect(self.deleteProject)
+        self.eraseAction.triggered.connect(lambda: self.eventManager.projectDeleteFromDiskRequested.emit(self))
         self.compileAction.triggered.connect(lambda: self.eventManager.projectCompileRequested.emit(self.proxy))
         self.debugAction.triggered.connect(lambda: self.eventManager.projectDebugRequested.emit(self.proxy))
         self.runAction.triggered.connect(lambda: self.eventManager.projectRunRequested.emit(self.proxy))
+
+    def removeFile(self, file: FileNode):
+        answer = QMessageBox.question(None, "Delete file",
+                                      "Are you sure you want to delete file {} from the disk?".format(file.proxy.path),
+                                      QMessageBox.Yes | QMessageBox.No)
+        if not answer == QMessageBox.Yes:
+            return
+        self.proxy.files.remove(file.proxy)
+        os.remove(file.proxy.getFilePath())
+        self.eventManager.fileRemove.emit(file.proxy)
+        self.removeChild(file)
+        self.parent().saveWorkspace()
 
     def createNewFile(self):
         dialog = NewFileDialog()
@@ -133,16 +141,11 @@ class ProjectNode(Node):
             self.addChild(node)
             os.mknod(rootPath)
             self.proxy.addFile(node.proxy)
+            self.connectFileEventHandlers(node)
 
 
     def deleteProject(self):
-        answer = QMessageBox.question(None, "Delete project", "Are you sure you want to delete project {}".format(self.text(0)), QMessageBox.Yes | QMessageBox.No)
-        if not answer == QMessageBox.Yes:
-            return
-        for child in self.takeChildren():
-            del child
-        self.parent().removeChild(self)
-        self.proxy.parent.projects.remove(self.proxy)
+        self.eventManager.projectRemoveRequested.emit(self)
 
     def loadProject(self):
         for proxy in self.proxy.files:
@@ -157,7 +160,7 @@ class ProjectNode(Node):
                 file.path = proxy.path
                 file.proxy = proxy
                 self.addChild(file)
-        # load assembly and C files which are not added through the IDE but are the part of project folder
+                self.connectFileEventHandlers(file)
         projectPath = self.proxy.getProjectPath()
         for filePath in os.listdir(projectPath):
             if filePath not in [file.path for file in self.proxy.files]:
@@ -177,5 +180,18 @@ class ProjectNode(Node):
                     node.proxy.parent = self.proxy
                     self.addChild(node)
                     self.proxy.files.append(node.proxy)
+                    self.connectFileEventHandlers(node)
+
+class ProjectEventManager(QObject):
+
+    projectCompileRequested = Signal(ProjectProxy)
+    projectDebugRequested = Signal(ProjectProxy)
+    projectRunRequested = Signal(ProjectProxy)
+    projectRemoveRequested = Signal(ProjectNode)
+    projectDeleteFromDiskRequested = Signal(ProjectNode)
+    fileRemove = Signal(FileProxy)
+
+    def __init__(self):
+        super(ProjectEventManager, self).__init__()
 
 

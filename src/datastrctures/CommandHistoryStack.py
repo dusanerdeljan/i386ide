@@ -6,6 +6,9 @@ class CommandHistoryStack(object):
         self.limit = 5
 
     def push(self, command):
+        if len(self.history) > 0:
+            if command == self.history[-1]:
+                return
         self.history.append(command)
         if len(self.history) > self.limit:
             self.history.pop(0)

@@ -52,10 +52,10 @@ class EditorTabWidget(QTabWidget):
                 return False
         return True
 
-    def closeTab(self, index):
+    def closeTab(self, index, askToSave=True):
         proxy: FileProxy = self.tabs[index]
         key = "{}/{}".format(proxy.parent.path, proxy.path)
-        if proxy.hasUnsavedChanges:
+        if proxy.hasUnsavedChanges and askToSave:
             msg = QMessageBox()
             msg.setParent(None)
             msg.setModal(True)

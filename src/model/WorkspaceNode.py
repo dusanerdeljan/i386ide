@@ -2,9 +2,11 @@ from PySide2.QtWidgets import QMenu, QAction, QInputDialog, QLineEdit, QMessageB
 from PySide2.QtCore import Signal, QObject
 from src.model.Node import Node
 from src.model.ProjectNode import ProjectNode, ProjectProxy
+from src.model.FileNode import FileProxy
 import os
 import pickle
 import re
+import shutil
 
 
 class WorkspaceProxy(object):
@@ -25,6 +27,10 @@ class WorkspaceEventManager(QObject):
     projectCompile = Signal(ProjectProxy)
     projectDebug = Signal(ProjectProxy)
     projectRun = Signal(ProjectProxy)
+    projectRemove = Signal(ProjectNode)
+    projectDeleteFromDisk = Signal(ProjectNode)
+
+    fileRemove = Signal(FileProxy)
 
     def __init__(self):
         super(WorkspaceEventManager, self).__init__()
@@ -99,6 +105,33 @@ class WorkspaceNode(Node):
         project.eventManager.projectCompileRequested.connect(lambda proxy: self.eventManager.projectCompile.emit(proxy))
         project.eventManager.projectDebugRequested.connect(lambda proxy: self.eventManager.projectDebug.emit(proxy))
         project.eventManager.projectRunRequested.connect(lambda proxy: self.eventManager.projectRun.emit(proxy))
+        project.eventManager.projectRemoveRequested.connect(self.removeProject)
+        project.eventManager.projectDeleteFromDiskRequested.connect(self.deleteProjectFromDisk)
+        project.eventManager.fileRemove.connect(lambda fileProxy: self.eventManager.fileRemove.emit(fileProxy))
+
+    def removeProject(self, project: ProjectNode):
+        answer = QMessageBox.question(None, "Delete project",
+                                      "Are you sure you want to remove project {} from the workspace?".format(project.proxy.path),
+                                      QMessageBox.Yes | QMessageBox.No)
+        if not answer == QMessageBox.Yes:
+            return
+        self.proxy.projects.remove(project.proxy)
+        self.eventManager.projectRemove.emit(project)
+        self.removeChild(project)
+        self.saveWorkspace()
+
+    def deleteProjectFromDisk(self, project: ProjectNode):
+        answer = QMessageBox.question(None, "Delete project from disk",
+                                      "Are you sure you want to delete project {} and all it's content from the disk?".format(
+                                          project.proxy.path),
+                                      QMessageBox.Yes | QMessageBox.No)
+        if not answer == QMessageBox.Yes:
+            return
+        self.proxy.projects.remove(project.proxy)
+        shutil.rmtree(project.proxy.getProjectPath())
+        self.eventManager.projectRemove.emit(project)
+        self.removeChild(project)
+        self.saveWorkspace()
 
     def loadWorkspace(self):
         toBeDeleted = []
