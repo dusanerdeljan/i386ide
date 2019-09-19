@@ -9,7 +9,7 @@ class DefaultWorkspaceEditor(QDialog):
         self.workspaceConfiguration: WorkspaceConfiguration = workspaceConfiguration
         self.setWindowFlag(Qt.WindowContextHelpButtonHint, False)
         self.setWindowTitle("Edit default workspace")
-        self.setStyleSheet("background-color: #44423E; color: white;")
+        self.setStyleSheet("background-color: #2D2D30; color: white;")
         self.setFixedSize(500, 150)
         self.label = QLabel("Default workspace")
         self.comboBox = QComboBox()

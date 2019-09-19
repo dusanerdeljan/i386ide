@@ -6,14 +6,17 @@ from src.util.Formater import Formater
 class CSyntax(QSyntaxHighlighter):
 
     keywords = ['int', 'double', 'float', 'char', 'struct', 'typedef', 'for', 'while', 'union', 'return', 'if', 'else', 'break', 'continue', 'const', 'void']
-
+    functions = ['printf', 'scanf', 'malloc', 'calloc', 'memset']
 
     def __init__(self, dokument):
         super(CSyntax, self).__init__(dokument)
         self.rules = []
         self.formater = Formater()
         self.rules += [(r'\b%s\b' % w, 0, self.formater.stilovi['keyword']) for w in CSyntax.keywords]
+        self.rules += [(r'\b%s\b' % w, 0, self.formater.stilovi['declarations']) for w in CSyntax.functions]
         self.rules += [(r'//[^\n]*', 0, self.formater.stilovi['comment'])]
+        self.rules += [(r'#[^\n]*', 0, self.formater.stilovi['string'])]
+        self.rules += [(r"\".*\"", 0, self.formater.stilovi['string'])]
         self.rules = [(QRegExp(pat), index, fmt) for (pat, index, fmt) in self.rules]
 
     def highlightBlock(self, text):

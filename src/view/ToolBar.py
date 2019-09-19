@@ -15,7 +15,7 @@ class ToolBar(QToolBar):
     def __init__(self, configurationManager: ConfigurationManager):
         super(ToolBar, self).__init__()
         self.configurationManager = configurationManager
-        self.setStyleSheet("background-color: #676867; border-bottom: 2px solid grey; color: white; font-weight: 500")
+        self.setStyleSheet("background-color: #2D2D30; color: white; font-weight: 500")
         self.setMovable(False)
         self.compile = QAction("Compile", self)
         self.compile.setShortcut(QKeySequence("Ctrl+Shift+B"))
@@ -24,7 +24,7 @@ class ToolBar(QToolBar):
         self.run = QAction("Run", self)
         self.label = QLabel("Select current project")
         self.projectComboBox = ProjectComboBox(self.configurationManager)
-        self.projectComboBox.setMinimumWidth(150)
+        self.projectComboBox.setMinimumWidth(250)
         self.run.setShortcut(QKeySequence("F5"))
         self.addAction(self.compile)
         self.addAction(self.debug)
@@ -35,9 +35,12 @@ class ToolBar(QToolBar):
 
     def updateComboBox(self):
         self.projectComboBox.clear()
+        currentProject = self.configurationManager.currentProject
         if self.configurationManager.allProjects:
             for project in self.configurationManager.allProjects:
                 self.projectComboBox.addItem(project.proxy.path, project)
+            if currentProject:
+                self.projectComboBox.setCurrentText(currentProject.proxy.path)
 
     def getCurrentProject(self):
         return self.projectComboBox.currentText()

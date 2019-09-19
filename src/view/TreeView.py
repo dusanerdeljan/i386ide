@@ -10,18 +10,21 @@ class TreeView(QTreeWidget):
     fileDoubleCliked = Signal(FileProxy)
     newProjectAdded = Signal(ProjectNode)
     workspaceReload = Signal(WorkspaceProxy)
+    workspaceRename = Signal(str, WorkspaceProxy)
 
     projectCompile = Signal(ProjectProxy)
     projectDebug = Signal(ProjectProxy)
     projectRun = Signal(ProjectProxy)
     projectRemove = Signal(ProjectProxy)
+    projectRename = Signal(str, ProjectNode)
 
     fileRemove = Signal(FileProxy)
+    fileRename = Signal(str, FileProxy)
     
     def __init__(self, configurationManager: ConfigurationManager):
         super(TreeView, self).__init__()
         self.configurationManager = configurationManager
-        self.setStyleSheet("background-color: #44423E; color: white;")
+        self.setStyleSheet("background-color: #2D2D30; color: white;")
         self.setColumnCount(1)
         self.setHeaderLabel("Workspace explorer")
         self.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -63,14 +66,20 @@ class TreeView(QTreeWidget):
         self.configurationManager.allProjects.remove(project)
         self.projectRemove.emit(project.proxy)
 
+    def renameProject(self, oldPath, project: ProjectNode):
+        self.projectRename.emit(oldPath, project)
+
     def connectWorkspaceEventHandlers(self):
         self.rootNode.eventManager.projectAdded.connect(self.newProject)
         self.rootNode.eventManager.projectCompile.connect(lambda proxy: self.projectCompile.emit(proxy))
         self.rootNode.eventManager.projectDebug.connect(lambda proxy: self.projectDebug.emit(proxy))
         self.rootNode.eventManager.projectRun.connect(lambda proxy: self.projectRun.emit(proxy))
         self.rootNode.eventManager.projectRemove.connect(self.removeProject)
+        self.rootNode.eventManager.projectRename.connect(self.renameProject)
         self.rootNode.eventManager.workspaceReload.connect(lambda wsProxy: self.workspaceReload.emit(wsProxy))
+        self.rootNode.eventManager.workspaceRename.connect(lambda oldPath, wsProxy: self.workspaceRename.emit(oldPath, wsProxy))
         self.rootNode.eventManager.fileRemove.connect(lambda fileProxy: self.fileRemove.emit(fileProxy))
+        self.rootNode.eventManager.fileRename.connect(lambda oldPath, fileProxy: self.fileRename.emit(oldPath, fileProxy))
 
     def setRoot(self, item: QTreeWidgetItem):
         self.clear()

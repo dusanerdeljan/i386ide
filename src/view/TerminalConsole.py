@@ -109,13 +109,14 @@ class TerminalConsole(QTextEdit):
 
     def externalShellCommandRun(self, command):
         msg = QMessageBox()
+        msg.setStyleSheet("background-color: #2D2D30; color: white;")
         msg.setIcon(QMessageBox.Information)
         msg.setText("Proccess started in external shell.")
         msg.setWindowTitle(command)
         msg.exec_()
 
     def getColoredUsername(self):
-        return '<span style="color: green; font-size: 14px; font-weight: 700;">{}</span>$ '.format(self.username)
+        return '<span style="color: #3A6434; font-size: 14px; font-weight: 700;">{}</span>$ '.format(self.username)
 
     def getPrompt(self):
         cwd = os.getcwd()
@@ -123,8 +124,8 @@ class TerminalConsole(QTextEdit):
             self.cwd = '~' + cwd.split(os.getlogin())[1]
         else:
             self.cwd = cwd
-        return '<span style="color: green; font-size: 14px; font-weight: 700;">{}</span>:  ' \
-               '<span style="color: blue; font-size: 14px; font-weight: 700;">{}</span>$ '.format(self.username, self.cwd)
+        return '<span style="color: #3A6434; font-size: 14px; font-weight: 700;">{}</span>:  ' \
+               '<span style="color: #007ACC; font-size: 14px; font-weight: 700;">{}</span>$ '.format(self.username, self.cwd)
 
     def getPromptCursorPosition(self):
         return len("{}:{}$ ".format(self.username, self.cwd))+1
@@ -137,7 +138,7 @@ class TerminalConsole(QTextEdit):
 
     def prepareConsole(self):
         self.setStyleSheet("""
-                background-color: #44423E;
+                background-color: #333337;
                 color: white;
                 font-size: 14px;
                 """)

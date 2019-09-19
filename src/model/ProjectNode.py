@@ -1,7 +1,7 @@
 from src.model.Node import Node
 from PySide2.QtGui import QIcon
 from PySide2.QtCore import Signal, QObject
-from PySide2.QtWidgets import QMenu, QAction, QMessageBox
+from PySide2.QtWidgets import QMenu, QAction, QMessageBox, QInputDialog, QLineEdit
 from src.view.NewFileDialog import NewFileDialog
 from src.model.AssemblyFileNode import AssemblyFileNode, AssemblyFileProxy
 from src.model.CFileNode import CFileNode, CFileProxy
@@ -52,6 +52,7 @@ class ProjectNode(Node):
         super(ProjectNode, self).__init__()
         self.eventManager = ProjectEventManager()
         self.menu = QMenu()
+        self.menu.setStyleSheet("background-color: #3E3E42; color: white;")
         self.proxy = ProjectProxy()
         self.saveAction = QAction("Save project")
         self.deleteAction = QAction("Remove project")
@@ -82,14 +83,48 @@ class ProjectNode(Node):
 
     def connectFileEventHandlers(self, file: FileNode):
         file.eventManager.fileRemoveRequsted.connect(self.removeFile)
+        file.eventManager.fileRename.connect(lambda oldPath, fileProxy: self.eventManager.fileRename.emit(oldPath, fileProxy))
 
     def connectActions(self):
         self.newFileAction.triggered.connect(self.createNewFile)
         self.deleteAction.triggered.connect(self.deleteProject)
+        self.renameAction.triggered.connect(self.renameProject)
         self.eraseAction.triggered.connect(lambda: self.eventManager.projectDeleteFromDiskRequested.emit(self))
         self.compileAction.triggered.connect(lambda: self.eventManager.projectCompileRequested.emit(self.proxy))
         self.debugAction.triggered.connect(lambda: self.eventManager.projectDebugRequested.emit(self.proxy))
         self.runAction.triggered.connect(lambda: self.eventManager.projectRunRequested.emit(self.proxy))
+
+    def renameProject(self):
+        name, entered = QInputDialog.getText(None, "Rename project", "Enter new workspace name: ", QLineEdit.Normal, self.path)
+        if entered:
+            parentDir = os.path.abspath(os.path.join(self.proxy.getProjectPath(), os.pardir))
+            newPath = os.path.join(parentDir, name)
+            print(newPath)
+            regex = re.compile('[@_!#$%^&*()<>?/\|}{~:]')
+            if " " in name or regex.search(name):
+                msg = QMessageBox()
+                msg.setStyleSheet("background-color: #2D2D30; color: white;")
+                msg.setModal(True)
+                msg.setIcon(QMessageBox.Critical)
+                msg.setText("Project name cannot contain whitespace or special characters.")
+                msg.setWindowTitle("Project rename error")
+                msg.exec_()
+                return
+            if os.path.exists(newPath):
+                msg = QMessageBox()
+                msg.setStyleSheet("background-color: #2D2D30; color: white;")
+                msg.setModal(True)
+                msg.setIcon(QMessageBox.Critical)
+                msg.setText("Folder with the same name already exists.")
+                msg.setWindowTitle("Project rename error")
+                msg.exec_()
+                return
+            os.rename(self.path, newPath)
+            oldPath = self.path
+            self.proxy.path = self.path = os.path.basename(newPath)
+            self.setText(0, self.path)
+            self.parent().saveWorkspace()
+            self.eventManager.projectRename.emit(oldPath, self)
 
     def removeFile(self, file: FileNode):
         answer = QMessageBox.question(None, "Delete file",
@@ -111,6 +146,7 @@ class ProjectNode(Node):
             regex = re.compile('[@_!#$%^&*()<>?/\|}{~:]')
             if " " in dialog.result or regex.search(dialog.result):
                 msg = QMessageBox()
+                msg.setStyleSheet("background-color: #2D2D30; color: white;")
                 msg.setModal(True)
                 msg.setIcon(QMessageBox.Critical)
                 msg.setText("File name cannot contain whitespace or special characters.")
@@ -119,6 +155,7 @@ class ProjectNode(Node):
                 return
             if os.path.exists(rootPath):
                 msg = QMessageBox()
+                msg.setStyleSheet("background-color: #2D2D30; color: white;")
                 msg.setModal(True)
                 msg.setIcon(QMessageBox.Critical)
                 msg.setText("File with the same name already exists.")
@@ -189,7 +226,9 @@ class ProjectEventManager(QObject):
     projectRunRequested = Signal(ProjectProxy)
     projectRemoveRequested = Signal(ProjectNode)
     projectDeleteFromDiskRequested = Signal(ProjectNode)
+    projectRename = Signal(str, ProjectNode)
     fileRemove = Signal(FileProxy)
+    fileRename = Signal(str, FileProxy)
 
     def __init__(self):
         super(ProjectEventManager, self).__init__()

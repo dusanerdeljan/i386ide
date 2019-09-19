@@ -79,7 +79,7 @@ kraj:
 
         # self.setTabStopWidth(self.fontMetrics().width(" ") * self.tabSize)
         self.setStyleSheet(
-            "font-size: 14px; background-color: #44423E; color: white; font-family: comic-sans; border: none;")
+            "font-size: 14px; background-color: #1E1E1E; color: white; font-family: comic-sans; border: none;")
         self.sintaksa = AsemblerSintaksa(self.document())
         self.lineNumberArea = QLineNumberArea(self)
         self.blockCountChanged.connect(self.updateLineNumberAreaWidth)
@@ -284,7 +284,7 @@ kraj:
         extraSelections = []
         if not self.isReadOnly():
             selection = QTextEdit.ExtraSelection()
-            lineColor = QColor.fromRgb(103, 104, 103, 127)
+            lineColor = QColor("#232323")
             selection.format.setBackground(lineColor)
             selection.format.setProperty(QTextFormat.FullWidthSelection, True)
             selection.cursor = self.textCursor()
@@ -295,19 +295,18 @@ kraj:
     def lineNumberAreaPaintEvent(self, event):
         painter = QPainter(self.lineNumberArea)
 
-        painter.fillRect(event.rect(), QColor.fromRgb(103, 104, 103, 255))
+        painter.fillRect(event.rect(), QColor("#1E1E1E"))#QColor.fromRgb(103, 104, 103, 255))
 
         block = self.firstVisibleBlock()
         blockNumber = block.blockNumber()
         top = self.blockBoundingGeometry(block).translated(self.contentOffset()).top()
         bottom = top + self.blockBoundingRect(block).height()
 
-        # Just to make sure I use the right font
         height = self.fontMetrics().height()
         while block.isValid() and (top <= event.rect().bottom()):
             if block.isVisible() and (bottom >= event.rect().top()):
                 number = str(blockNumber + 1)
-                painter.setPen(QColor.fromRgb(196, 198, 196, 255))
+                painter.setPen(QColor("#235662"))
                 painter.setFont(QFont("Sans serif", 8, QFont.Bold))
                 painter.drawText(0, top, self.lineNumberArea.width(), height, Qt.AlignJustify, number)
 

@@ -1,5 +1,5 @@
 from PySide2.QtCore import QObject, Signal
-import _thread
+import threading
 import subprocess
 import shlex
 import os
@@ -13,7 +13,8 @@ class TerminalController(QObject):
         command = command.strip()
         if command.startswith("./") or command.startswith("/"):
             try :
-                _thread.start_new_thread(self.runShell, (command, not command.startswith("ddd"), ))
+                thread = threading.Thread(target=self.runShell, args=[command, not command.startswith("ddd")])
+                thread.start()
                 # os.system(command)
                 self.externalCommand.emit(command)
                 return "ES" # external shell

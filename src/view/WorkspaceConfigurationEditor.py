@@ -14,7 +14,7 @@ class WorkspaceConfigurationEditor(QDialog):
         self.switch = switch
         self.workspaceDirectory = None
         self.setWindowTitle("Choose a workspace directory")
-        self.setStyleSheet("background-color: #44423E; color: white;")
+        self.setStyleSheet("background-color: #2D2D30; color: white;")
         self.setWindowFlag(Qt.WindowContextHelpButtonHint, False)
         self.setWindowFlag(Qt.WindowStaysOnTopHint, True)
         self.setFixedSize(500, 150)
@@ -54,6 +54,7 @@ class WorkspaceConfigurationEditor(QDialog):
         regex = re.compile('[@_!#$%^&*()<>?/\|}{~:]')
         if ' ' in directory or regex.search(wsname):
             msg = QMessageBox()
+            msg.setStyleSheet("background-color: #2D2D30; color: white;")
             msg.setModal(True)
             msg.setIcon(QMessageBox.Critical)
             msg.setText("Workspace path/name cannot contain whitespace special characters.")
@@ -73,6 +74,7 @@ class WorkspaceConfigurationEditor(QDialog):
             success = self.mainApplication.openWorkspaceAction(self.comboBox.currentText())
             if not success:
                 msg = QMessageBox()
+                msg.setStyleSheet("background-color: #2D2D30; color: white;")
                 msg.setModal(True)
                 msg.setIcon(QMessageBox.Critical)
                 msg.setText("Failed to load '{}' because it is deleted from the disk.".format(self.comboBox.currentText()))

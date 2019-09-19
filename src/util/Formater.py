@@ -5,13 +5,14 @@ class Formater(object):
 
     def __init__(self):
         self.stilovi = {
-            'keyword': self._formatiraj(214, 137, 16, 'bold'),
-            'operator': self._formatiraj(122, 250, 226, 'bold'),
-            'literals': self._formatiraj(149, 93, 193, 'bold'),
-            'comment': self._formatiraj(40, 128, 42),
-            'register': self._formatiraj(122, 250, 226),
-            'declarations': self._formatiraj(255, 195, 0, 'bold'),
-            'label': self._formatiraj(239, 241, 90)
+            'keyword': self._formatiraj(65,111,145),
+            'operator': self._formatiraj(122, 250, 226),
+            'literals': self._formatiraj(149, 93, 193),
+            'comment': self._formatiraj(58,100,52),
+            'register': self._formatiraj(55,127,115),
+            'declarations': self._formatiraj(255, 195, 0),
+            'label': self._formatiraj(239, 241, 90),
+            'string': self._formatiraj(140,108,58)
         }
 
     def _formatiraj(self, r, g, b, stil=''):

@@ -32,6 +32,7 @@ class AsemblerSintaksa(QSyntaxHighlighter):
         self.rules += [(r"\$\'[^']*\'", 0, self.formater.stilovi['literals'])]
         self.rules += [(r'\.%s\b' % d, 0, self.formater.stilovi['declarations']) for d in AsemblerSintaksa.declarations]
         self.rules += [(r'[a-zA-Z0-9\_\-]+\:\s*', 0, self.formater.stilovi['label'])]
+        self.rules += [(r"\".*\"", 0, self.formater.stilovi['string'])]
         self.rules = [(QRegExp(pat), index, fmt) for (pat, index, fmt) in self.rules]
 
     def highlightBlock(self, text):

@@ -17,7 +17,7 @@ class AutocompleteWidget(QDialog):
     def __init__(self, suggestions: list):
         super(AutocompleteWidget, self).__init__()
         self.widget = QListWidget()
-        self.widget.setStyleSheet("background-color: #676867;")
+        self.widget.setStyleSheet("background-color: #232323;")
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.Window)
         self.vbox = QVBoxLayout()
         self.label = QLabel("")

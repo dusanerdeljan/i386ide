@@ -22,6 +22,13 @@ class WorkspaceConfiguration(object):
             self.defaultWorkspace = None
         self.saveConfiguration()
 
+    def replaceWorkpsace(self, oldWorkspace, newWorkspace):
+        self.workspaces.remove(oldWorkspace)
+        self.workspaces.add(newWorkspace)
+        if self.defaultWorkspace == oldWorkspace:
+            self.defaultWorkspace = newWorkspace
+        self.saveConfiguration()
+
     def getDefaultWorkspace(self):
         return self.defaultWorkspace
 

@@ -10,6 +10,7 @@ class NewFileDialog(QDialog):
         self.comboBox.addItem("C file")
         self.lineEdit = QLineEdit()
         self.lineEdit.setPlaceholderText("Enter file name...")
+        self.setStyleSheet("background-color: #2D2D30; color: white;")
         self.hbox = QHBoxLayout()
         self.vbox = QVBoxLayout()
         self.create = QPushButton("Create")

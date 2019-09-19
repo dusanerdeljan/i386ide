@@ -6,7 +6,7 @@ class StatusBar(QStatusBar):
     def __init__(self):
         super(StatusBar, self).__init__()
         self.setStyleSheet("""
-                        background-color: #44423E;
+                        background-color: #007ACC;
                         color: white;
                         font-size: 14px;
                         """)
@@ -17,3 +17,4 @@ class StatusBar(QStatusBar):
         self.addWidget(QWidget(), 2)
         self.addWidget(self.label, 1)
         self.addWidget(self.comboBox, 1)
+        self.setMaximumHeight(25)

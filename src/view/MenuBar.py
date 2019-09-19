@@ -6,7 +6,7 @@ class MenuBar(QMenuBar):
 
     def __init__(self):
         super(MenuBar, self).__init__()
-        self.setStyleSheet("background-color: #676867; border-bottom: 2px solid grey; color: white; font-weight: 500")
+        self.setStyleSheet("background-color: #2D2D30; color: white; font-weight: 500")
         self.file = self.addMenu("File")
         self.edit = self.addMenu("Edit")
         self.view = self.addMenu("View")

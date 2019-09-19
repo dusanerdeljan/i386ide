@@ -10,7 +10,7 @@ class Terminal(QDockWidget):
         self.setAllowedAreas(Qt.BottomDockWidgetArea | Qt.RightDockWidgetArea)
         self.setFeatures(QDockWidget.DockWidgetMovable)
         self.titleLabel = QLabel()
-        self.titleLabel.setStyleSheet("background-color: #44423E; border-top: 2px solid black; color: white")
+        self.titleLabel.setStyleSheet("background-color: #3E3E42; color: white")
         self.titleLabel.setText("Terminal")
         self.setTitleBarWidget(self.titleLabel)
         self.console = TerminalConsole()

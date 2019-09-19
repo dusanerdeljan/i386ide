@@ -16,8 +16,9 @@ class EditorTabWidget(QTabWidget):
     
     def __init__(self):
         super(EditorTabWidget, self).__init__()
-        self.tabBar().setStyleSheet("background-color: #44423E; color: white;")
-        self.setStyleSheet("background-color: #44423E; color: white;")
+        self.tabBar().setStyleSheet("background-color:#007ACC;color: white; height: 20px")
+        self.tabBar().setMaximumHeight(30)
+        self.setStyleSheet("background-color: #2D2D30; color: white;")
         self.projectTabs = dict()
         self.tabs = []
         self.setTabsClosable(True)
@@ -57,6 +58,7 @@ class EditorTabWidget(QTabWidget):
         key = "{}/{}".format(proxy.parent.path, proxy.path)
         if proxy.hasUnsavedChanges and askToSave:
             msg = QMessageBox()
+            msg.setStyleSheet("background-color: #2D2D30; color: white;")
             msg.setParent(None)
             msg.setModal(True)
             msg.setWindowTitle("Close tab")

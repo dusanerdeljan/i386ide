@@ -45,7 +45,7 @@ class AsemblerIDE(QMainWindow):
         # self.addDockWidget(Qt.RightDockWidgetArea, self.help)
         self.treeDock = QDockWidget()
         self.treeDock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
-        self.treeDock.setStyleSheet("background-color: #44423E; color: white;")
+        self.treeDock.setStyleSheet("background-color: #2D2D30; color: white;")
         self.treeDock.setFeatures(QDockWidget.DockWidgetMovable)
         self.treeDock.setWidget(self.treeView)
         self.treeDock.setTitleBarWidget(QLabel("Workspace explorer"))
@@ -54,7 +54,7 @@ class AsemblerIDE(QMainWindow):
         self.setMinimumSize(1200, 800)
         self.setWindowTitle("i386 Assembly Integrated Development Environment")
         self.setCentralWidget(self.editorTabs)
-        self.setStyleSheet("background-color:  #566573 ; color: white;")
+        self.setStyleSheet("background-color: #3E3E42; color: white;")
 
         self.addTabWidgetEventHandlers()
         self.addMenuBarEventHandlers()
@@ -93,12 +93,37 @@ class AsemblerIDE(QMainWindow):
     def addTreeViewEventHandlers(self):
         self.treeView.fileDoubleCliked.connect(self.loadFileText)
         self.treeView.workspaceReload.connect(lambda wsProxy: self.openWorkspaceAction(wsProxy.path))
+        self.treeView.workspaceRename.connect(lambda oldPath, wsProxy: self.workspaceConfiguration.replaceWorkpsace(oldPath, wsProxy.path))
         self.treeView.newProjectAdded.connect(lambda: self.toolBar.updateComboBox())
         self.treeView.projectCompile.connect(lambda proxy: self.compileAction(proxy))
         self.treeView.projectDebug.connect(lambda proxy: self.debugAction(proxy))
         self.treeView.projectRun.connect(lambda proxy: self.runAction(proxy))
         self.treeView.projectRemove.connect(lambda proxy: self.removeProject(proxy))
+        self.treeView.projectRename.connect(lambda oldPath, project: self.renameProject(oldPath, project))
         self.treeView.fileRemove.connect(lambda fileProxy: self.removeFile(fileProxy))
+        self.treeView.fileRename.connect(lambda oldPath, fileProxy: self.renameFile(oldPath, fileProxy))
+
+    def renameFile(self, oldPath: str, fileProxy: FileProxy):
+        key = "{}/{}".format(fileProxy.parent.path, oldPath)
+        if key in self.editorTabs.projectTabs:
+            newKey = "{}/{}".format(fileProxy.parent.path, fileProxy.path)
+            tab = self.editorTabs.projectTabs.pop(key)
+            self.editorTabs.projectTabs[newKey] = tab
+            tab.tabName = newKey
+            index = self.editorTabs.tabs.index(fileProxy)
+            self.editorTabs.setTabText(index, newKey)
+
+    def renameProject(self, oldPath: str, project: ProjectNode):
+        self.toolBar.updateComboBox()
+        for fileProxy in project.proxy.files:
+            oldKey = "{}/{}".format(oldPath, fileProxy.path)
+            if oldKey in self.editorTabs.projectTabs:
+                newKey = "{}/{}".format(project.proxy.path, fileProxy.path)
+                tab = self.editorTabs.projectTabs.pop(oldKey)
+                self.editorTabs.projectTabs[newKey] = tab
+                tab.tabName = newKey
+                index = self.editorTabs.tabs.index(fileProxy)
+                self.editorTabs.setTabText(index, newKey)
 
     def removeFile(self, proxy: FileProxy):
         key = "{}/{}".format(proxy.parent.path, proxy.path)
@@ -139,11 +164,12 @@ class AsemblerIDE(QMainWindow):
         for proxy in self.editorTabs.tabs:
             if proxy.hasUnsavedChanges:
                 msg = QMessageBox()
+                msg.setStyleSheet("background-color: #2D2D30; color: white;")
                 msg.setParent(None)
                 msg.setModal(True)
                 msg.setWindowTitle("Confirm Exit")
                 msg.setText("The file {}/{} has been modified.".format(proxy.parent.path, proxy.path))
-                msg.setInformativeText("Do you want to save changes?")
+                msg.setInformativeText("Do you want to save the changes?")
                 msg.setStandardButtons(QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
                 msg.setDefaultButton(QMessageBox.Save)
                 retValue = msg.exec_()
@@ -195,6 +221,7 @@ class AsemblerIDE(QMainWindow):
             regex = re.compile('[@_!#$%^&*()<>?/\|}{~:]')
             if ' ' in name or regex.search(wsname):
                 msg = QMessageBox()
+                msg.setStyleSheet("background-color: #2D2D30; color: white;")
                 msg.setModal(True)
                 msg.setIcon(QMessageBox.Critical)
                 msg.setText("Workspace path/name cannot contain whitespace special characters.")
