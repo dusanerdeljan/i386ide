@@ -6,7 +6,7 @@ from src.util.Formater import Formater
 class CSyntax(QSyntaxHighlighter):
 
     keywords = ['int', 'double', 'float', 'char', 'struct', 'typedef', 'for', 'while', 'union', 'return', 'if', 'else', 'break', 'continue', 'const', 'void']
-    functions = ['printf', 'scanf', 'malloc', 'calloc', 'memset']
+    functions = ['printf', 'scanf', 'malloc', 'calloc', 'memset', 'sizeof']
 
     def __init__(self, dokument):
         super(CSyntax, self).__init__(dokument)

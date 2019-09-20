@@ -1,6 +1,6 @@
 from PySide2.QtWidgets import QTextEdit, QWidget, QPlainTextEdit
-from PySide2.QtCore import QSize, Qt, QRect
-from PySide2.QtGui import QColor, QPainter, QTextFormat, QFont, QTextCursor
+from PySide2.QtCore import QSize, Qt, QRect, QEvent
+from PySide2.QtGui import QColor, QPainter, QTextFormat, QFont, QTextCursor, QKeyEvent
 from src.util.AsemblerSintaksa import AsemblerSintaksa
 from src.view.AutocompleteWidget import AutocompleteWidget
 from src.datastrctures.Trie import Trie
@@ -115,6 +115,7 @@ kraj:
         insertRightBracket = False
         insertRightBrace = False
         insertRightQuote = False
+        formatBraces = False
         numSpaces = 0
         if e.key() == Qt.Key_Return:
             if self.autocompleteWidgetOpen:
@@ -122,14 +123,8 @@ kraj:
             self.queryWord = ""
             enterPressed = True
             # napravi da se prenosi spacing sa pocetka prethodne linije
-            currentLine = self.textCursor().block().text()
-            for i in currentLine:
-                if i == '\t':
-                    numSpaces += self.tabSize
-                elif i == ' ':
-                    numSpaces += 1
-                else:
-                    break
+            numSpaces = self.getIndent()
+            formatBraces = self.checkBraces()
         elif e.key() == Qt.Key_Colon or e.key() == Qt.Key_Equal:
             if isinstance(self.sintaksa, AsemblerSintaksa):
                 self.insertLabelInTrie()
@@ -199,9 +194,43 @@ kraj:
         if insertRightQuote:
             self.insertPlainText("\"")
             self.moveCursor(QTextCursor.Left)
+        if formatBraces:
+            self.formatBraces()
         endLength = len(self.toPlainText())
         if (endLength - startLength) != 0:
             self.setUnsavedChanges()
+
+    def checkBraces(self):
+        index = self.textCursor().positionInBlock()
+        if self.textCursor().atBlockEnd() or self.textCursor().atBlockStart():
+            return False
+        currentLine = self.textCursor().block().text()
+        for i in range(index - 1, -1, -1):
+            if currentLine[i] == " ":
+                continue
+            elif currentLine[i] == "{":
+                return True
+            else:
+                return False
+
+    def formatBraces(self):
+        e = QKeyEvent(QEvent.KeyPress, Qt.Key_Return, Qt.NoModifier)
+        self.keyPressEvent(e)
+        self.moveCursor(QTextCursor.Up)
+        self.insertPlainText(self.tabSize*' ')
+
+
+    def getIndent(self):
+        numSpaces = 0
+        currentLine = self.textCursor().block().text()
+        for i in currentLine:
+            if i == '\t':
+                numSpaces += self.tabSize
+            elif i == ' ':
+                numSpaces += 1
+            else:
+                break
+        return numSpaces
 
     def insertLabelInTrie(self):
         currentLineCursorIndex = self.textCursor().positionInBlock()
