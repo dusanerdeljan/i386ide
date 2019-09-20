@@ -54,14 +54,14 @@ class ProjectNode(Node):
         self.menu = QMenu()
         self.menu.setStyleSheet("background-color: #3E3E42; color: white;")
         self.proxy = ProjectProxy()
-        self.saveAction = QAction("Save project")
-        self.deleteAction = QAction("Remove project")
-        self.eraseAction = QAction("Delete project from disk")
-        self.renameAction = QAction("Rename project")
-        self.compileAction = QAction("Compile project")
-        self.runAction = QAction("Run project")
-        self.debugAction = QAction("Debug project")
-        self.newFileAction = QAction("New file")
+        self.saveAction = QAction(QIcon("resources/save_folder.png"), "Save project")
+        self.deleteAction = QAction(QIcon("resources/remove_folder.png"), "Remove project")
+        self.eraseAction = QAction(QIcon("resources/delete_folder.png"), "Delete project from disk")
+        self.renameAction = QAction(QIcon("resources/rename_folder.png"), "Rename project")
+        self.compileAction = QAction(QIcon("resources/compile.png"), "Compile project")
+        self.runAction = QAction(QIcon("resources/run.png"), "Run project")
+        self.debugAction = QAction(QIcon("resources/debug.png"), "Debug project")
+        self.newFileAction = QAction(QIcon("resources/new_file.png"), "New file")
         self.menu.addAction(self.saveAction)
         self.menu.addAction(self.compileAction)
         self.menu.addAction(self.debugAction)
@@ -165,8 +165,10 @@ class ProjectNode(Node):
             node = None
             if dialog.result[-1] == "S":
                 node = AssemblyFileNode()
+                node.setIcon(0, QIcon("resources/s.png"))
             else:
                 node = CFileNode()
+                node.setIcon(0, QIcon("resources/c.png"))
             node.setText(0, dialog.result)
             node.path = dialog.result
             if isinstance(node, AssemblyFileNode):
@@ -189,8 +191,10 @@ class ProjectNode(Node):
             file = None
             if isinstance(proxy, AssemblyFileProxy):
                 file = AssemblyFileNode()
+                file.setIcon(0, QIcon("resources/s.png"))
             elif isinstance(proxy, CFileProxy):
                 file = CFileNode()
+                file.setIcon(0, QIcon("resources/c.png"))
             if file:
                 proxy.parent = self.proxy
                 file.setText(0, proxy.path)
@@ -205,9 +209,11 @@ class ProjectNode(Node):
                 proxy = None
                 if filePath.lower().endswith(".s"):
                     node = AssemblyFileNode()
+                    node.setIcon(0, QIcon("resources/s.png"))
                     proxy = AssemblyFileProxy()
                 elif filePath.lower().endswith(".c"):
                     node = CFileNode()
+                    node.setIcon(0, QIcon("resources/c.png"))
                     proxy = CFileProxy()
                 if node:
                     proxy.path = filePath

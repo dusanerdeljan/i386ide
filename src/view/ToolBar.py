@@ -1,5 +1,6 @@
 from PySide2.QtWidgets import QToolBar, QPushButton, QAction, QComboBox, QLabel
-from PySide2.QtGui import QKeySequence
+from PySide2.QtGui import QKeySequence, QIcon, QPixmap
+from PySide2.QtCore import Qt, QSize
 from src.controller.ConfigurationManager import ConfigurationManager
 
 class ProjectComboBox(QComboBox):
@@ -14,15 +15,20 @@ class ToolBar(QToolBar):
 
     def __init__(self, configurationManager: ConfigurationManager):
         super(ToolBar, self).__init__()
+        self.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
         self.configurationManager = configurationManager
         self.setStyleSheet("background-color: #2D2D30; color: white; font-weight: 500")
         self.setMovable(False)
-        self.compile = QAction("Compile", self)
+        self.compile = QAction(QIcon("resources/compile.png"), "Compile", self)
         self.compile.setShortcut(QKeySequence("Ctrl+Shift+B"))
-        self.debug = QAction("Debug", self)
+        self.debug = QAction(QIcon("resources/debug.png"), "Debug", self)
         self.debug.setShortcut(QKeySequence("Ctrl+F5"))
-        self.run = QAction("Run", self)
+        self.run = QAction(QIcon("resources/run.png"), "Run", self)
         self.label = QLabel("Select current project")
+        self.label.setStyleSheet("padding-left: 5px;")
+        icon = QIcon("resources/current_folder.png")
+        self.currentIcon = QLabel()
+        self.currentIcon.setPixmap(icon.pixmap(QSize(20, 20)))
         self.projectComboBox = ProjectComboBox(self.configurationManager)
         self.projectComboBox.setMinimumWidth(250)
         self.run.setShortcut(QKeySequence("F5"))
@@ -30,6 +36,7 @@ class ToolBar(QToolBar):
         self.addAction(self.debug)
         self.addAction(self.run)
         self.addSeparator()
+        self.addWidget(self.currentIcon)
         self.addWidget(self.label)
         self.addWidget(self.projectComboBox)
 

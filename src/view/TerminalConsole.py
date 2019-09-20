@@ -15,7 +15,10 @@ class TerminalConsole(QTextEdit):
         self.controller = TerminalController()
         self.controller.externalCommand.connect(self.externalShellCommandRun)
         self.username = "{}@{}".format(os.getlogin(), socket.gethostname())
-        self.cwd = '~' + os.getcwd().split(os.getlogin())[1]
+        try:
+            self.cwd = '~' + os.getcwd().split(os.getlogin())[1]
+        except:
+            self.cwd = '~' + os.getcwd()
         self.history = CommandHistoryStack()
         self.prepareConsole()
 

@@ -1,6 +1,6 @@
 from PySide2.QtWidgets import QTextEdit, QWidget, QPlainTextEdit
 from PySide2.QtCore import QSize, Qt, QRect
-from PySide2.QtGui import QColor, QPainter, QTextFormat, QFont
+from PySide2.QtGui import QColor, QPainter, QTextFormat, QFont, QTextCursor
 from src.util.AsemblerSintaksa import AsemblerSintaksa
 from src.view.AutocompleteWidget import AutocompleteWidget
 from src.datastrctures.Trie import Trie
@@ -111,6 +111,10 @@ kraj:
     def keyPressEvent(self, e):
         startLength = len(self.toPlainText())
         enterPressed = False
+        insertRightPar = False
+        insertRightBracket = False
+        insertRightBrace = False
+        insertRightQuote = False
         numSpaces = 0
         if e.key() == Qt.Key_Return:
             if self.autocompleteWidgetOpen:
@@ -167,6 +171,14 @@ kraj:
         elif e.key() == Qt.Key_Escape:
             if self.autocompleteWidgetOpen:
                 self.closeAutoSuggestionWidget()
+        elif e.key() == Qt.Key_ParenLeft:
+            insertRightPar = True
+        elif e.key() == Qt.Key_BracketLeft:
+            insertRightBracket = True
+        elif e.key() == Qt.Key_BraceLeft:
+            insertRightBrace = True
+        elif e.key() == Qt.Key_QuoteDbl:
+            insertRightQuote = True
         else:
             self.queryWord += e.text()
         super(CodeEditor, self).keyPressEvent(e)
@@ -175,6 +187,18 @@ kraj:
                 self.updateSuggestions()
         if enterPressed and numSpaces:
             self.insertPlainText(numSpaces * " ")
+        if insertRightPar:
+            self.insertPlainText(")")
+            self.moveCursor(QTextCursor.Left)
+        if insertRightBracket:
+            self.insertPlainText("]")
+            self.moveCursor(QTextCursor.Left)
+        if insertRightBrace:
+            self.insertPlainText("}")
+            self.moveCursor(QTextCursor.Left)
+        if insertRightQuote:
+            self.insertPlainText("\"")
+            self.moveCursor(QTextCursor.Left)
         endLength = len(self.toPlainText())
         if (endLength - startLength) != 0:
             self.setUnsavedChanges()

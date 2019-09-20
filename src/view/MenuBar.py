@@ -1,5 +1,5 @@
 from PySide2.QtWidgets import QMenuBar, QAction, QMenu
-from PySide2.QtGui import QKeySequence
+from PySide2.QtGui import QKeySequence, QIcon
 
 
 class MenuBar(QMenuBar):
@@ -18,23 +18,23 @@ class MenuBar(QMenuBar):
         self.createViewMenuItemActions()
 
     def createFileMenuItemActions(self):
-        self.newWorkspaceAction = QAction("New workspace", self)
+        self.newWorkspaceAction = QAction(QIcon("resources/new_folder.png"), "New workspace", self)
         self.newWorkspaceAction.setShortcut(QKeySequence("Ctrl+N"))
         self.file.addAction(self.newWorkspaceAction)
 
-        self.openWorkspaceAction = QAction("Open workspace", self)
+        self.openWorkspaceAction = QAction(QIcon("resources/open_folder.png"), "Open workspace", self)
         self.openWorkspaceAction.setShortcut(QKeySequence("Ctrl+O"))
         self.file.addAction(self.openWorkspaceAction)
 
-        self.switchWorkspaceAction = QAction("Switch workspace", self)
+        self.switchWorkspaceAction = QAction(QIcon("resources/switch_folder.png"), "Switch workspace", self)
         self.switchWorkspaceAction.setShortcut((QKeySequence("Ctrl+W")))
         self.file.addAction(self.switchWorkspaceAction)
 
-        self.saveWorkspaceAction = QAction("Save workspace", self)
+        self.saveWorkspaceAction = QAction(QIcon("resources/save_folder.png"), "Save workspace", self)
         self.saveWorkspaceAction.setShortcut(QKeySequence("Ctrl+Shift+S"))
         self.file.addAction(self.saveWorkspaceAction)
 
-        self.saveAction = QAction("Save file", self)
+        self.saveAction = QAction(QIcon("resources/save_file.png"), "Save file", self)
         self.saveAction.setShortcut(QKeySequence("Ctrl+S"))
         self.file.addAction(self.saveAction)
         #
@@ -47,7 +47,7 @@ class MenuBar(QMenuBar):
         # self.file.addAction(self.newAction)
 
     def createEditMenuItemActions(self):
-        self.editDefaultWorkspace = QAction("Edit default workspace", self)
+        self.editDefaultWorkspace = QAction(QIcon("resources/workspace.png"), "Edit default workspace", self)
         self.edit.addAction(self.editDefaultWorkspace)
 
     def createViewMenuItemActions(self):

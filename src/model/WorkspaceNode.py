@@ -1,5 +1,6 @@
 from PySide2.QtWidgets import QMenu, QAction, QInputDialog, QLineEdit, QMessageBox
 from PySide2.QtCore import Signal, QObject
+from PySide2.QtGui import QIcon
 from src.model.Node import Node
 from src.model.ProjectNode import ProjectNode, ProjectProxy
 from src.model.FileNode import FileProxy
@@ -47,11 +48,11 @@ class WorkspaceNode(Node):
         self.menu = QMenu()
         self.menu.setStyleSheet("background-color: #3E3E42; color: white;")
         self.proxy = WorkspaceProxy()
-        self.newProjectAction = QAction("New project")
-        self.saveAction = QAction("Save workspace")
-        self.renameAction = QAction("Rename workspace")
-        self.switchAction = QAction("Switch workspace")
-        self.updateAction = QAction("Update workspace")
+        self.newProjectAction = QAction(QIcon("resources/new_folder.png"), "New project")
+        self.saveAction = QAction(QIcon("resources/save_folder.png"), "Save workspace")
+        self.renameAction = QAction(QIcon("resources/rename_folder.png"), "Rename workspace")
+        self.switchAction = QAction(QIcon("resources/switch_folder.png"), "Switch workspace")
+        self.updateAction = QAction(QIcon("resources/update_folder.png"), "Update workspace")
         self.menu.addAction(self.newProjectAction)
         self.menu.addAction(self.saveAction)
         self.menu.addAction(self.switchAction)
@@ -126,6 +127,7 @@ class WorkspaceNode(Node):
             project.path = name
             project.proxy.path = name
             project.proxy.parent = self.proxy
+            project.setIcon(0, QIcon("resources/project.png"))
             project.setText(0, name)
             self.addChild(project)
             newPath = os.path.join(self.path, name)
@@ -183,6 +185,7 @@ class WorkspaceNode(Node):
             if os.path.exists(projectProxy.getProjectPath()):
                 projectProxy.parent = self.proxy
                 project = ProjectNode()
+                project.setIcon(0, QIcon("resources/project.png"))
                 project.setText(0, projectProxy.path)
                 project.path = projectProxy.path
                 project.proxy = projectProxy

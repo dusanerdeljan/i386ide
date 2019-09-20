@@ -4,6 +4,7 @@ import pickle
 import re
 from PySide2.QtWidgets import QMainWindow, QLineEdit, QApplication, QFileDialog, QMessageBox, QDockWidget, QLabel, QInputDialog
 from PySide2.QtCore import Qt, QDir
+from PySide2.QtGui import QIcon
 from src.view.CodeEditor import CodeEditor
 from src.view.MenuBar import MenuBar
 from src.view.Terminal import Terminal
@@ -232,6 +233,7 @@ class AsemblerIDE(QMainWindow):
             proxy = WorkspaceProxy()
             proxy.path = name
             workspace.proxy = proxy
+            workspace.setIcon(0, QIcon("resources/workspace.png"))
             workspace.setText(0, wsname)
             self.workspace = workspace
             self.treeView.setRoot(self.workspace)
@@ -261,6 +263,7 @@ class AsemblerIDE(QMainWindow):
                 workspace = pickle.load(file)
         self.workspace = WorkspaceNode()
         self.workspace.proxy = workspace
+        self.workspace.setIcon(0, QIcon("resources/workspace.png"))
         self.workspace.setText(0, name[name.rindex(os.path.sep)+1:])
         self.workspace.path = name
         self.workspace.proxy.path = name
