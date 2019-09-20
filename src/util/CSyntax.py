@@ -17,6 +17,7 @@ class CSyntax(QSyntaxHighlighter):
         self.rules += [(r'//[^\n]*', 0, self.formater.stilovi['comment'])]
         self.rules += [(r'#[^\n]*', 0, self.formater.stilovi['string'])]
         self.rules += [(r"\".*\"", 0, self.formater.stilovi['string'])]
+        self.rules += [(r"\'.?\'", 0, self.formater.stilovi['string'])]
         self.rules = [(QRegExp(pat), index, fmt) for (pat, index, fmt) in self.rules]
 
     def highlightBlock(self, text):

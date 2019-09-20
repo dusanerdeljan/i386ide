@@ -106,6 +106,8 @@ class TerminalConsole(QTextEdit):
             success = True
         else:
             self.insertPlainText(commandResult['error'])
+            if commandResult['error'].lower() == "too many errors from stdin":
+                self.insertPlainText("\n")
         self.insertHtml(self.getPrompt())
         self.command = ""
         return success
@@ -126,7 +128,7 @@ class TerminalConsole(QTextEdit):
         if os.getlogin() in cwd:
             self.cwd = '~' + cwd.split(os.getlogin())[1]
         else:
-            self.cwd = cwd
+            self.cwd = '~' + cwd
         return '<span style="color: #3A6434; font-size: 14px; font-weight: 700;">{}</span>:  ' \
                '<span style="color: #007ACC; font-size: 14px; font-weight: 700;">{}</span>$ '.format(self.username, self.cwd)
 

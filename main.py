@@ -43,7 +43,7 @@ class AsemblerIDE(QMainWindow):
         self.setStatusBar(self.statusBar)
         self.addToolBar(self.toolBar)
         self.addDockWidget(Qt.BottomDockWidgetArea, self.terminal)
-        # self.addDockWidget(Qt.RightDockWidgetArea, self.help)
+        self.addDockWidget(Qt.RightDockWidgetArea, self.help)
         self.treeDock = QDockWidget()
         self.treeDock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
         self.treeDock.setStyleSheet("background-color: #2D2D30; color: white;")

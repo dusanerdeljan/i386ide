@@ -32,9 +32,9 @@ class AutocompleteWidget(QDialog):
         if suggestions:
             for keyword in suggestions:
                 self.widget.addItem(AutoCompleteListWidgetItem(keyword))
-            self.label.setText("Broj predloga: {}.".format(len(suggestions)))
+            self.label.setText("Number of suggestions: {}.".format(len(suggestions)))
         else:
-            self.label.setText("Nema dostupnih predloga.")
+            self.label.setText("No available suggestions.")
         self.setSize()
 
     def setSize(self):

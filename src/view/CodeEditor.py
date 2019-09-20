@@ -1,4 +1,4 @@
-from PySide2.QtWidgets import QTextEdit, QWidget, QPlainTextEdit
+from PySide2.QtWidgets import QTextEdit, QWidget, QPlainTextEdit, QToolTip
 from PySide2.QtCore import QSize, Qt, QRect, QEvent
 from PySide2.QtGui import QColor, QPainter, QTextFormat, QFont, QTextCursor, QKeyEvent
 from src.util.AsemblerSintaksa import AsemblerSintaksa
@@ -76,6 +76,7 @@ kraj:
         self.widget = None
         self.instructionsTrie = Trie()
         self.insertInstructionsInTrie()
+        self.setMouseTracking(True)
 
         # self.setTabStopWidth(self.fontMetrics().width(" ") * self.tabSize)
         self.setStyleSheet(
@@ -108,6 +109,20 @@ kraj:
         else:
             super(CodeEditor, self).mousePressEvent(e)
 
+    def mouseMoveEvent(self, e):
+        super(CodeEditor, self).mouseMoveEvent(e)
+        self.showInstructionHelp(e)
+            
+    def showInstructionHelp(self, e):
+        super(CodeEditor, self).mouseMoveEvent(e)
+        cursor = self.cursorForPosition(e.pos())
+        cursor.select(QTextCursor.WordUnderCursor)
+        keyword = cursor.selectedText()
+        if keyword:
+            QToolTip.showText(e.globalPos(), "Test")
+        else:
+            QToolTip.hideText()
+
     def keyPressEvent(self, e):
         startLength = len(self.toPlainText())
         enterPressed = False
@@ -115,6 +130,7 @@ kraj:
         insertRightBracket = False
         insertRightBrace = False
         insertRightQuote = False
+        insertRightSingleQuote = False
         formatBraces = False
         numSpaces = 0
         if e.key() == Qt.Key_Return:
@@ -174,6 +190,8 @@ kraj:
             insertRightBrace = True
         elif e.key() == Qt.Key_QuoteDbl:
             insertRightQuote = True
+        elif e.key() == Qt.Key_Apostrophe:
+            insertRightSingleQuote = True
         else:
             self.queryWord += e.text()
         super(CodeEditor, self).keyPressEvent(e)
@@ -193,6 +211,9 @@ kraj:
             self.moveCursor(QTextCursor.Left)
         if insertRightQuote:
             self.insertPlainText("\"")
+            self.moveCursor(QTextCursor.Left)
+        if insertRightSingleQuote:
+            self.insertPlainText("'")
             self.moveCursor(QTextCursor.Left)
         if formatBraces:
             self.formatBraces()
