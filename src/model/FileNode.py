@@ -1,7 +1,7 @@
 from PySide2.QtWidgets import QMenu, QAction, QMessageBox, QInputDialog, QLineEdit
 from PySide2.QtCore import QObject, Signal
 from PySide2.QtGui import QIcon
-from src.model.Node import Node
+from src.model.Node import Node, PathManager
 import os
 import re
 
@@ -31,9 +31,9 @@ class FileNode(Node):
         self.menu.setStyleSheet("background-color: #3E3E42; color: white;")
         self.eventManager = FileEventManager()
         self.proxy: FileProxy = None
-        self.saveAction = QAction(QIcon("resources/save_file.png"), "Save file")
-        self.renameAction = QAction(QIcon("resources/rename_file.png"), "Rename file")
-        self.deleteAction = QAction(QIcon("resources/delete_file.png"), "Delete file")
+        self.saveAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/save_file.png")), "Save file")
+        self.renameAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/rename_file.png")), "Rename file")
+        self.deleteAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/delete_file.png")), "Delete file")
         self.menu.addAction(self.saveAction)
         self.menu.addAction(self.renameAction)
         self.menu.addAction(self.deleteAction)

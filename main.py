@@ -25,6 +25,7 @@ from src.model.WorkspaceNode import WorkspaceNode, WorkspaceProxy
 from src.model.FileNode import FileProxy
 from src.controller.ConfigurationManager import ConfigurationManager
 from src.controller.WorkspaceConfiguration import WorkspaceConfiguration
+from src.controller.PathManager import PathManager
 
 
 class AsemblerIDE(QMainWindow):
@@ -32,6 +33,7 @@ class AsemblerIDE(QMainWindow):
     def __init__(self):
         super(AsemblerIDE, self).__init__()
         self.workspace = None
+        PathManager.START_DIRECTORY = os.getcwd()
         self.workspaceConfiguration = WorkspaceConfiguration.loadConfiguration()
         self.configurationManager = ConfigurationManager()
         self.editorTabs = EditorTabWidget()
@@ -106,6 +108,7 @@ class AsemblerIDE(QMainWindow):
         self.treeView.fileRename.connect(lambda oldPath, fileProxy: self.renameFile(oldPath, fileProxy))
 
     def renameFile(self, oldPath: str, fileProxy: FileProxy):
+        fileProxy.text = None
         key = "{}/{}".format(fileProxy.parent.path, oldPath)
         if key in self.editorTabs.projectTabs:
             newKey = "{}/{}".format(fileProxy.parent.path, fileProxy.path)
@@ -236,7 +239,7 @@ class AsemblerIDE(QMainWindow):
             proxy = WorkspaceProxy()
             proxy.path = name
             workspace.proxy = proxy
-            workspace.setIcon(0, QIcon("resources/workspace.png"))
+            workspace.setIcon(0, QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/workspace.png")))
             workspace.setText(0, wsname)
             self.workspace = workspace
             self.treeView.setRoot(self.workspace)
@@ -266,7 +269,7 @@ class AsemblerIDE(QMainWindow):
                 workspace = pickle.load(file)
         self.workspace = WorkspaceNode()
         self.workspace.proxy = workspace
-        self.workspace.setIcon(0, QIcon("resources/workspace.png"))
+        self.workspace.setIcon(0, QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/workspace.png")))
         self.workspace.setText(0, name[name.rindex(os.path.sep)+1:])
         self.workspace.path = name
         self.workspace.proxy.path = name
@@ -367,8 +370,8 @@ class AsemblerIDE(QMainWindow):
 
     def openFileAction(self, fileName: FileProxy):
         text = None
-        if fileName.text:
-            return fileName.text
+        # if fileName.text:
+        #     return fileName.text
         with open(fileName.getFilePath(), 'r') as file:
             text = file.read()
         return text

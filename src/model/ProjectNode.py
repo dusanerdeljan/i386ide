@@ -1,4 +1,4 @@
-from src.model.Node import Node
+from src.model.Node import Node, PathManager
 from PySide2.QtGui import QIcon
 from PySide2.QtCore import Signal, QObject
 from PySide2.QtWidgets import QMenu, QAction, QMessageBox, QInputDialog, QLineEdit
@@ -54,14 +54,14 @@ class ProjectNode(Node):
         self.menu = QMenu()
         self.menu.setStyleSheet("background-color: #3E3E42; color: white;")
         self.proxy = ProjectProxy()
-        self.saveAction = QAction(QIcon("resources/save_folder.png"), "Save project")
-        self.deleteAction = QAction(QIcon("resources/remove_folder.png"), "Remove project")
-        self.eraseAction = QAction(QIcon("resources/delete_folder.png"), "Delete project from disk")
-        self.renameAction = QAction(QIcon("resources/rename_folder.png"), "Rename project")
-        self.compileAction = QAction(QIcon("resources/compile.png"), "Compile project")
-        self.runAction = QAction(QIcon("resources/run.png"), "Run project")
-        self.debugAction = QAction(QIcon("resources/debug.png"), "Debug project")
-        self.newFileAction = QAction(QIcon("resources/new_file.png"), "New file")
+        self.saveAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/save_folder.png")), "Save project")
+        self.deleteAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/remove_folder.png")), "Remove project")
+        self.eraseAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/delete_folder.png")), "Delete project from disk")
+        self.renameAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/rename_folder.png")), "Rename project")
+        self.compileAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/compile.png")), "Compile project")
+        self.runAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/run.png")), "Run project")
+        self.debugAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/debug.png")), "Debug project")
+        self.newFileAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/new_file.png")), "New file")
         self.menu.addAction(self.saveAction)
         self.menu.addAction(self.compileAction)
         self.menu.addAction(self.debugAction)
@@ -165,10 +165,10 @@ class ProjectNode(Node):
             node = None
             if dialog.result[-1] == "S":
                 node = AssemblyFileNode()
-                node.setIcon(0, QIcon("resources/s.png"))
+                node.setIcon(0, QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/s.png")))
             else:
                 node = CFileNode()
-                node.setIcon(0, QIcon("resources/c.png"))
+                node.setIcon(0, QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/c.png")))
             node.setText(0, dialog.result)
             node.path = dialog.result
             if isinstance(node, AssemblyFileNode):
@@ -191,10 +191,10 @@ class ProjectNode(Node):
             file = None
             if isinstance(proxy, AssemblyFileProxy):
                 file = AssemblyFileNode()
-                file.setIcon(0, QIcon("resources/s.png"))
+                file.setIcon(0, QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/s.png")))
             elif isinstance(proxy, CFileProxy):
                 file = CFileNode()
-                file.setIcon(0, QIcon("resources/c.png"))
+                file.setIcon(0, QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/c.png")))
             if file:
                 proxy.parent = self.proxy
                 file.setText(0, proxy.path)
@@ -209,11 +209,11 @@ class ProjectNode(Node):
                 proxy = None
                 if filePath.lower().endswith(".s"):
                     node = AssemblyFileNode()
-                    node.setIcon(0, QIcon("resources/s.png"))
+                    node.setIcon(0, QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/s.png")))
                     proxy = AssemblyFileProxy()
                 elif filePath.lower().endswith(".c"):
                     node = CFileNode()
-                    node.setIcon(0, QIcon("resources/c.png"))
+                    node.setIcon(0, QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/c.png")))
                     proxy = CFileProxy()
                 if node:
                     proxy.path = filePath
