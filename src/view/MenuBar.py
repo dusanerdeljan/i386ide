@@ -62,3 +62,9 @@ class MenuBar(QMenuBar):
 
         self.hideTree = QAction("Hide project explorer", self)
         self.view.addAction(self.hideTree)
+
+        self.showHelp = QAction("Show help", self)
+        self.view.addAction(self.showHelp)
+
+        self.hideHelp = QAction("Hide help", self)
+        self.view.addAction(self.hideHelp)

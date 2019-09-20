@@ -1,12 +1,9 @@
 from PySide2.QtWidgets import QDockWidget, QLineEdit, QTextEdit, QCompleter
 from PySide2.QtCore import Qt
+from src.util.InstructionsInfo import InstructionsInfo
 
 
 class HelpWidget(QDockWidget):
-
-    INFO = {
-        'adc': """<b>adc</b> <em>src</em>, <em>dst</em><br><p>Sabira izvorni i odredisni operand i rezultat smesta u odredisni operand. Prilikom sabiranja zateceni prenos se uzima u obzir</p>"""
-    }
 
     def __init__(self):
         super(HelpWidget, self).__init__()
@@ -19,7 +16,7 @@ class HelpWidget(QDockWidget):
         self.setStyleSheet("background-color: #2D2D30; color: white;")
         self.searchLabel = QLineEdit()
         self.searchLabel.setPlaceholderText("Search for an instruction...")
-        self.completer = QCompleter(list(HelpWidget.INFO.keys()), self)
+        self.completer = QCompleter(list(InstructionsInfo.INFO.keys()), self)
         self.completer.setCaseSensitivity(Qt.CaseInsensitive)
         self.completer.popup().setStyleSheet("background-color: #2D2D30; color: white")
         self.searchLabel.setCompleter(self.completer)
@@ -34,6 +31,6 @@ class HelpWidget(QDockWidget):
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Return and self.searchLabel.hasFocus():
             seachWord = self.searchLabel.text().strip()
-            if seachWord in HelpWidget.INFO:
-                self.resultBox.setHtml(HelpWidget.INFO[seachWord])
+            if seachWord in InstructionsInfo.INFO:
+                self.resultBox.setHtml(InstructionsInfo.INFO[seachWord])
         super(HelpWidget, self).keyPressEvent(event)

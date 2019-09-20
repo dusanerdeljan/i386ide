@@ -2,6 +2,7 @@ import sys
 import os
 import pickle
 import re
+import platform
 from PySide2.QtWidgets import QMainWindow, QLineEdit, QApplication, QFileDialog, QMessageBox, QDockWidget, QLabel, QInputDialog
 from PySide2.QtCore import Qt, QDir
 from PySide2.QtGui import QIcon
@@ -199,6 +200,8 @@ class AsemblerIDE(QMainWindow):
         self.menuBar.hideTerminal.triggered.connect(lambda: self.terminal.hide())
         self.menuBar.showTree.triggered.connect(lambda: self.treeDock.show())
         self.menuBar.hideTree.triggered.connect(lambda: self.treeDock.hide())
+        self.menuBar.showHelp.triggered.connect(lambda: self.help.show())
+        self.menuBar.hideHelp.triggered.connect(lambda: self.help.hide())
 
     def switchWorkspaceAction(self):
         dialog = WorkspaceConfigurationEditor(self.workspaceConfiguration, self, switch=True)
@@ -373,5 +376,15 @@ class AsemblerIDE(QMainWindow):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    ide = AsemblerIDE()
+    if platform.system() != "Linux":
+        msg = QMessageBox()
+        msg.setStyleSheet("background-color: #2D2D30; color: white;")
+        msg.setModal(True)
+        msg.setIcon(QMessageBox.Critical)
+        msg.setText("You are using {} and the only currently supported operating system is Linux.".format(platform.system()))
+        msg.setWindowTitle("Unsupported operating system")
+        msg.exec_()
+        sys.exit(1)
+    else:
+        ide = AsemblerIDE()
     app.exec_()

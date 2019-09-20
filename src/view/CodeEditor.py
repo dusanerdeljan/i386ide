@@ -1,7 +1,8 @@
 from PySide2.QtWidgets import QTextEdit, QWidget, QPlainTextEdit, QToolTip
 from PySide2.QtCore import QSize, Qt, QRect, QEvent
-from PySide2.QtGui import QColor, QPainter, QTextFormat, QFont, QTextCursor, QKeyEvent
+from PySide2.QtGui import QColor, QPainter, QTextFormat, QFont, QTextCursor, QKeyEvent, QPalette
 from src.util.AsemblerSintaksa import AsemblerSintaksa
+from src.util.InstructionsInfo import InstructionsInfo
 from src.view.AutocompleteWidget import AutocompleteWidget
 from src.datastrctures.Trie import Trie
 from src.model.FileNode import FileProxy
@@ -89,6 +90,11 @@ kraj:
         self.updateLineNumberAreaWidth(0)
         #self.textChanged.connect(self.setUnsavedChanges)
 
+        palette = QToolTip.palette()
+        palette.setColor(QPalette.ToolTipBase, QColor("#2D2D30"))
+        palette.setColor(QPalette.ToolTipText, QColor("#FFFFFF"))
+        QToolTip.setPalette(palette)
+
     def setUnsavedChanges(self):
         if self.file:
             self.file.hasUnsavedChanges = True
@@ -118,8 +124,8 @@ kraj:
         cursor = self.cursorForPosition(e.pos())
         cursor.select(QTextCursor.WordUnderCursor)
         keyword = cursor.selectedText()
-        if keyword:
-            QToolTip.showText(e.globalPos(), "Test")
+        if keyword and keyword in InstructionsInfo.INFO:
+            QToolTip.showText(e.globalPos(), InstructionsInfo.INFO[keyword])
         else:
             QToolTip.hideText()
 
