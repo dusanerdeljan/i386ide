@@ -1,5 +1,5 @@
 # Autor Dusan Erdeljan sw-43/2018
-# Program ispisuje "Hello world!"
+# Program ispisuje "Hello world!!!"
 .section .data
     poruka: .ascii "Hello world!\0"
     poruka_len = .-poruka
