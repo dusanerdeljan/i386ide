@@ -105,6 +105,11 @@ kraj:
             self.file.hasUnsavedChanges = True
             self.file.text = self.toPlainText()
 
+    def updateTrie(self):
+        del self.instructionsTrie
+        self.instructionsTrie = Trie()
+        self.insertInstructionsInTrie()
+
     def insertInstructionsInTrie(self):
         type = None
         if isinstance(self.file, AssemblyFileProxy):

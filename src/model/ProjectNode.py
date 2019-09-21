@@ -84,6 +84,7 @@ class ProjectNode(Node):
     def connectFileEventHandlers(self, file: FileNode):
         file.eventManager.fileRemoveRequsted.connect(self.removeFile)
         file.eventManager.fileRename.connect(lambda oldPath, fileProxy: self.eventManager.fileRename.emit(oldPath, fileProxy))
+        file.eventManager.fileSave.connect(lambda fileProxy: self.eventManager.fileSave.emit(fileProxy))
 
     def connectActions(self):
         self.newFileAction.triggered.connect(self.createNewFile)
@@ -235,6 +236,7 @@ class ProjectEventManager(QObject):
     projectRename = Signal(str, ProjectNode)
     fileRemove = Signal(FileProxy)
     fileRename = Signal(str, FileProxy)
+    fileSave = Signal(FileProxy)
 
     def __init__(self):
         super(ProjectEventManager, self).__init__()

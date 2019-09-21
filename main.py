@@ -106,6 +106,7 @@ class AsemblerIDE(QMainWindow):
         self.treeView.projectRename.connect(lambda oldPath, project: self.renameProject(oldPath, project))
         self.treeView.fileRemove.connect(lambda fileProxy: self.removeFile(fileProxy))
         self.treeView.fileRename.connect(lambda oldPath, fileProxy: self.renameFile(oldPath, fileProxy))
+        self.treeView.fileSave.connect(lambda fileProxy: self.updateEditorTrie(fileProxy))
 
     def renameFile(self, oldPath: str, fileProxy: FileProxy):
         fileProxy.text = None
@@ -359,13 +360,19 @@ class AsemblerIDE(QMainWindow):
         self.editorTabs.addNewTab(fileProxy, update)
         self.statusBar.comboBox.setCurrentText(currentText)
 
+    def updateEditorTrie(self, proxy: FileProxy):
+        key = "{}/{}".format(proxy.parent.path, proxy.path)
+        if key in self.editorTabs.projectTabs:
+            self.editorTabs.projectTabs[key].editor.updateTrie()
+
     def saveFileAction(self):
         if len(self.editorTabs.tabs):
             proxy = self.editorTabs.getCurrentFileProxy()
-            if proxy:
+            if proxy and proxy.hasUnsavedChanges:
                 with open(proxy.getFilePath(), 'w') as file:
                     file.write(proxy.text)
                     proxy.hasUnsavedChanges = False
+                self.updateEditorTrie(proxy)
             return True
 
     def openFileAction(self, fileName: FileProxy):

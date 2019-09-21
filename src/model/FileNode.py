@@ -82,7 +82,9 @@ class FileNode(Node):
         self.renameAction.triggered.connect(self.renameFile)
 
     def saveFile(self):
-        self.proxy.saveFile()
+        if self.proxy.hasUnsavedChanges:
+            self.proxy.saveFile()
+            self.eventManager.fileSave.emit(self.proxy)
 
     def getFilePath(self):
         return os.path.join(self.proxy.parent.parent.path, self.proxy.parent.path, self.proxy.path)
@@ -91,6 +93,7 @@ class FileEventManager(QObject):
 
     fileRemoveRequsted = Signal(FileNode)
     fileRename = Signal(str, FileProxy)
+    fileSave = Signal(FileProxy)
 
     def __init__(self):
         super(FileEventManager, self).__init__()

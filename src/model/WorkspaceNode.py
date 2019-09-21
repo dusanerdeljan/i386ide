@@ -35,6 +35,7 @@ class WorkspaceEventManager(QObject):
 
     fileRemove = Signal(FileProxy)
     fileRename = Signal(str, FileProxy)
+    fileSave = Signal(FileProxy)
 
     def __init__(self):
         super(WorkspaceEventManager, self).__init__()
@@ -151,6 +152,7 @@ class WorkspaceNode(Node):
         project.eventManager.projectRename.connect(lambda oldPath, project: self.eventManager.projectRename.emit(oldPath, project))
         project.eventManager.fileRemove.connect(lambda fileProxy: self.eventManager.fileRemove.emit(fileProxy))
         project.eventManager.fileRename.connect(lambda oldPath, fileProxy: self.renameFile(oldPath, fileProxy))
+        project.eventManager.fileSave.connect(lambda fileProxy: self.eventManager.fileSave.emit(fileProxy))
 
     def renameFile(self, oldPath, fileProxy):
         self.saveWorkspace()
