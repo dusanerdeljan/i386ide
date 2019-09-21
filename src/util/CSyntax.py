@@ -5,8 +5,13 @@ from src.util.Formater import Formater
 
 class CSyntax(QSyntaxHighlighter):
 
-    keywords = ['int', 'double', 'float', 'char', 'struct', 'typedef', 'for', 'while', 'union', 'return', 'if', 'else', 'break', 'continue', 'const', 'void']
-    functions = ['printf', 'scanf', 'malloc', 'calloc', 'memset', 'sizeof']
+    keywords = ['long', 'unsigned', 'short', 'int', 'double', 'float', 'char', 'struct', 'typedef', 'for', 'while', 'union', 'return', 'if', 'else', 'break', 'continue', 'const', 'void']
+    functions = ['printf', 'scanf', 'malloc', 'calloc', 'memset', 'sizeof', 'free',
+                 'getc', 'gets', 'getchar', 'puts', 'putchar', 'clearerr', 'fopen', 'fclose', 'getw',
+                 'putw', 'fgetc', 'putc', 'fputc', 'fgets', 'fputs', 'feof', 'fprintf', 'fscanf',
+                 'fgetchar', 'fputchar', 'fseek', 'SEEK_SET', 'SEEK_CUR', 'SEEK_END', 'ftell', 'rewind',
+                 'sprintf', 'sscanf', 'remove', 'fflush', 'realloc', 'abs', 'div', 'abort', 'exit', 'system',
+                 'atoi', 'atol', 'atof', 'strtod', 'strtol', 'getenv', 'setenv', 'putenv', 'perror', 'rand', 'delay']
 
     def __init__(self, dokument):
         super(CSyntax, self).__init__(dokument)

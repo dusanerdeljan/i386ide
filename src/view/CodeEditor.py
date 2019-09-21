@@ -2,10 +2,14 @@ from PySide2.QtWidgets import QTextEdit, QWidget, QPlainTextEdit, QToolTip
 from PySide2.QtCore import QSize, Qt, QRect, QEvent
 from PySide2.QtGui import QColor, QPainter, QTextFormat, QFont, QTextCursor, QKeyEvent, QPalette
 from src.util.AsemblerSintaksa import AsemblerSintaksa
+from src.util.CSyntax import CSyntax
 from src.util.InstructionsInfo import InstructionsInfo
 from src.view.AutocompleteWidget import AutocompleteWidget
 from src.datastrctures.Trie import Trie
 from src.model.FileNode import FileProxy
+from src.model.AssemblyFileNode import AssemblyFileProxy
+from src.model.CFileNode import CFileProxy
+import re
 
 
 class QLineNumberArea(QWidget):
@@ -22,11 +26,12 @@ class QLineNumberArea(QWidget):
 
 class CodeEditor(QPlainTextEdit):
 
-    def __init__(self):
+    def __init__(self, file: FileProxy):
         super(CodeEditor, self).__init__()
 
         # podaci vezani za asmeblerski fajl
-        self.file: FileProxy = None
+        self.file: FileProxy = file
+        self.setPlainText(self.file.text)
 
         # snipeti
         self.codeSnipets = {
@@ -101,12 +106,37 @@ kraj:
             self.file.text = self.toPlainText()
 
     def insertInstructionsInTrie(self):
-        for keyword in AsemblerSintaksa.keywords:
-            self.instructionsTrie.insert(keyword)
-        for register in AsemblerSintaksa.registers:
-            self.instructionsTrie.insert(register)
-        for declaration in AsemblerSintaksa.declarations:
-            self.instructionsTrie.insert(".{}".format(declaration))
+        type = None
+        if isinstance(self.file, AssemblyFileProxy):
+            type = "s"
+            for keyword in AsemblerSintaksa.keywords:
+                self.instructionsTrie.insert(keyword)
+            for register in AsemblerSintaksa.registers:
+                self.instructionsTrie.insert(register)
+            for declaration in AsemblerSintaksa.declarations:
+                self.instructionsTrie.insert(".{}".format(declaration))
+        elif isinstance(self.file, CFileProxy):
+            type = "c"
+            for keyword in CSyntax.keywords:
+                self.instructionsTrie.insert(keyword)
+            for function in CSyntax.functions:
+                self.instructionsTrie.insert(function)
+        self.parseFileForLabels(type)
+
+    def parseFileForLabels(self, type):
+        if type == "s":
+            labels = re.findall(r'[a-zA-Z0-9\_\-]+\s*\:', self.file.text)
+            for label in labels:
+                self.instructionsTrie.insert(label[:-1].strip())
+            constants = re.findall(r'[a-zA-Z0-9\_\-]+\s*\=', self.file.text)
+            for constant in constants:
+                self.instructionsTrie.insert(constant.split("=")[0].strip())
+            print(constants)
+        elif type == "c":
+            variables = re.findall(r'[a-zA-Z0-9\_\-]+\s*\=', self.file.text)
+            for variable in variables:
+                self.instructionsTrie.insert(variable.split("=")[0].strip())
+
 
     def mousePressEvent(self, e):
         if self.autocompleteWidgetOpen:
@@ -170,16 +200,16 @@ kraj:
             if self.autocompleteWidgetOpen:
                 return
             self.loadQueryWord()
-            if isinstance(self.sintaksa, AsemblerSintaksa):
-                if self.queryWord in self.codeSnipets:
-                    while not self.textCursor().atBlockStart():
-                        self.textCursor().deletePreviousChar()
-                    self.insertPlainText(self.codeSnipets[self.queryWord])
-                    # self.moveCursor(QTextCursor.End)
-                    self.queryWord = ""
-                    return
-                cursorPosition = self.cursorRect()
-                self.showAutocompleteWidget(cursorPosition)
+            #if isinstance(self.sintaksa, AsemblerSintaksa):
+            if self.queryWord in self.codeSnipets:
+                while not self.textCursor().atBlockStart():
+                    self.textCursor().deletePreviousChar()
+                self.insertPlainText(self.codeSnipets[self.queryWord])
+                # self.moveCursor(QTextCursor.End)
+                self.queryWord = ""
+                return
+            cursorPosition = self.cursorRect()
+            self.showAutocompleteWidget(cursorPosition)
         elif e.key() == Qt.Key_Space:
             self.queryWord = ""
         elif e.key() == Qt.Key_Left or e.key() == Qt.Key_Right or e.key() == Qt.Key_Up:
@@ -202,8 +232,8 @@ kraj:
             self.queryWord += e.text()
         super(CodeEditor, self).keyPressEvent(e)
         if self.autocompleteWidgetOpen:
-            if isinstance(self.sintaksa, AsemblerSintaksa):
-                self.updateSuggestions()
+            #if isinstance(self.sintaksa, AsemblerSintaksa):
+            self.updateSuggestions()
         if enterPressed and numSpaces:
             self.insertPlainText(numSpaces * " ")
         if insertRightPar:

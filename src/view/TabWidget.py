@@ -6,9 +6,8 @@ class EditorTab(QWidget):
     
     def __init__(self, fileProxy: FileProxy):
         super(EditorTab, self).__init__()
-        self.editor = CodeEditor()
-        self.editor.setPlainText(fileProxy.text)
-        self.editor.file = fileProxy
+        self.editor = CodeEditor(fileProxy)
+        #self.editor.setPlainText(fileProxy.text)
         fileProxy.hasUnsavedChanges = False
         self.tabName = "{}/{}".format(fileProxy.parent.path, fileProxy.path)
 
