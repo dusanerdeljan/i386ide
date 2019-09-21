@@ -1,4 +1,4 @@
-from PySide2.QtWidgets import QMenu, QAction, QInputDialog, QLineEdit, QMessageBox
+from PySide2.QtWidgets import QMenu, QAction, QInputDialog, QLineEdit, QMessageBox, QFileDialog
 from PySide2.QtCore import Signal, QObject
 from PySide2.QtGui import QIcon
 from src.model.Node import Node, PathManager
@@ -50,11 +50,13 @@ class WorkspaceNode(Node):
         self.menu.setStyleSheet("background-color: #3E3E42; color: white;")
         self.proxy = WorkspaceProxy()
         self.newProjectAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/new_folder.png")), "New project")
+        self.importProjectAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/open_folder.png")), "Import project")
         self.saveAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/save_folder.png")), "Save workspace")
         self.renameAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/rename_folder.png")), "Rename workspace")
         self.switchAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/switch_folder.png")), "Switch workspace")
         self.updateAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/update_folder.png")), "Update workspace")
         self.menu.addAction(self.newProjectAction)
+        self.menu.addAction(self.importProjectAction)
         self.menu.addAction(self.saveAction)
         self.menu.addAction(self.switchAction)
         self.menu.addAction(self.renameAction)
@@ -68,6 +70,7 @@ class WorkspaceNode(Node):
     def connectActions(self):
         self.renameAction.triggered.connect(self.renameWorkspace)
         self.newProjectAction.triggered.connect(self.createNewProject)
+        self.importProjectAction.triggered.connect(self.importProject)
         self.saveAction.triggered.connect(self.saveWorkspace)
         self.updateAction.triggered.connect(lambda: self.eventManager.workspaceReload.emit(self.proxy))
 
@@ -102,8 +105,47 @@ class WorkspaceNode(Node):
             self.saveWorkspace()
             self.eventManager.workspaceRename.emit(oldPath, self.proxy)
 
+    def importProject(self):
+        name = QFileDialog.getExistingDirectory(None, "Import project", ".", QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks)
+        if name:
+            projectName = os.path.basename(name)
+            regex = re.compile('[@_!#$%^&*()<>?/\|}{~:]')
+            if " " in name or regex.search(projectName):
+                msg = QMessageBox()
+                msg.setStyleSheet("background-color: #2D2D30; color: white;")
+                msg.setModal(True)
+                msg.setIcon(QMessageBox.Critical)
+                msg.setText("Project name cannot contain whitespace or special characters.")
+                msg.setWindowTitle("Project import error")
+                msg.exec_()
+                return
+            if os.path.exists(os.path.join(self.path, projectName)) and os.path.join(self.path, projectName) != name:
+                msg = QMessageBox()
+                msg.setStyleSheet("background-color: #2D2D30; color: white;")
+                msg.setModal(True)
+                msg.setIcon(QMessageBox.Critical)
+                msg.setText("Folder with the same name already exists.")
+                msg.setWindowTitle("Project import error")
+                msg.exec_()
+                return
+            project = ProjectNode()
+            project.path = projectName
+            project.proxy.path = projectName
+            project.proxy.parent = self.proxy
+            project.setIcon(0, QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/project.png")))
+            project.setText(0, projectName)
+            self.addChild(project)
+            newPath = os.path.join(self.path, projectName)
+            if os.path.join(self.path, projectName) != name:
+                os.mkdir(newPath)
+            self.proxy.addProject(project.proxy)
+            sourcePath = name if os.path.join(self.path, projectName) != name else None
+            project.loadProject(sourcePath)
+            self.saveWorkspace()
+            self.connectProjectEventHandlers(project)
+            self.eventManager.projectAdded.emit(project)
+
     def createNewProject(self):
-        print(PathManager.START_DIRECTORY)
         name, entered = QInputDialog.getText(None, "New project", "Enter project name: ", QLineEdit.Normal, "New project")
         if entered:
             regex = re.compile('[@_!#$%^&*()<>?/\|}{~:]')

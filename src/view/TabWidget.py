@@ -1,8 +1,11 @@
 from PySide2.QtWidgets import QTabWidget, QWidget, QMessageBox
+from PySide2.QtCore import Signal
 from src.view.CodeEditor import CodeEditor
 from src.model.FileNode import FileProxy
 
 class EditorTab(QWidget):
+
+    fileChanged = Signal(FileProxy)
     
     def __init__(self, fileProxy: FileProxy):
         super(EditorTab, self).__init__()
@@ -10,6 +13,7 @@ class EditorTab(QWidget):
         #self.editor.setPlainText(fileProxy.text)
         fileProxy.hasUnsavedChanges = False
         self.tabName = "{}/{}".format(fileProxy.parent.path, fileProxy.path)
+        self.editor.fileChanged.connect(lambda fileProxy: self.fileChanged.emit(fileProxy))
 
 class EditorTabWidget(QTabWidget):
     
@@ -31,11 +35,24 @@ class EditorTabWidget(QTabWidget):
             self.setCurrentIndex(self.tabs.index(fileProxy))
             return
         tab = EditorTab(fileProxy)
+        tab.fileChanged.connect(self.fileChanged)
         self.projectTabs[key] = tab
         self.addTab(tab.editor, tab.tabName)
         if update:
             self.tabs.append(fileProxy)
         self.setCurrentIndex(self.tabs.index(fileProxy))
+
+    def fileChanged(self, fileProxy: FileProxy):
+        key = "{}/{}".format(fileProxy.parent.path, fileProxy.path)
+        if key in self.projectTabs:
+            tabIndex = self.tabs.index(fileProxy)
+            self.setTabText(tabIndex, key+"*")
+
+    def removeChangeIdentificator(self, fileProxy: FileProxy):
+        key = "{}/{}".format(fileProxy.parent.path, fileProxy.path)
+        if key in self.projectTabs:
+            tabIndex = self.tabs.index(fileProxy)
+            self.setTabText(tabIndex, key)
 
     def getCurrentFileProxy(self):
         return self.tabs[self.currentIndex()]

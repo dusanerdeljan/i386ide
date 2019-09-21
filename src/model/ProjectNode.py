@@ -1,13 +1,14 @@
 from src.model.Node import Node, PathManager
 from PySide2.QtGui import QIcon
 from PySide2.QtCore import Signal, QObject
-from PySide2.QtWidgets import QMenu, QAction, QMessageBox, QInputDialog, QLineEdit
+from PySide2.QtWidgets import QMenu, QAction, QMessageBox, QInputDialog, QLineEdit, QFileDialog
 from src.view.NewFileDialog import NewFileDialog
 from src.model.AssemblyFileNode import AssemblyFileNode, AssemblyFileProxy
 from src.model.CFileNode import CFileNode, CFileProxy
 from src.model.FileNode import FileNode, FileProxy
 import os
 import re
+import shutil
 
 
 class ProjectProxy(object):
@@ -62,12 +63,14 @@ class ProjectNode(Node):
         self.runAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/run.png")), "Run project")
         self.debugAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/debug.png")), "Debug project")
         self.newFileAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/new_file.png")), "New file")
+        self.importFileAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/import_file.png")), "Import file")
         self.menu.addAction(self.saveAction)
         self.menu.addAction(self.compileAction)
         self.menu.addAction(self.debugAction)
         self.menu.addAction(self.runAction)
         self.menu.addSeparator()
         self.menu.addAction(self.newFileAction)
+        self.menu.addAction(self.importFileAction)
         self.menu.addSeparator()
         self.menu.addAction(self.renameAction)
         self.menu.addAction(self.deleteAction)
@@ -88,6 +91,7 @@ class ProjectNode(Node):
 
     def connectActions(self):
         self.newFileAction.triggered.connect(self.createNewFile)
+        self.importFileAction.triggered.connect(self.importFile)
         self.deleteAction.triggered.connect(self.deleteProject)
         self.renameAction.triggered.connect(self.renameProject)
         self.eraseAction.triggered.connect(lambda: self.eventManager.projectDeleteFromDiskRequested.emit(self))
@@ -139,6 +143,53 @@ class ProjectNode(Node):
         self.removeChild(file)
         self.parent().saveWorkspace()
 
+    def importFile(self):
+        name, entered = QFileDialog.getOpenFileName(None, "Select file to import", ".", "Assembly files (*.S);;C files (*.c)")
+        if entered:
+            fileName = os.path.basename(name)
+            filePath = os.path.join(self.proxy.getProjectPath(), fileName)
+            regex = re.compile('[@_!#$%^&*()<>?/\|}{~:]')
+            if " " in filePath or regex.search(fileName):
+                msg = QMessageBox()
+                msg.setStyleSheet("background-color: #2D2D30; color: white;")
+                msg.setModal(True)
+                msg.setIcon(QMessageBox.Critical)
+                msg.setText("File name cannot contain whitespace or special characters.")
+                msg.setWindowTitle("File import error")
+                msg.exec_()
+                return
+            if os.path.exists(filePath):
+                msg = QMessageBox()
+                msg.setStyleSheet("background-color: #2D2D30; color: white;")
+                msg.setModal(True)
+                msg.setIcon(QMessageBox.Critical)
+                msg.setText("File with the same name already exists.")
+                msg.setWindowTitle("File import error")
+                msg.exec_()
+                return
+            node = None
+            if fileName[-1] == "S":
+                node = AssemblyFileNode()
+                node.setIcon(0, QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/s.png")))
+            else:
+                node = CFileNode()
+                node.setIcon(0, QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/c.png")))
+            node.setText(0, fileName)
+            node.path = fileName
+            if isinstance(node, AssemblyFileNode):
+                node.proxy = AssemblyFileProxy()
+            elif isinstance(node, CFileNode):
+                node.proxy = CFileProxy()
+            node.proxy.path = fileName
+            node.proxy.parent = self.proxy
+            self.addChild(node)
+            os.mknod(filePath)
+            self.proxy.addFile(node.proxy)
+            self.connectFileEventHandlers(node)
+            with open(filePath, 'w') as file:
+                with open(name, 'r') as inputFile:
+                    file.write(inputFile.read())
+
     def createNewFile(self):
         dialog = NewFileDialog()
         dialog.exec_()
@@ -187,7 +238,7 @@ class ProjectNode(Node):
     def deleteProject(self):
         self.eventManager.projectRemoveRequested.emit(self)
 
-    def loadProject(self):
+    def loadProject(self, sourcePath=None):
         for proxy in self.proxy.files:
             file = None
             if isinstance(proxy, AssemblyFileProxy):
@@ -203,7 +254,7 @@ class ProjectNode(Node):
                 file.proxy = proxy
                 self.addChild(file)
                 self.connectFileEventHandlers(file)
-        projectPath = self.proxy.getProjectPath()
+        projectPath = self.proxy.getProjectPath() if not sourcePath else sourcePath
         for filePath in os.listdir(projectPath):
             if filePath not in [file.path for file in self.proxy.files]:
                 node = None
@@ -225,6 +276,8 @@ class ProjectNode(Node):
                     self.addChild(node)
                     self.proxy.files.append(node.proxy)
                     self.connectFileEventHandlers(node)
+                    if sourcePath:
+                        shutil.copyfile(os.path.join(sourcePath, filePath), os.path.join(self.proxy.getProjectPath(), filePath))
 
 class ProjectEventManager(QObject):
 

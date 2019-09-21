@@ -64,7 +64,10 @@ class TreeView(QTreeWidget):
         self.newProjectAdded.emit(project)
 
     def removeProject(self, project: ProjectNode):
-        self.configurationManager.allProjects.remove(project)
+        self.configurationManager.allProjects = []
+        for proj in self.getProjects():
+            if proj is not project:
+                self.configurationManager.allProjects.append(proj)
         self.projectRemove.emit(project.proxy)
 
     def renameProject(self, oldPath, project: ProjectNode):

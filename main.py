@@ -364,6 +364,7 @@ class AsemblerIDE(QMainWindow):
         key = "{}/{}".format(proxy.parent.path, proxy.path)
         if key in self.editorTabs.projectTabs:
             self.editorTabs.projectTabs[key].editor.updateTrie()
+            self.editorTabs.removeChangeIdentificator(proxy)
 
     def saveFileAction(self):
         if len(self.editorTabs.tabs):

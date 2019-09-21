@@ -1,5 +1,5 @@
 from PySide2.QtWidgets import QTextEdit, QWidget, QPlainTextEdit, QToolTip
-from PySide2.QtCore import QSize, Qt, QRect, QEvent
+from PySide2.QtCore import QSize, Qt, QRect, QEvent, Signal
 from PySide2.QtGui import QColor, QPainter, QTextFormat, QFont, QTextCursor, QKeyEvent, QPalette
 from src.util.AsemblerSintaksa import AsemblerSintaksa
 from src.util.CSyntax import CSyntax
@@ -25,6 +25,8 @@ class QLineNumberArea(QWidget):
 
 
 class CodeEditor(QPlainTextEdit):
+
+    fileChanged = Signal(FileProxy)
 
     def __init__(self, file: FileProxy):
         super(CodeEditor, self).__init__()
@@ -101,9 +103,13 @@ kraj:
         QToolTip.setPalette(palette)
 
     def setUnsavedChanges(self):
+        shoudEmitSignal = False
         if self.file:
+            shoudEmitSignal = not self.file.hasUnsavedChanges
             self.file.hasUnsavedChanges = True
             self.file.text = self.toPlainText()
+        if shoudEmitSignal:
+            self.fileChanged.emit(self.file)
 
     def updateTrie(self):
         del self.instructionsTrie
