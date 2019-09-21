@@ -15,7 +15,8 @@ class EditorTabWidget(QTabWidget):
     
     def __init__(self):
         super(EditorTabWidget, self).__init__()
-        self.tabBar().setStyleSheet("background-color:#007ACC;color: white; height: 20px")
+        self.tabBar().setStyleSheet("QTabBar:tab {background-color: #2D2D30; color: white; height: 25px;}"
+                                    " QTabBar:tab:selected {background-color: #007ACC;}")
         self.tabBar().setMaximumHeight(30)
         self.setStyleSheet("background-color: #2D2D30; color: white;")
         self.projectTabs = dict()
