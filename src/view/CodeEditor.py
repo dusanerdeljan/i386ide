@@ -130,8 +130,7 @@ kraj:
                 self.instructionsTrie.insert(label[:-1].strip())
             constants = re.findall(r'[a-zA-Z0-9\_\-]+\s*\=', self.file.text)
             for constant in constants:
-                self.instructionsTrie.insert(constant.split("=")[0].strip())
-            print(constants)
+                self.instructionsTrie.insert("$"+constant.split("=")[0].strip())
         elif type == "c":
             variables = re.findall(r'[a-zA-Z0-9\_\-]+\s*\=', self.file.text)
             for variable in variables:

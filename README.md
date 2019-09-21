@@ -14,5 +14,5 @@ To run this program from the source code you need **Python 3.6 or higher** and y
 ## License
 
 This program is free.</br>
-You can redistribute it and/or change it under the terms of **GNU General Public Licence version 3.0** (GPLv3). </br>
-You can find a copy of the licence in the repository.
+You can redistribute it and/or change it under the terms of **GNU General Public License version 3.0** (GPLv3). </br>
+You can find a copy of the license in the repository.
