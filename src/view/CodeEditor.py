@@ -9,6 +9,7 @@ from src.datastrctures.Trie import Trie
 from src.model.FileNode import FileProxy
 from src.model.AssemblyFileNode import AssemblyFileProxy
 from src.model.CFileNode import CFileProxy
+from src.util.NumbersInfo import NumbersInfo
 import re
 
 
@@ -136,7 +137,8 @@ kraj:
 
     def parseFileForLabels(self, type):
         if type == "s":
-            labels = re.findall(r'[a-zA-Z0-9\_\-]+\s*\:', self.file.text)
+            rx_label = re.compile(r'^[^#\n]*[a-zA-Z0-9\_\-]+\s*\:', re.MULTILINE)
+            labels = re.findall(rx_label, self.file.text)
             for label in labels:
                 self.instructionsTrie.insert(label[:-1].strip())
             constants = re.findall(r'[a-zA-Z0-9\_\-]+\s*\=', self.file.text)
@@ -166,6 +168,8 @@ kraj:
         keyword = cursor.selectedText()
         if keyword and keyword in InstructionsInfo.INFO:
             QToolTip.showText(e.globalPos(), InstructionsInfo.INFO[keyword])
+        elif keyword and NumbersInfo.checkIfNumber(keyword):
+            QToolTip.showText(e.globalPos(), NumbersInfo.showConvertedNumbers(keyword))
         else:
             QToolTip.hideText()
 
