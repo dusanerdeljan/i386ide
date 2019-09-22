@@ -13,7 +13,7 @@ from src.view.ToolBar import ToolBar
 from src.view.StatusBar import StatusBar
 from src.view.TreeView import TreeView
 from src.view.HelpWidget import HelpWidget
-from src.view.TabWidget import EditorTabWidget
+from src.view.TabWidget import EditorTabWidget, EditorTab
 from src.view.WorkspaceConfigurationEditor import WorkspaceConfigurationEditor
 from src.view.DefaultWorkspaceEditor import DefaultWorkspaceEditor
 from src.util.AsemblerSintaksa import AsemblerSintaksa
@@ -67,9 +67,16 @@ class AsemblerIDE(QMainWindow):
         self.checkWorkspaceConfiguration()
         #self.populateTreeView()
         self.statusBar.comboBox.currentTextChanged.connect(self.changeEditorSyntax)
+        self.statusBar.tabWidthComboBox.currentTextChanged.connect(self.changeEditorTabWidth)
+
+    def changeEditorTabWidth(self, text):
+        currentTab: EditorTab = self.editorTabs.getCurrentTab()
+        if currentTab:
+            currentTab.editor.tabSize = int(text)
+
 
     def changeEditorSyntax(self, text):
-        currentTab = self.editorTabs.getCurrentTab()
+        currentTab: EditorTab = self.editorTabs.getCurrentTab()
         if currentTab:
             if text == "Assembly":
                 currentTab.editor.sintaksa = AsemblerSintaksa(currentTab.editor.document())
@@ -144,9 +151,13 @@ class AsemblerIDE(QMainWindow):
 
     def activeTabChanged(self, index):
         if index == -1:
+            self.statusBar.tabWidthComboBox.setCurrentText("4")
             return
         syntax = "Assembly" if self.editorTabs.tabs[index].path[-1].lower() == "s" else "C"
+        proxy = self.editorTabs.tabs[index]
+        key = "{}/{}".format(proxy.parent.path, proxy.path)
         self.statusBar.comboBox.setCurrentText(syntax)
+        self.statusBar.tabWidthComboBox.setCurrentText(str(self.editorTabs.projectTabs[key].editor.tabSize))
         self.changeEditorSyntax(syntax)
 
     def populateTreeView(self):

@@ -55,13 +55,15 @@ class EditorTabWidget(QTabWidget):
             self.setTabText(tabIndex, key)
 
     def getCurrentFileProxy(self):
-        return self.tabs[self.currentIndex()]
+        if self.tabs:
+            return self.tabs[self.currentIndex()]
 
     def getCurrentTab(self):
         proxy = self.getCurrentFileProxy()
-        key = "{}/{}".format(proxy.parent.path, proxy.path)
-        if key in self.projectTabs:
-            return self.projectTabs[key]
+        if proxy:
+            key = "{}/{}".format(proxy.parent.path, proxy.path)
+            if key in self.projectTabs:
+                return self.projectTabs[key]
         return None
 
     def closeAllTabs(self):
