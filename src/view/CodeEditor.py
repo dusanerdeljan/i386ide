@@ -1,6 +1,6 @@
 from PySide2.QtWidgets import QTextEdit, QWidget, QPlainTextEdit, QToolTip
 from PySide2.QtCore import QSize, Qt, QRect, QEvent, Signal
-from PySide2.QtGui import QColor, QPainter, QTextFormat, QFont, QTextCursor, QKeyEvent, QPalette
+from PySide2.QtGui import QColor, QPainter, QTextFormat, QFont, QTextCursor, QKeyEvent, QPalette, QCursor
 from src.util.AsemblerSintaksa import AsemblerSintaksa
 from src.util.CSyntax import CSyntax
 from src.util.InstructionsInfo import InstructionsInfo
@@ -156,16 +156,19 @@ kraj:
             variables = re.findall(r'[a-zA-Z0-9\_\-]+\s*\=', self.file.text)
             for variable in variables:
                 self.instructionsTrie.insert(variable.split("=")[0].strip())
-            rx_func_def= re.compile(r'[A-Za-z0-9\_\-\+]+\s*(?=\(.*\)\s*)', re.MULTILINE) #hvata sve oblike funkcija
-            lines = self.file.text.splitlines(keepends=False)
+            rx_func_def = re.compile(r'[A-Za-z0-9\_\-\+]+\s*(?=\(.*\)\s*)', re.MULTILINE)
+            rx_func_definition = re.compile(r'\b(?!(?:if|switch|while|void|for)[\s*|(])\b[A-Za-z0-9\_]+\s*(?=\([^\)]*\)\s*\{)', re.MULTILINE)
+            string = self.file.text
             self.labelPositions.clear()
-            for index in range(len(lines)):
-                line = lines[index]
-                labels = re.findall(rx_func_def, line)
-                for label in labels:
-                    self.instructionsTrie.insert(label.strip())
-                    # self.labelPositions[label.strip()] = index
-
+            functionDefs = re.findall(rx_func_def, string)
+            for functionDefinition in functionDefs:
+                functionDefinition = functionDefinition.strip()
+                self.instructionsTrie.insert(functionDefinition)
+            functionDefinitions = re.findall(rx_func_definition, string)
+            for functionDefinition in functionDefinitions:
+                index = string.find(functionDefinition)
+                lineIndex = string[:index].count('\n')
+                self.labelPositions[functionDefinition] = lineIndex
 
     def mousePressEvent(self, e):
         if self.autocompleteWidgetOpen:
@@ -173,7 +176,7 @@ kraj:
             self.queryWord = ""
         else:
             super(CodeEditor, self).mousePressEvent(e)
-            if (Qt.ControlModifier == e.modifiers()):
+            if Qt.ControlModifier == e.modifiers():
                 cursor = self.cursorForPosition(e.pos())
                 cursor.select(QTextCursor.WordUnderCursor)
                 label = cursor.selectedText()
