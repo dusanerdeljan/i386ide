@@ -5,7 +5,8 @@ from src.util.Formater import Formater
 
 class CSyntax(QSyntaxHighlighter):
 
-    keywords = ['long', 'unsigned', 'short', 'int', 'double', 'float', 'char', 'struct', 'typedef', 'for', 'while', 'union', 'return', 'if', 'else', 'break', 'continue', 'const', 'void']
+    keywords = ['long', 'unsigned', 'short', 'int', 'double', 'float', 'char', 'struct', 'typedef', 'for', 'while',
+                'union', 'return', 'if', 'else', 'break', 'continue', 'const', 'void', 'switch', 'case', 'default']
     functions = ['printf', 'scanf', 'malloc', 'calloc', 'memset', 'sizeof', 'free',
                  'getc', 'gets', 'getchar', 'puts', 'putchar', 'clearerr', 'fopen', 'fclose', 'getw',
                  'putw', 'fgetc', 'putc', 'fputc', 'fgets', 'fputs', 'feof', 'fprintf', 'fscanf',

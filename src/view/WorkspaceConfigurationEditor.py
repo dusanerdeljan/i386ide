@@ -51,7 +51,7 @@ class WorkspaceConfigurationEditor(QDialog):
         if directory == "":
             return
         wsname = directory[directory.rindex(os.path.sep) + 1:]
-        regex = re.compile('[@_!#$%^&*()<>?/\|}{~:]')
+        regex = re.compile('[@!#$%^&*()<>?/\|}{~:]')
         if ' ' in directory or regex.search(wsname):
             msg = QMessageBox()
             msg.setStyleSheet("background-color: #2D2D30; color: white;")

@@ -226,13 +226,13 @@ class AsemblerIDE(QMainWindow):
         name = QFileDialog.getExistingDirectory(self, "New workspace", "select new workspace directory")
         if name:
             wsname = name[name.rindex(os.path.sep)+1:]
-            regex = re.compile('[@_!#$%^&*()<>?/\|}{~:]')
+            regex = re.compile('[@!#$%^&*()<>?/\|}{~:]')
             if ' ' in name or regex.search(wsname):
                 msg = QMessageBox()
                 msg.setStyleSheet("background-color: #2D2D30; color: white;")
                 msg.setModal(True)
                 msg.setIcon(QMessageBox.Critical)
-                msg.setText("Workspace path/name cannot contain whitespace special characters.")
+                msg.setText("Workspace path/name cannot contain whitespace or special characters.")
                 msg.setWindowTitle("Workspace creation error")
                 msg.exec_()
                 return False
@@ -263,6 +263,16 @@ class AsemblerIDE(QMainWindow):
                 return
         else:
             name = workspacePath
+        regex = re.compile('[@!#$%^&*()<>?/\|}{~:]')
+        if ' ' in name or regex.search(os.path.basename(name)):
+            msg = QMessageBox()
+            msg.setStyleSheet("background-color: #2D2D30; color: white;")
+            msg.setModal(True)
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText("Workspace path/name cannot contain whitespace or special characters.")
+            msg.setWindowTitle("Workspace creation error")
+            msg.exec_()
+            return False
         workspace = WorkspaceProxy()
         path = os.path.join(name, ".metadata")
         if os.path.exists(path):

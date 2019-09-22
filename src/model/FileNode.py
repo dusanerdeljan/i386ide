@@ -47,7 +47,7 @@ class FileNode(Node):
             name += "."+type
             parentDir = os.path.abspath(os.path.join(self.proxy.getFilePath(), os.pardir))
             newPath = os.path.join(parentDir, name)
-            regex = re.compile('[@_!#$%^&*()<>?/\|}{~:]')
+            regex = re.compile('[@!#$%^&*()<>?/\|}{~:]')
             if " " in name or regex.search(name):
                 msg = QMessageBox()
                 msg.setStyleSheet("background-color: #2D2D30; color: white;")

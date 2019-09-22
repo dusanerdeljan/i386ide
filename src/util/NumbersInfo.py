@@ -32,4 +32,4 @@ class NumbersInfo(object):
             binary = str(bin(int(decimal)))
             hexadecimal = word
 
-        return "DEC:{}\nBIN:{}\nHEX:{}".format(decimal,binary,hexadecimal)
+        return "DEC: {}\nBIN: {}\nHEX: {}".format(decimal,binary,hexadecimal)

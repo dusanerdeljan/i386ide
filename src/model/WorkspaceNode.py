@@ -79,7 +79,7 @@ class WorkspaceNode(Node):
         if entered:
             parentDir = os.path.abspath(os.path.join(self.path, os.pardir))
             newPath = os.path.join(parentDir, name)
-            regex = re.compile('[@_!#$%^&*()<>?/\|}{~:]')
+            regex = re.compile('[@!#$%^&*()<>?/\|}{~:]')
             if " " in name or regex.search(name):
                 msg = QMessageBox()
                 msg.setStyleSheet("background-color: #2D2D30; color: white;")
@@ -109,7 +109,7 @@ class WorkspaceNode(Node):
         name = QFileDialog.getExistingDirectory(None, "Import project", ".", QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks)
         if name:
             projectName = os.path.basename(name)
-            regex = re.compile('[@_!#$%^&*()<>?/\|}{~:]')
+            regex = re.compile('[@!#$%^&*()<>?/\|}{~:]')
             if " " in name or regex.search(projectName):
                 msg = QMessageBox()
                 msg.setStyleSheet("background-color: #2D2D30; color: white;")
@@ -128,6 +128,16 @@ class WorkspaceNode(Node):
                 msg.setWindowTitle("Project import error")
                 msg.exec_()
                 return
+            for projectProxy in self.proxy.projects:
+                if projectProxy.getProjectPath() == name:
+                    msg = QMessageBox()
+                    msg.setStyleSheet("background-color: #2D2D30; color: white;")
+                    msg.setModal(True)
+                    msg.setIcon(QMessageBox.Critical)
+                    msg.setText("Project is already a part of the workspace.")
+                    msg.setWindowTitle("Project import error")
+                    msg.exec_()
+                    return
             project = ProjectNode()
             project.path = projectName
             project.proxy.path = projectName
@@ -148,7 +158,7 @@ class WorkspaceNode(Node):
     def createNewProject(self):
         name, entered = QInputDialog.getText(None, "New project", "Enter project name: ", QLineEdit.Normal, "New project")
         if entered:
-            regex = re.compile('[@_!#$%^&*()<>?/\|}{~:]')
+            regex = re.compile('[@!#$%^&*()<>?/\|}{~:]')
             if " " in name or regex.search(name):
                 msg = QMessageBox()
                 msg.setStyleSheet("background-color: #2D2D30; color: white;")

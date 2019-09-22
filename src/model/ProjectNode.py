@@ -105,7 +105,7 @@ class ProjectNode(Node):
             parentDir = os.path.abspath(os.path.join(self.proxy.getProjectPath(), os.pardir))
             newPath = os.path.join(parentDir, name)
             print(newPath)
-            regex = re.compile('[@_!#$%^&*()<>?/\|}{~:]')
+            regex = re.compile('[@!#$%^&*()<>?/\|}{~:]')
             if " " in name or regex.search(name):
                 msg = QMessageBox()
                 msg.setStyleSheet("background-color: #2D2D30; color: white;")
@@ -148,7 +148,7 @@ class ProjectNode(Node):
         if entered:
             fileName = os.path.basename(name)
             filePath = os.path.join(self.proxy.getProjectPath(), fileName)
-            regex = re.compile('[@_!#$%^&*()<>?/\|}{~:]')
+            regex = re.compile('[@!#$%^&*()<>?/\|}{~:]')
             if " " in filePath or regex.search(fileName):
                 msg = QMessageBox()
                 msg.setStyleSheet("background-color: #2D2D30; color: white;")
@@ -186,16 +186,17 @@ class ProjectNode(Node):
             os.mknod(filePath)
             self.proxy.addFile(node.proxy)
             self.connectFileEventHandlers(node)
-            with open(filePath, 'w') as file:
-                with open(name, 'r') as inputFile:
-                    file.write(inputFile.read())
+            shutil.copyfile(name, filePath)
+            # with open(filePath, 'w') as file:
+            #     with open(name, 'r') as inputFile:
+            #         file.write(inputFile.read())
 
     def createNewFile(self):
         dialog = NewFileDialog()
         dialog.exec_()
         if dialog.result:
             rootPath = os.path.join(self.parent().path, self.path, dialog.result)
-            regex = re.compile('[@_!#$%^&*()<>?/\|}{~:]')
+            regex = re.compile('[@!#$%^&*()<>?/\|}{~:]')
             if " " in dialog.result or regex.search(dialog.result):
                 msg = QMessageBox()
                 msg.setStyleSheet("background-color: #2D2D30; color: white;")
