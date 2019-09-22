@@ -19,7 +19,7 @@ class StatusBar(QStatusBar):
         self.tabWidthComboBox.addItem("2")
         self.tabWidthComboBox.addItem("4")
         self.tabWidthComboBox.addItem("8")
-        self.tabWidthComboBox.setCurrentText("4")
+        self.tabWidthComboBox.setCurrentText('4')
         self.addWidget(QWidget(), 6)
         self.addWidget(self.label, 1)
         self.addWidget(self.comboBox, 1)

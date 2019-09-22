@@ -151,7 +151,7 @@ class AsemblerIDE(QMainWindow):
 
     def activeTabChanged(self, index):
         if index == -1:
-            self.statusBar.tabWidthComboBox.setCurrentText("4")
+            self.statusBar.tabWidthComboBox.setCurrentText('4')
             return
         syntax = "Assembly" if self.editorTabs.tabs[index].path[-1].lower() == "s" else "C"
         proxy = self.editorTabs.tabs[index]
