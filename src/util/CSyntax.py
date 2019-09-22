@@ -19,7 +19,8 @@ class CSyntax(QSyntaxHighlighter):
         self.rules = []
         self.formater = Formater()
         self.rules += [(r'\b%s\b' % w, 0, self.formater.stilovi['keyword']) for w in CSyntax.keywords]
-        self.rules += [(r'\b%s\b' % w, 0, self.formater.stilovi['declarations']) for w in CSyntax.functions]
+        # self.rules += [(r'\b%s\b' % w, 0, self.formater.stilovi['declarations']) for w in CSyntax.functions]
+        self.rules += [(r'\b(?!(if|switch|while|void|for)[\s*|(])\b[A-Za-z0-9\_\-\+]+\s*(?=\(.*\)\s*)', 0, self.formater.stilovi['declarations'])]
         self.rules += [(r'//[^\n]*', 0, self.formater.stilovi['comment'])]
         self.rules += [(r'#[^\n]*', 0, self.formater.stilovi['string'])]
         self.rules += [(r"\".*\"", 0, self.formater.stilovi['string'])]

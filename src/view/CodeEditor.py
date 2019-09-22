@@ -156,6 +156,15 @@ kraj:
             variables = re.findall(r'[a-zA-Z0-9\_\-]+\s*\=', self.file.text)
             for variable in variables:
                 self.instructionsTrie.insert(variable.split("=")[0].strip())
+            rx_func_def= re.compile(r'[A-Za-z0-9\_\-\+]+\s*(?=\(.*\)\s*)', re.MULTILINE) #hvata sve oblike funkcija
+            lines = self.file.text.splitlines(keepends=False)
+            self.labelPositions.clear()
+            for index in range(len(lines)):
+                line = lines[index]
+                labels = re.findall(rx_func_def, line)
+                for label in labels:
+                    self.instructionsTrie.insert(label.strip())
+                    # self.labelPositions[label.strip()] = index
 
 
     def mousePressEvent(self, e):
