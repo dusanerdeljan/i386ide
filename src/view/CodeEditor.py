@@ -6,6 +6,7 @@ from src.util.CSyntax import CSyntax
 from src.util.InstructionsInfo import InstructionsInfo
 from src.view.AutocompleteWidget import AutocompleteWidget
 from src.datastrctures.Trie import Trie
+from src.datastrctures.Stack import Stack
 from src.model.FileNode import FileProxy
 from src.model.AssemblyFileNode import AssemblyFileProxy
 from src.model.CFileNode import CFileProxy
@@ -36,7 +37,7 @@ class CodeEditor(QPlainTextEdit):
         self.file: FileProxy = file
         self.setPlainText(self.file.text)
         self.labelPositions = dict()
-        self.labelToReturn = None
+        self.labelVisitStack = Stack()
 
         # snipeti
         self.codeSnipets = {
@@ -141,6 +142,7 @@ kraj:
         if type == "s":
             rx_label = re.compile(r'^[^#\n]*[a-zA-Z0-9\_\-]+\s*\:', re.MULTILINE)
             lines = self.file.text.splitlines(keepends=False)
+            self.labelPositions.clear()
             for index in range(len(lines)):
                 line = lines[index]
                 labels = re.findall(rx_label, line)
@@ -167,17 +169,22 @@ kraj:
                 cursor.select(QTextCursor.WordUnderCursor)
                 label = cursor.selectedText()
                 if label in self.labelPositions:
-                    self.labelToReturn = self.textCursor().blockNumber()
-                    self.scrollToLine(self.labelPositions[label])
+                    currentPosition = self.textCursor().blockNumber()
+                    if currentPosition != self.labelPositions[label]:
+                        self.labelVisitStack.push(currentPosition)
+                        self.scrollToLine(self.labelPositions[label])
 
 
     def scrollToLine(self, lineIndex):
-        index = lineIndex - 10 if lineIndex >= 10 else 0
-        newCursor = QTextCursor(self.document().findBlockByLineNumber(index))
-        self.moveCursor(QTextCursor.End)
-        self.setTextCursor(newCursor)
-        newerCursor = QTextCursor(self.document().findBlockByLineNumber(lineIndex))
-        self.setTextCursor(newerCursor)
+        try:
+            index = lineIndex - 10 if lineIndex >= 10 else 0
+            newCursor = QTextCursor(self.document().findBlockByLineNumber(index))
+            self.moveCursor(QTextCursor.End)
+            self.setTextCursor(newCursor)
+            newerCursor = QTextCursor(self.document().findBlockByLineNumber(lineIndex))
+            self.setTextCursor(newerCursor)
+        except:
+            self.labelVisitStack.clear()
 
     def mouseMoveEvent(self, e):
         super(CodeEditor, self).mouseMoveEvent(e)
@@ -249,9 +256,9 @@ kraj:
         elif e.key() == Qt.Key_Space:
             self.queryWord = ""
         elif e.key() == Qt.Key_Left and e.modifiers() == Qt.AltModifier:
-            if self.labelToReturn:
-                self.scrollToLine(self.labelToReturn)
-                self.labelToReturn = None
+            if not self.labelVisitStack.is_empty():
+                nextLabel = self.labelVisitStack.pop()
+                self.scrollToLine(nextLabel)
         elif e.key() == Qt.Key_Left or e.key() == Qt.Key_Right or e.key() == Qt.Key_Up:
             if self.autocompleteWidgetOpen:
                 self.closeAutoSuggestionWidget()
