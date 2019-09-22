@@ -35,6 +35,8 @@ class CodeEditor(QPlainTextEdit):
         # podaci vezani za asmeblerski fajl
         self.file: FileProxy = file
         self.setPlainText(self.file.text)
+        self.labelPositions = dict()
+        self.labelToReturn = None
 
         # snipeti
         self.codeSnipets = {
@@ -78,7 +80,7 @@ kraj:
     popl %ebp
     ret\n""",
         }
-
+        self.setLineWrapMode(QPlainTextEdit.NoWrap)
         self.tabSize = 4
         self.autocompleteWidgetOpen = False
         self.queryWord = ""
@@ -138,9 +140,13 @@ kraj:
     def parseFileForLabels(self, type):
         if type == "s":
             rx_label = re.compile(r'^[^#\n]*[a-zA-Z0-9\_\-]+\s*\:', re.MULTILINE)
-            labels = re.findall(rx_label, self.file.text)
-            for label in labels:
-                self.instructionsTrie.insert(label[:-1].strip())
+            lines = self.file.text.splitlines(keepends=False)
+            for index in range(len(lines)):
+                line = lines[index]
+                labels = re.findall(rx_label, line)
+                for label in labels:
+                    self.instructionsTrie.insert(label[:-1].strip())
+                    self.labelPositions[label[:-1].strip()] = index
             constants = re.findall(r'[a-zA-Z0-9\_\-]+\s*\=', self.file.text)
             for constant in constants:
                 self.instructionsTrie.insert("$"+constant.split("=")[0].strip())
@@ -156,6 +162,22 @@ kraj:
             self.queryWord = ""
         else:
             super(CodeEditor, self).mousePressEvent(e)
+            if (Qt.ControlModifier == e.modifiers()):
+                cursor = self.cursorForPosition(e.pos())
+                cursor.select(QTextCursor.WordUnderCursor)
+                label = cursor.selectedText()
+                if label in self.labelPositions:
+                    self.labelToReturn = self.textCursor().blockNumber()
+                    self.scrollToLine(self.labelPositions[label])
+
+
+    def scrollToLine(self, lineIndex):
+        index = lineIndex - 10 if lineIndex >= 10 else 0
+        newCursor = QTextCursor(self.document().findBlockByLineNumber(index))
+        self.moveCursor(QTextCursor.End)
+        self.setTextCursor(newCursor)
+        newerCursor = QTextCursor(self.document().findBlockByLineNumber(lineIndex))
+        self.setTextCursor(newerCursor)
 
     def mouseMoveEvent(self, e):
         super(CodeEditor, self).mouseMoveEvent(e)
@@ -226,6 +248,10 @@ kraj:
             self.showAutocompleteWidget(cursorPosition)
         elif e.key() == Qt.Key_Space:
             self.queryWord = ""
+        elif e.key() == Qt.Key_Left and e.modifiers() == Qt.AltModifier:
+            if self.labelToReturn:
+                self.scrollToLine(self.labelToReturn)
+                self.labelToReturn = None
         elif e.key() == Qt.Key_Left or e.key() == Qt.Key_Right or e.key() == Qt.Key_Up:
             if self.autocompleteWidgetOpen:
                 self.closeAutoSuggestionWidget()

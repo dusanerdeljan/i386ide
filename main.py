@@ -245,6 +245,9 @@ class AsemblerIDE(QMainWindow):
             self.workspace = workspace
             self.treeView.setRoot(self.workspace)
             self.saveWorkspaceAction()
+            self.configurationManager.allProjects = []
+            self.configurationManager.currentProject = None
+            self.toolBar.updateComboBox()
             self.terminal.executeCommand("cd {}".format(self.workspace.path))
             self.workspaceConfiguration.addWorkspace(self.workspace.proxy.path)
             return True
