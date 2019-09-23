@@ -27,7 +27,7 @@ class CSyntax(QSyntaxHighlighter):
         self.rules += [(r'#[^\n]*', 0, self.formater.stilovi['string'])]
         self.rules += [(r"\".*\"", 0, self.formater.stilovi['string'])]
         self.rules += [(r"\'.?\'", 0, self.formater.stilovi['string'])]
-        self.multiline_comment_start = r'//*.*'
+        self.multiline_comment_start = r'/\*.*'
         self.multiline_comment_end = r'.*\*/'
 
         self.rules = [(QRegExp(pat), index, fmt) for (pat, index, fmt) in self.rules]
@@ -41,14 +41,13 @@ class CSyntax(QSyntaxHighlighter):
                 self.setFormat(index, length, format)
                 index = exp.indexIn(text, index + length)
 
-        # self.setCurrentBlockState(0)
+        self.setCurrentBlockState(0)
 
         start_index = 0
         exp = QRegExp(self.multiline_comment_start)
         if self.previousBlockState() != 1:
             start_index = exp.indexIn(text)
         while start_index >= 0:
-            print(text)
             rex = QRegularExpression(self.multiline_comment_end)
             match = rex.match(text, start_index)
             end_index = match.capturedStart()
