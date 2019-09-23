@@ -331,6 +331,16 @@ class AsemblerIDE(QMainWindow):
             commandString = proxy.getProjectDebugCommand()
             self.terminal.console.setFocus()
             if self.terminal.executeCommand(proxy.getProjectCompileCommand()):
+                copmileString = proxy.getProjectCompileCommand()
+                if not ' -g ' in copmileString:
+                    msg = QMessageBox()
+                    msg.setStyleSheet("background-color: #2D2D30; color: white;")
+                    msg.setModal(True)
+                    msg.setIcon(QMessageBox.Warning)
+                    msg.setText("Please set '-g' option in compiler configuration to be able to debug your project.")
+                    msg.setWindowTitle("Debug warning")
+                    msg.exec_()
+                    return False
                 self.terminal.executeCommand(commandString)
             self.toolBar.projectComboBox.setCurrentText(proxy.path)
 

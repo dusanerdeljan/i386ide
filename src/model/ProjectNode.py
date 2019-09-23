@@ -3,6 +3,7 @@ from PySide2.QtGui import QIcon
 from PySide2.QtCore import Signal, QObject
 from PySide2.QtWidgets import QMenu, QAction, QMessageBox, QInputDialog, QLineEdit, QFileDialog
 from src.view.NewFileDialog import NewFileDialog
+from src.view.CompilerOptionsEditor import CompilerOptionsEditor
 from src.model.AssemblyFileNode import AssemblyFileNode, AssemblyFileProxy
 from src.model.CFileNode import CFileNode, CFileProxy
 from src.model.FileNode import FileNode, FileProxy
@@ -17,6 +18,7 @@ class ProjectProxy(object):
         self.path = None
         self.files = []
         self.parent = None
+        self.gccOptions = ['-m32']
 
     def addFile(self, proxy):
         self.files.append(proxy)
@@ -33,8 +35,9 @@ class ProjectProxy(object):
                 cFiles.append(file.getFilePath())
             elif isinstance(file, AssemblyFileProxy):
                 sFiles.append(file.getFilePath())
-        print(self.files)
-        command = ['gcc', '-g', '-m32', '-o', destination]
+        command = ['gcc']
+        command.extend(self.gccOptions)
+        command.extend(['-o', destination])
         if cFiles:
             command.extend(cFiles)
         if sFiles:
@@ -64,7 +67,9 @@ class ProjectNode(Node):
         self.debugAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/debug.png")), "Debug project")
         self.newFileAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/new_file.png")), "New file")
         self.importFileAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/import_file.png")), "Import file")
+        self.compilerOptionsAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/compiler_options.png")), "Compiler options")
         self.menu.addAction(self.saveAction)
+        self.menu.addAction(self.compilerOptionsAction)
         self.menu.addAction(self.compileAction)
         self.menu.addAction(self.debugAction)
         self.menu.addAction(self.runAction)
@@ -94,10 +99,16 @@ class ProjectNode(Node):
         self.importFileAction.triggered.connect(self.importFile)
         self.deleteAction.triggered.connect(self.deleteProject)
         self.renameAction.triggered.connect(self.renameProject)
+        self.compilerOptionsAction.triggered.connect(self.editCompilerOptions)
         self.eraseAction.triggered.connect(lambda: self.eventManager.projectDeleteFromDiskRequested.emit(self))
         self.compileAction.triggered.connect(lambda: self.eventManager.projectCompileRequested.emit(self.proxy))
         self.debugAction.triggered.connect(lambda: self.eventManager.projectDebugRequested.emit(self.proxy))
         self.runAction.triggered.connect(lambda: self.eventManager.projectRunRequested.emit(self.proxy))
+
+    def editCompilerOptions(self):
+        editor = CompilerOptionsEditor(self.proxy)
+        if editor.exec_():
+            self.parent().saveWorkspace()
 
     def renameProject(self):
         name, entered = QInputDialog.getText(None, "Rename project", "Enter new workspace name: ", QLineEdit.Normal, self.path)
