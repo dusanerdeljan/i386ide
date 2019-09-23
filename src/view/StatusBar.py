@@ -10,11 +10,12 @@ class StatusBar(QStatusBar):
                         color: white;
                         font-size: 14px;
                         """)
-        self.label = QLabel("Choose a syntax:")
+        self.label = QLabel("Current syntax:")
         self.label2 = QLabel("Set tab width:")
         self.comboBox = QComboBox()
         self.comboBox.addItem("Assembly")
         self.comboBox.addItem("C")
+        self.comboBox.setEnabled(False)
         self.tabWidthComboBox = QComboBox()
         self.tabWidthComboBox.addItem("2")
         self.tabWidthComboBox.addItem("4")

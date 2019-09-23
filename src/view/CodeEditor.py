@@ -93,7 +93,10 @@ kraj:
         # self.setTabStopWidth(self.fontMetrics().width(" ") * self.tabSize)
         self.setStyleSheet(
             "font-size: 14px; background-color: #1E1E1E; color: white; font-family: comic-sans; border: none;")
-        self.sintaksa = AsemblerSintaksa(self.document())
+        if isinstance(self.file, AssemblyFileProxy):
+            self.sintaksa = AsemblerSintaksa(self.document())
+        else:
+            self.sintaksa = CSyntax(self.document())
         self.lineNumberArea = QLineNumberArea(self)
         self.blockCountChanged.connect(self.updateLineNumberAreaWidth)
         self.updateRequest.connect(self.updateLineNumberArea)
