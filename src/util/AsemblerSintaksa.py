@@ -44,4 +44,4 @@ class AsemblerSintaksa(QSyntaxHighlighter):
                 length = exp.matchedLength()
                 self.setFormat(index, length, format)
                 index = exp.indexIn(text, index+length)
-        self.setCurrentBlockState(0)
+        # self.setCurrentBlockState(0)

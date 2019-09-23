@@ -132,7 +132,7 @@ kraj:
                 self.instructionsTrie.insert(".{}".format(declaration))
         elif isinstance(self.file, CFileProxy):
             type = "c"
-            for keyword in CSyntax.keywords:
+            for keyword in CSyntax.keywords_c:
                 self.instructionsTrie.insert(keyword)
             for function in CSyntax.functions:
                 self.instructionsTrie.insert(function)

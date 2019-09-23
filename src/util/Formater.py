@@ -9,10 +9,12 @@ class Formater(object):
             'operator': self._formatiraj(122, 250, 226),
             'literals': self._formatiraj(149, 93, 193),
             'comment': self._formatiraj(58,100,52),
+            'comment_c': self._formatiraj(58, 100, 52),
             'register': self._formatiraj(55,127,115),
             'declarations': self._formatiraj(255, 195, 0),
             'label': self._formatiraj(239, 241, 90),
-            'string': self._formatiraj(140,108,58)
+            'string': self._formatiraj(140,108,58),
+            'string_c': self._formatiraj(140, 108, 58)
         }
 
     def _formatiraj(self, r, g, b, stil=''):
