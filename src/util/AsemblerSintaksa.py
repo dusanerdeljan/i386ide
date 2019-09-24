@@ -7,14 +7,14 @@ class AsemblerSintaksa(QSyntaxHighlighter):
     keywords = ['add', 'addl', 'addw', 'addb', 'sub', 'subl', 'subw', 'subb', 'and', 'andl', 'andw', 'andb', 'or', 'orl', 'orw', 'orb',
                 'xor', 'xorl', 'xorw', 'xorb', 'shl', 'shll', 'shlw', 'shlb', 'shr', 'shrl', 'shrw', 'shrb', 'sar', 'sarl', 'sarw', 'sarb',
                 'jne', 'je', 'jl', 'jg', 'ja', 'jb', 'test', 'testl', 'testw', 'testb', 'lea', 'leal', 'leaw', 'leab', 'int',
-                'call', 'cld', 'cmp', 'cmpl', 'cmpw', 'cmpb', 'dec', 'decl', 'decw', 'decb', 'inc', 'incl', 'incw', 'incb',
+                'call', 'clc', 'cld', 'cmp', 'cmpl', 'cmpw', 'cmpb', 'dec', 'decl', 'decw', 'decb', 'inc', 'incl', 'incw', 'incb',
                 'div', 'divl', 'divw', 'divb', 'mul', 'mull', 'mulw', 'mulb', 'idiv', 'idivl', 'idivw', 'idivb',
                 'imul', 'imull', 'imulw', 'imulb', 'jae', 'jbe', 'jnae', 'jnbe', 'jge', 'jle', 'jng', 'jnl',
-                'jna', 'jnb', 'jnge', 'jnle', 'jc', 'jnc', 'jz', 'jnz', 'jo', 'jno', 'js', 'jns', 'jcxz', 'jeckz',
+                'jna', 'jnb', 'jnge', 'jnle', 'jc', 'jnc', 'jz', 'jnz', 'jo', 'jno', 'js', 'jns', 'jcxz', 'jecxz',
                 'lods', 'lodsl', 'lodsw', 'lodsb', 'loop', 'loopw', 'loopl', 'mov', 'movl', 'movb', 'movw',
                 'neg', 'negl', 'negw', 'negb', 'nop', 'not', 'notl', 'notw', 'notb', 'pop', 'popl', 'push', 'pushl',
                 'rcl', 'rcll', 'rclw', 'rclb', 'rcr', 'rcrl', 'rcrw', 'rcrb', 'ret', 'rol', 'roll', 'rolw', 'rolb',
-                'std', 'stos', 'xchg', 'xchgl', 'xchgw', 'xchgb', 'jmp', 'adc', 'adcl', 'adcw', 'adcb', 'sbbl', 'sbb', 'sbbw', 'sbbb']
+                'std','stc', 'stos', 'xchg', 'xchgl', 'xchgw', 'xchgb', 'jmp', 'adc', 'adcl', 'adcw', 'adcb', 'sbbl', 'sbb', 'sbbw', 'sbbb']
     registers = ['%eax', '%ebx', '%ecx', '%edx', '%ax', '%al', '%ah', '%bx', '%bl', '%bh', '%cx', '%cl', '%ch', '%dx', '%dl', '%dh', '%esi', '%edi', '%esp', '%ebp']
     declarations = ['section', 'data', 'text', 'marco', 'ascii', 'globl', 'long', 'byte', 'quad', 'fill']
 

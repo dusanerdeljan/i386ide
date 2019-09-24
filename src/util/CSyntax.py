@@ -23,7 +23,6 @@ class CSyntax(QSyntaxHighlighter):
         # self.rules += [(r'\b%s\b' % w, 0, self.formater.stilovi['declarations']) for w in CSyntax.functions]
         self.rules += [(QRegExp(r'\b(?!(?:if|switch|while|void|for)[\s*|(])\b[A-Za-z0-9\_]+\s*(?=\([^\)]*\)\s*)'),
                         self.formater.stilovi['declarations'])]
-        self.rules += [(QRegExp(r'//[^\n]*'), self.formater.stilovi['comment_c'])]
         self.rules += [(QRegExp(r'#[^\n]*'), self.formater.stilovi['string_c'])]
         self.rules += [(QRegExp(r"\".*\""), self.formater.stilovi['string'])]
         self.rules += [(QRegExp(r"\'.?\'"), self.formater.stilovi['string'])]
@@ -35,6 +34,7 @@ class CSyntax(QSyntaxHighlighter):
         self.multiLineCommentFormat.setForeground(Qt.red)
         self.commentStartExpression = QRegExp("/\\*")
         self.commentEndExpression = QRegExp("\\*/")
+        self.rules += [(QRegExp(r'//[^\n]*'), self.formater.stilovi['comment_c'])]
 
         # self.rules = [(QRegExp(pat), index, fmt) for (pat, index, fmt) in self.rules]
 
