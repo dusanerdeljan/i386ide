@@ -41,6 +41,9 @@ class WorkspaceConfiguration(object):
     def getWorkspaces(self):
         return self.workspaces
 
+    def setWorkspaces(self, workspaces):
+        self.workspaces = workspaces
+
     def saveConfiguration(self):
         if not os.path.exists(WorkspaceConfiguration.SAVE_FOLDER):
             os.mkdir(WorkspaceConfiguration.SAVE_FOLDER)
@@ -56,6 +59,11 @@ class WorkspaceConfiguration(object):
         try:
             with open(WorkspaceConfiguration.SAVE_PATH, 'rb') as file:
                 workspace = pickle.load(file)
+                if isinstance(workspace.getWorkspaces(), set):
+                    lista = []
+                    for ws in workspace.getWorkspaces():
+                        lista.append(ws)
+                    workspace.setWorkspaces(lista)
             return workspace
         except:
             return WorkspaceConfiguration()
