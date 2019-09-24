@@ -18,7 +18,7 @@ class ProjectProxy(object):
         self.path = None
         self.files = []
         self.parent = None
-        self.gccOptions = ['-m32']
+        self.gccOptions = ['-g', '-m32']
 
     def addFile(self, proxy):
         self.files.append(proxy)

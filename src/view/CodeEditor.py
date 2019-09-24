@@ -1,6 +1,7 @@
 from PySide2.QtWidgets import QTextEdit, QWidget, QPlainTextEdit, QToolTip
 from PySide2.QtCore import QSize, Qt, QRect, QEvent, Signal
-from PySide2.QtGui import QColor, QPainter, QTextFormat, QFont, QTextCursor, QKeyEvent, QPalette, QCursor
+from PySide2.QtGui import QColor, QPainter, QTextFormat, QFont, QTextCursor, QKeyEvent, QPalette, QTextCharFormat
+from src.util.Formater import Formater
 from src.util.AsemblerSintaksa import AsemblerSintaksa
 from src.util.CSyntax import CSyntax
 from src.util.InstructionsInfo import InstructionsInfo
@@ -38,6 +39,10 @@ class CodeEditor(QPlainTextEdit):
         self.setPlainText(self.file.text)
         self.labelPositions = dict()
         self.labelVisitStack = Stack()
+        self.previousKeywordFormat = {
+            'cursor': None,
+            'format': None
+        }
 
         # snipeti
         self.codeSnipets = {
@@ -210,12 +215,42 @@ kraj:
         cursor = self.cursorForPosition(e.pos())
         cursor.select(QTextCursor.WordUnderCursor)
         keyword = cursor.selectedText()
+        if e.modifiers() == Qt.ControlModifier and keyword in self.labelPositions:
+            self.viewport().setCursor(Qt.PointingHandCursor)
+            self.mouseOverLabel(e)
+        else:
+            if self.previousKeywordFormat['cursor']:
+                self.resetActiveLabelFormat()
+            if self.viewport().cursor() == Qt.PointingHandCursor:
+                self.viewport().setCursor(Qt.IBeamCursor)
         if keyword and keyword in InstructionsInfo.INFO:
             QToolTip.showText(e.globalPos(), InstructionsInfo.INFO[keyword])
         elif keyword and NumbersInfo.checkIfNumber(keyword):
             QToolTip.showText(e.globalPos(), NumbersInfo.showConvertedNumbers(keyword))
         else:
             QToolTip.hideText()
+
+    def resetActiveLabelFormat(self):
+        self.previousKeywordFormat['cursor'].setCharFormat(self.previousKeywordFormat['format'])
+        self.previousKeywordFormat['cursor'] = self.previousKeywordFormat['format'] = None
+
+    def mouseOverLabel(self, e):
+        if self.previousKeywordFormat['cursor']:
+            return
+        cursor = self.cursorForPosition(e.pos())
+        cursor.select(QTextCursor.WordUnderCursor)
+        newFormat = QTextCharFormat()
+        newFormat.setUnderlineColor(QColor("#007ACC"))
+        newFormat.setFontItalic(True)
+        newFormat.setUnderlineStyle(QTextCharFormat.SingleUnderline)
+        cursor.setCharFormat(newFormat)
+        formater = Formater()
+        self.previousKeywordFormat['cursor'] = cursor
+        if isinstance(self.file, AssemblyFileProxy):
+            self.previousKeywordFormat['format'] = formater._formatiraj(255, 255, 255)
+        else:
+            self.previousKeywordFormat['format'] = formater.stilovi['declarations']
+
 
     def keyPressEvent(self, e):
         startLength = len(self.toPlainText())
