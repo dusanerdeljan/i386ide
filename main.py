@@ -332,7 +332,7 @@ class AsemblerIDE(QMainWindow):
             self.terminal.console.setFocus()
             if self.terminal.executeCommand(proxy.getProjectCompileCommand()):
                 copmileString = proxy.getProjectCompileCommand()
-                if not ' -g ' in copmileString:
+                if ' -g ' not in copmileString:
                     msg = QMessageBox()
                     msg.setStyleSheet("background-color: #2D2D30; color: white;")
                     msg.setModal(True)
