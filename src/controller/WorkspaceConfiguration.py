@@ -10,10 +10,12 @@ class WorkspaceConfiguration(object):
 
     def __init__(self):
         self.defaultWorkspace = None
-        self.workspaces = set()
+        self.workspaces = []
 
     def addWorkspace(self, workspace):
-        self.workspaces.add(workspace)
+        if workspace in self.workspaces:
+            self.workspaces.remove(workspace)
+        self.workspaces.insert(0, workspace)
         self.saveConfiguration()
 
     def removeWorkspace(self, workspace):
@@ -24,7 +26,7 @@ class WorkspaceConfiguration(object):
 
     def replaceWorkpsace(self, oldWorkspace, newWorkspace):
         self.workspaces.remove(oldWorkspace)
-        self.workspaces.add(newWorkspace)
+        self.workspaces.insert(0, newWorkspace)
         if self.defaultWorkspace == oldWorkspace:
             self.defaultWorkspace = newWorkspace
         self.saveConfiguration()

@@ -62,8 +62,7 @@ class WorkspaceConfigurationEditor(QDialog):
             msg.exec_()
             return
         self.workspaceConfiguration.addWorkspace(directory)
-        self.comboBox.addItem(directory)
-        self.comboBox.setCurrentText(directory)
+        self.updateComboBox()
         if not self.btnOpen.isEnabled():
             self.btnOpen.setEnabled(True)
 
