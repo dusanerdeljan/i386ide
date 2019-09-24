@@ -2,6 +2,8 @@ from PySide2.QtWidgets import QTabWidget, QWidget, QMessageBox
 from PySide2.QtCore import Signal
 from src.view.CodeEditor import CodeEditor
 from src.model.FileNode import FileProxy
+from src.controller.PathManager import PathManager
+import os
 
 class EditorTab(QWidget):
 
@@ -22,9 +24,11 @@ class EditorTabWidget(QTabWidget):
         self.tabBar().setStyleSheet("QTabBar:tab {background-color: #2D2D30; color: white; height: 25px;}"
                                     " QTabBar:tab:selected {background-color: #007ACC;}")
         self.tabBar().setMaximumHeight(30)
-        self.setStyleSheet("background-color: #2D2D30; color: white;")
         self.projectTabs = dict()
         self.tabs = []
+        self.closedTabsStyleSheet = "background-image: url(\"{}\"); background-repeat: no-repeat; background-position: center; color: white;".format(os.path.join(PathManager.START_DIRECTORY, "resources/tab_background.png"))
+        self.openTabsStyleSheet = "background-color: #2D2D30; color: white;"
+        self.setStyleSheet(self.closedTabsStyleSheet)
         self.setTabsClosable(True)
         self.setMovable(False)
         self.tabCloseRequested.connect(self.closeTab)
@@ -34,6 +38,8 @@ class EditorTabWidget(QTabWidget):
         if key in self.projectTabs:
             self.setCurrentIndex(self.tabs.index(fileProxy))
             return
+        self.setStyleSheet(self.openTabsStyleSheet)
+        self.update()
         tab = EditorTab(fileProxy)
         tab.fileChanged.connect(self.fileChanged)
         self.projectTabs[key] = tab
@@ -95,4 +101,7 @@ class EditorTabWidget(QTabWidget):
         self.tabs.pop(index)
         del self.projectTabs[key]
         self.removeTab(index)
+        if len(self.tabs) == 0:
+            self.setStyleSheet(self.closedTabsStyleSheet)
+            self.update()
         return True
