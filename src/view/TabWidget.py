@@ -4,6 +4,7 @@ from src.view.CodeEditor import CodeEditor
 from src.model.FileNode import FileProxy
 from src.controller.PathManager import PathManager
 import os
+import main
 
 class EditorTab(QWidget):
 
@@ -26,7 +27,7 @@ class EditorTabWidget(QTabWidget):
         self.tabBar().setMaximumHeight(30)
         self.projectTabs = dict()
         self.tabs = []
-        self.closedTabsStyleSheet = "background-image: url(\"{}\"); background-repeat: no-repeat; background-position: center; color: white;".format(os.path.join(PathManager.START_DIRECTORY, "resources/tab_background.png"))
+        self.closedTabsStyleSheet = "background-image: url(\"{}\"); background-repeat: no-repeat; background-position: center; color: white;".format(main.resource_path("resources/tab_background.png"))
         self.openTabsStyleSheet = "background-color: #2D2D30; color: white;"
         self.setStyleSheet(self.closedTabsStyleSheet)
         self.setTabsClosable(True)

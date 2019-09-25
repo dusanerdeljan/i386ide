@@ -8,7 +8,7 @@ import os
 import pickle
 import re
 import shutil
-
+import main
 
 class WorkspaceProxy(object):
 
@@ -49,12 +49,12 @@ class WorkspaceNode(Node):
         self.menu = QMenu()
         self.menu.setStyleSheet("background-color: #3E3E42; color: white;")
         self.proxy = WorkspaceProxy()
-        self.newProjectAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/new_folder.png")), "New project")
-        self.importProjectAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/open_folder.png")), "Import project")
-        self.saveAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/save_folder.png")), "Save workspace")
-        self.renameAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/rename_folder.png")), "Rename workspace")
-        self.switchAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/switch_folder.png")), "Switch workspace")
-        self.updateAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/update_folder.png")), "Update workspace")
+        self.newProjectAction = QAction(QIcon(main.resource_path("resources/new_folder.png")), "New project")
+        self.importProjectAction = QAction(QIcon(main.resource_path("resources/open_folder.png")), "Import project")
+        self.saveAction = QAction(QIcon(main.resource_path("resources/save_folder.png")), "Save workspace")
+        self.renameAction = QAction(QIcon(main.resource_path("resources/rename_folder.png")), "Rename workspace")
+        self.switchAction = QAction(QIcon(main.resource_path("resources/switch_folder.png")), "Switch workspace")
+        self.updateAction = QAction(QIcon(main.resource_path("resources/update_folder.png")), "Update workspace")
         self.menu.addAction(self.newProjectAction)
         self.menu.addAction(self.importProjectAction)
         self.menu.addAction(self.saveAction)
@@ -142,7 +142,7 @@ class WorkspaceNode(Node):
             project.path = projectName
             project.proxy.path = projectName
             project.proxy.parent = self.proxy
-            project.setIcon(0, QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/project.png")))
+            project.setIcon(0, QIcon(main.resource_path("resources/project.png")))
             project.setText(0, projectName)
             self.addChild(project)
             newPath = os.path.join(self.path, projectName)
@@ -181,7 +181,7 @@ class WorkspaceNode(Node):
             project.path = name
             project.proxy.path = name
             project.proxy.parent = self.proxy
-            project.setIcon(0, QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/project.png")))
+            project.setIcon(0, QIcon(main.resource_path("resources/project.png")))
             project.setText(0, name)
             self.addChild(project)
             newPath = os.path.join(self.path, name)
@@ -240,7 +240,7 @@ class WorkspaceNode(Node):
             if os.path.exists(projectProxy.getProjectPath()):
                 projectProxy.parent = self.proxy
                 project = ProjectNode()
-                project.setIcon(0, QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/project.png")))
+                project.setIcon(0, QIcon(main.resource_path("resources/project.png")))
                 project.setText(0, projectProxy.path)
                 project.path = projectProxy.path
                 project.proxy = projectProxy

@@ -19,23 +19,23 @@ class MenuBar(QMenuBar):
         self.createViewMenuItemActions()
 
     def createFileMenuItemActions(self):
-        self.newWorkspaceAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/new_folder.png")), "New workspace", self)
+        self.newWorkspaceAction = QAction(QIcon(resource_path("resources/new_folder.png")), "New workspace", self)
         self.newWorkspaceAction.setShortcut(QKeySequence("Ctrl+N"))
         self.file.addAction(self.newWorkspaceAction)
 
-        self.openWorkspaceAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/open_folder.png")), "Open workspace", self)
+        self.openWorkspaceAction = QAction(QIcon(resource_path("resources/open_folder.png")), "Open workspace", self)
         self.openWorkspaceAction.setShortcut(QKeySequence("Ctrl+O"))
         self.file.addAction(self.openWorkspaceAction)
 
-        self.switchWorkspaceAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/switch_folder.png")), "Switch workspace", self)
+        self.switchWorkspaceAction = QAction(QIcon(resource_path("resources/switch_folder.png")), "Switch workspace", self)
         self.switchWorkspaceAction.setShortcut((QKeySequence("Ctrl+W")))
         self.file.addAction(self.switchWorkspaceAction)
 
-        self.saveWorkspaceAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/save_folder.png")), "Save workspace", self)
+        self.saveWorkspaceAction = QAction(QIcon(resource_path("resources/save_folder.png")), "Save workspace", self)
         self.saveWorkspaceAction.setShortcut(QKeySequence("Ctrl+Shift+S"))
         self.file.addAction(self.saveWorkspaceAction)
 
-        self.saveAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/save_file.png")), "Save file", self)
+        self.saveAction = QAction(QIcon(resource_path("resources/save_file.png")), "Save file", self)
         self.saveAction.setShortcut(QKeySequence("Ctrl+S"))
         self.file.addAction(self.saveAction)
         #
@@ -48,7 +48,7 @@ class MenuBar(QMenuBar):
         # self.file.addAction(self.newAction)
 
     def createEditMenuItemActions(self):
-        self.editDefaultWorkspace = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/workspace.png")), "Edit default workspace", self)
+        self.editDefaultWorkspace = QAction(QIcon(resource_path("resources/workspace.png")), "Edit default workspace", self)
         self.edit.addAction(self.editDefaultWorkspace)
 
     def createViewMenuItemActions(self):
@@ -69,3 +69,6 @@ class MenuBar(QMenuBar):
 
         self.hideHelp = QAction("Hide help", self)
         self.view.addAction(self.hideHelp)
+
+
+from main import resource_path #mora ovde na kraju zbog nacina na koji python interpretira fajlove koji importuju jedan iz drugog

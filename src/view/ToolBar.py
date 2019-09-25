@@ -4,6 +4,7 @@ from PySide2.QtCore import Qt, QSize
 from src.controller.ConfigurationManager import ConfigurationManager
 from src.controller.PathManager import PathManager
 import os
+import main
 
 class ProjectComboBox(QComboBox):
 
@@ -21,14 +22,14 @@ class ToolBar(QToolBar):
         self.configurationManager = configurationManager
         self.setStyleSheet("background-color: #2D2D30; color: white; font-weight: 500")
         self.setMovable(False)
-        self.compile = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/compile.png")), "Compile", self)
+        self.compile = QAction(QIcon(main.resource_path("resources/compile.png")), "Compile", self)
         self.compile.setShortcut(QKeySequence("Ctrl+Shift+B"))
-        self.debug = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/debug.png")), "Debug", self)
+        self.debug = QAction(QIcon(main.resource_path("resources/debug.png")), "Debug", self)
         self.debug.setShortcut(QKeySequence("Ctrl+F5"))
-        self.run = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/run.png")), "Run", self)
+        self.run = QAction(QIcon(main.resource_path("resources/run.png")), "Run", self)
         self.label = QLabel("Select current project")
         self.label.setStyleSheet("padding-left: 5px;")
-        icon = QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/current_folder.png"))
+        icon = QIcon(main.resource_path("resources/current_folder.png"))
         self.currentIcon = QLabel()
         self.currentIcon.setPixmap(icon.pixmap(QSize(20, 20)))
         self.projectComboBox = ProjectComboBox(self.configurationManager)

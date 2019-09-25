@@ -10,7 +10,7 @@ from src.model.FileNode import FileNode, FileProxy
 import os
 import re
 import shutil
-
+import main
 
 class ProjectProxy(object):
 
@@ -58,16 +58,16 @@ class ProjectNode(Node):
         self.menu = QMenu()
         self.menu.setStyleSheet("background-color: #3E3E42; color: white;")
         self.proxy = ProjectProxy()
-        self.saveAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/save_folder.png")), "Save project")
-        self.deleteAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/remove_folder.png")), "Remove project")
-        self.eraseAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/delete_folder.png")), "Delete project from disk")
-        self.renameAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/rename_folder.png")), "Rename project")
-        self.compileAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/compile.png")), "Compile project")
-        self.runAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/run.png")), "Run project")
-        self.debugAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/debug.png")), "Debug project")
-        self.newFileAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/new_file.png")), "New file")
-        self.importFileAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/import_file.png")), "Import file")
-        self.compilerOptionsAction = QAction(QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/compiler_options.png")), "Compiler options")
+        self.saveAction = QAction(QIcon(main.resource_path("resources/save_folder.png")), "Save project")
+        self.deleteAction = QAction(QIcon(main.resource_path("resources/remove_folder.png")), "Remove project")
+        self.eraseAction = QAction(QIcon(main.resource_path("resources/delete_folder.png")), "Delete project from disk")
+        self.renameAction = QAction(QIcon(main.resource_path("resources/rename_folder.png")), "Rename project")
+        self.compileAction = QAction(QIcon(main.resource_path("resources/compile.png")), "Compile project")
+        self.runAction = QAction(QIcon(main.resource_path("resources/run.png")), "Run project")
+        self.debugAction = QAction(QIcon(main.resource_path("resources/debug.png")), "Debug project")
+        self.newFileAction = QAction(QIcon(main.resource_path("resources/new_file.png")), "New file")
+        self.importFileAction = QAction(QIcon(main.resource_path("resources/import_file.png")), "Import file")
+        self.compilerOptionsAction = QAction(QIcon(main.resource_path("resources/compiler_options.png")), "Compiler options")
         self.menu.addAction(self.saveAction)
         self.menu.addAction(self.compilerOptionsAction)
         self.menu.addAction(self.compileAction)
@@ -181,10 +181,10 @@ class ProjectNode(Node):
             node = None
             if fileName[-1] == "S":
                 node = AssemblyFileNode()
-                node.setIcon(0, QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/s.png")))
+                node.setIcon(0, QIcon(main.resource_path("resources/s.png")))
             else:
                 node = CFileNode()
-                node.setIcon(0, QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/c.png")))
+                node.setIcon(0, QIcon(main.resource_path("resources/c.png")))
             node.setText(0, fileName)
             node.path = fileName
             if isinstance(node, AssemblyFileNode):
@@ -229,10 +229,10 @@ class ProjectNode(Node):
             node = None
             if dialog.result[-1] == "S":
                 node = AssemblyFileNode()
-                node.setIcon(0, QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/s.png")))
+                node.setIcon(0, QIcon(main.resource_path("resources/s.png")))
             else:
                 node = CFileNode()
-                node.setIcon(0, QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/c.png")))
+                node.setIcon(0, QIcon(main.resource_path("resources/c.png")))
             node.setText(0, dialog.result)
             node.path = dialog.result
             if isinstance(node, AssemblyFileNode):
@@ -255,10 +255,10 @@ class ProjectNode(Node):
             file = None
             if isinstance(proxy, AssemblyFileProxy):
                 file = AssemblyFileNode()
-                file.setIcon(0, QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/s.png")))
+                file.setIcon(0, QIcon(main.resource_path("resources/s.png")))
             elif isinstance(proxy, CFileProxy):
                 file = CFileNode()
-                file.setIcon(0, QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/c.png")))
+                file.setIcon(0, QIcon(main.resource_path("resources/c.png")))
             if file:
                 proxy.parent = self.proxy
                 file.setText(0, proxy.path)
@@ -273,11 +273,11 @@ class ProjectNode(Node):
                 proxy = None
                 if filePath.lower().endswith(".s"):
                     node = AssemblyFileNode()
-                    node.setIcon(0, QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/s.png")))
+                    node.setIcon(0, QIcon(main.resource_path("resources/s.png")))
                     proxy = AssemblyFileProxy()
                 elif filePath.lower().endswith(".c"):
                     node = CFileNode()
-                    node.setIcon(0, QIcon(os.path.join(PathManager.START_DIRECTORY, "resources/c.png")))
+                    node.setIcon(0, QIcon(main.resource_path("resources/c.png")))
                     proxy = CFileProxy()
                 if node:
                     proxy.path = filePath
