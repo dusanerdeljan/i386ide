@@ -1,3 +1,17 @@
+"""
+    This file is part of i386ide.
+    i386ide is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
+
 from PySide2.QtWidgets import QTextEdit, QMessageBox
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QTextCursor
@@ -5,6 +19,7 @@ from src.controller.TerminalController import TerminalController
 from src.datastrctures.CommandHistoryStack import CommandHistoryStack
 import os
 import socket
+import getpass
 
 
 class TerminalConsole(QTextEdit):
@@ -14,9 +29,9 @@ class TerminalConsole(QTextEdit):
         self.command = ""
         self.controller = TerminalController()
         self.controller.externalCommand.connect(self.externalShellCommandRun)
-        self.username = "{}@{}".format(os.getlogin(), socket.gethostname())
+        self.username = "{}@{}".format(getpass.getuser(), socket.gethostname())
         try:
-            self.cwd = '~' + os.getcwd().split(os.getlogin())[1]
+            self.cwd = '~' + os.getcwd().split(getpass.getuser())[1]
         except:
             self.cwd = '~' + os.getcwd()
         self.history = CommandHistoryStack()
@@ -125,8 +140,8 @@ class TerminalConsole(QTextEdit):
 
     def getPrompt(self):
         cwd = os.getcwd()
-        if os.getlogin() in cwd:
-            self.cwd = '~' + cwd.split(os.getlogin())[1]
+        if getpass.getuser() in cwd:
+            self.cwd = '~' + cwd.split(getpass.getuser())[1]
         else:
             self.cwd = '~' + cwd
         return '<span style="color: #3A6434; font-size: 14px; font-weight: 700;">{}</span>:  ' \
