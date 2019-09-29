@@ -76,6 +76,7 @@ class AsemblerIDE(QMainWindow):
         self.setWindowTitle("i386 Assembly Integrated Development Environment")
         self.setCentralWidget(self.editorTabs)
         self.setStyleSheet("background-color: #3E3E42; color: white;")
+        self.setWindowIcon(QIcon(resource_path("resources/app_icon.ico")))
 
         self.addTabWidgetEventHandlers()
         self.addMenuBarEventHandlers()
@@ -440,8 +441,8 @@ def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
     try:
         # PyInstaller creates a temp folder and stores path in _MEIPASS
-        # base_path = sys._MEIPASS
-        base_path = PathManager.START_DIRECTORY
+        base_path = sys._MEIPASS
+        # base_path = PathManager.START_DIRECTORY
     except Exception:
         # base_path = os.path.abspath(".")
         base_path = PathManager.START_DIRECTORY

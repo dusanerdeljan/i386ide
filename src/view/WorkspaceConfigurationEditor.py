@@ -18,15 +18,18 @@
 
 from PySide2.QtWidgets import QDialog, QPushButton, QVBoxLayout, QHBoxLayout, QComboBox, QCheckBox, QFileDialog, QMessageBox
 from PySide2.QtCore import Qt
+from PySide2.QtGui import QIcon
 from src.controller.WorkspaceConfiguration import WorkspaceConfiguration
 import re
 import os
+import main
 
 
 class WorkspaceConfigurationEditor(QDialog):
 
     def __init__(self, workpsaceConfiguration, mainApplicatoin, switch=False):
         super(WorkspaceConfigurationEditor, self).__init__()
+        self.setWindowIcon(QIcon(main.resource_path("resources/app_icon")))
         self.workspaceConfiguration: WorkspaceConfiguration = workpsaceConfiguration
         self.mainApplication = mainApplicatoin
         self.switch = switch
