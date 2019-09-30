@@ -21,6 +21,7 @@ from PySide2.QtCore import Signal
 from src.view.CodeEditor import CodeEditor
 from src.model.FileNode import FileProxy
 from src.controller.PathManager import PathManager
+from src.controller.SnippetManager import SnippetManager
 import os
 import main
 
@@ -28,9 +29,9 @@ class EditorTab(QWidget):
 
     fileChanged = Signal(FileProxy)
     
-    def __init__(self, fileProxy: FileProxy):
+    def __init__(self, fileProxy: FileProxy, snippetManager: SnippetManager):
         super(EditorTab, self).__init__()
-        self.editor = CodeEditor(fileProxy)
+        self.editor = CodeEditor(fileProxy, snippetManager)
         #self.editor.setPlainText(fileProxy.text)
         fileProxy.hasUnsavedChanges = False
         self.tabName = "{}/{}".format(fileProxy.parent.path, fileProxy.path)
@@ -38,13 +39,14 @@ class EditorTab(QWidget):
 
 class EditorTabWidget(QTabWidget):
     
-    def __init__(self):
+    def __init__(self, snippetManager: SnippetManager):
         super(EditorTabWidget, self).__init__()
         self.tabBar().setStyleSheet("QTabBar:tab {background-color: #2D2D30; color: white; height: 25px;}"
                                     " QTabBar:tab:selected {background-color: #007ACC;}")
         self.tabBar().setMaximumHeight(30)
         self.projectTabs = dict()
         self.tabs = []
+        self.snippetManager = snippetManager
         self.closedTabsStyleSheet = "background-image: url(\"{}\"); background-repeat: no-repeat; background-position: center; color: white;".format(main.resource_path("resources/tab_background.png"))
         self.openTabsStyleSheet = "background-color: #2D2D30; color: white;"
         self.setStyleSheet(self.closedTabsStyleSheet)
@@ -59,7 +61,7 @@ class EditorTabWidget(QTabWidget):
             return
         self.setStyleSheet(self.openTabsStyleSheet)
         self.update()
-        tab = EditorTab(fileProxy)
+        tab = EditorTab(fileProxy, self.snippetManager)
         tab.fileChanged.connect(self.fileChanged)
         self.projectTabs[key] = tab
         self.addTab(tab.editor, tab.tabName)

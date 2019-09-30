@@ -30,6 +30,7 @@ from src.model.FileNode import FileProxy
 from src.model.AssemblyFileNode import AssemblyFileProxy
 from src.model.CFileNode import CFileProxy
 from src.util.NumbersInfo import NumbersInfo
+from src.controller.SnippetManager import SnippetManager
 import re
 
 
@@ -49,7 +50,7 @@ class CodeEditor(QPlainTextEdit):
 
     fileChanged = Signal(FileProxy)
 
-    def __init__(self, file: FileProxy):
+    def __init__(self, file: FileProxy, snippetManager: SnippetManager):
         super(CodeEditor, self).__init__()
 
         # podaci vezani za asmeblerski fajl
@@ -63,47 +64,7 @@ class CodeEditor(QPlainTextEdit):
         }
 
         # snipeti
-        self.codeSnipets = {
-            '.st': ".section .text\n",
-            '.sd': ".section .data\n",
-            '.gm': ".globl main\n",
-            '.gs': ".globl _start\n",
-            '.endl': """kraj:
-    movl $1, %eax
-    movl $0, %ebx
-    int $0x80\n""",
-            ".sys": """    movl A, %eax
-    movl B, %ebx
-    movl C, %ecx
-    movl D, %edx
-    int $0x80\n""",
-            '.full': """# autor Imenko Prezimenic SW123456
-# Potprogram radi...
-.section .data
-# sekcija za promenljive
-.section .text
-.globl main
-main:
-    # polazna tacka programa
-kraj:
-    movl $1, %eax
-    movl $0, %ebx
-    int $0x80\n""",
-            '.stackfull': """# autor Imenko Prezimenic SW123456
-# Potprogram radi...
-.section .data
-# sekcija za promenljive
-.section .text
-.globl ime_potprograma
-ime_potprograma:
-    pushl %ebp
-    movl %esp, %ebp 
-    # polazna tacka programa
-kraj:
-    movl %ebp, %esp
-    popl %ebp
-    ret\n""",
-        }
+        self.snippetManager = snippetManager
         self.setLineWrapMode(QPlainTextEdit.NoWrap)
         self.tabSize = 4
         self.autocompleteWidgetOpen = False
@@ -312,10 +273,11 @@ kraj:
                 return
             self.loadQueryWord()
             #if isinstance(self.sintaksa, AsemblerSintaksa):
-            if self.queryWord in self.codeSnipets:
+            if self.queryWord in self.snippetManager:
                 while not self.textCursor().atBlockStart():
                     self.textCursor().deletePreviousChar()
-                self.insertPlainText(self.codeSnipets[self.queryWord])
+                self.insertPlainText(self.snippetManager[self.queryWord])
+                self.file.text = self.toPlainText()
                 # self.moveCursor(QTextCursor.End)
                 self.queryWord = ""
                 return

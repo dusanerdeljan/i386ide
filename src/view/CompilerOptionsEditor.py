@@ -48,7 +48,7 @@ class CompilerOptionsEditor(QDialog):
         self.vbox.addWidget(self.previewTextEdit, 3)
         self.hbox = QHBoxLayout()
         self.saveButton = QPushButton("Save")
-        self.resetButton = QPushButton("Reset to defualt")
+        self.resetButton = QPushButton("Reset to default")
         self.cancelButton = QPushButton("Cancel")
         self.saveButton.setDefault(True)
         self.hbox.addWidget(self.cancelButton)

@@ -34,6 +34,7 @@ from src.view.TabWidget import EditorTabWidget, EditorTab
 from src.view.WorkspaceConfigurationEditor import WorkspaceConfigurationEditor
 from src.view.DefaultWorkspaceEditor import DefaultWorkspaceEditor
 from src.view.AsciiTableWidget import AsciiTableWidget
+from src.view.SnippetEditor import SnippetEditor
 from src.util.AsemblerSintaksa import AsemblerSintaksa
 from src.util.CSyntax import CSyntax
 from src.model.ProjectNode import ProjectNode, ProjectProxy
@@ -44,6 +45,7 @@ from src.model.FileNode import FileProxy
 from src.controller.ConfigurationManager import ConfigurationManager
 from src.controller.WorkspaceConfiguration import WorkspaceConfiguration
 from src.controller.PathManager import PathManager
+from src.controller.SnippetManager import SnippetManager
 
 
 class AsemblerIDE(QMainWindow):
@@ -53,8 +55,9 @@ class AsemblerIDE(QMainWindow):
         self.workspace = None
         PathManager.START_DIRECTORY = os.getcwd()
         self.workspaceConfiguration = WorkspaceConfiguration.loadConfiguration()
+        self.snippetManager = SnippetManager.loadSnippetConfiguration()
         self.configurationManager = ConfigurationManager()
-        self.editorTabs = EditorTabWidget()
+        self.editorTabs = EditorTabWidget(self.snippetManager)
         self.menuBar = MenuBar()
         self.terminal = Terminal()
         self.toolBar = ToolBar(self.configurationManager)
@@ -222,6 +225,7 @@ class AsemblerIDE(QMainWindow):
                     event.ignore()
                     return
         self.workspaceConfiguration.saveConfiguration()
+        self.snippetManager.saveConfiguration()
         super(AsemblerIDE, self).closeEvent(event)
 
     def addMenuBarEventHandlers(self):
@@ -232,6 +236,7 @@ class AsemblerIDE(QMainWindow):
 
         self.menuBar.saveAction.triggered.connect(self.saveFileAction)
         self.menuBar.editDefaultWorkspace.triggered.connect(self.editDefaultWorkspaceConfiguration)
+        self.menuBar.editCodeSnippets.triggered.connect(self.editCodeSnippets)
 
         self.menuBar.showTerminal.triggered.connect(lambda: self.terminal.show())
         self.menuBar.hideTerminal.triggered.connect(lambda: self.terminal.hide())
@@ -239,6 +244,8 @@ class AsemblerIDE(QMainWindow):
         self.menuBar.hideTree.triggered.connect(lambda: self.treeDock.hide())
         self.menuBar.showHelp.triggered.connect(lambda: self.help.show())
         self.menuBar.hideHelp.triggered.connect(lambda: self.help.hide())
+        self.menuBar.showAscii.triggered.connect(lambda: self.ascii.show())
+        self.menuBar.hideAscii.triggered.connect(lambda: self.ascii.hide())
 
     def switchWorkspaceAction(self):
         dialog = WorkspaceConfigurationEditor(self.workspaceConfiguration, self, switch=True)
@@ -251,6 +258,11 @@ class AsemblerIDE(QMainWindow):
         editor = DefaultWorkspaceEditor(self.workspaceConfiguration)
         if editor.exec_():
             self.workspaceConfiguration.saveConfiguration()
+
+    def editCodeSnippets(self):
+        editor = SnippetEditor(self.snippetManager)
+        if editor.exec_():
+            self.snippetManager.saveConfiguration()
 
     def newWorkspaceAction(self):
         if not self.editorTabs.closeAllTabs():

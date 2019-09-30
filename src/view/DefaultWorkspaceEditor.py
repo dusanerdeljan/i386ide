@@ -18,7 +18,9 @@
 
 from PySide2.QtWidgets import QDialog, QPushButton, QVBoxLayout, QHBoxLayout, QComboBox, QLabel
 from PySide2.QtCore import Qt
+from PySide2.QtGui import QIcon
 from src.controller.WorkspaceConfiguration import WorkspaceConfiguration
+import main
 
 class DefaultWorkspaceEditor(QDialog):
     
@@ -31,6 +33,7 @@ class DefaultWorkspaceEditor(QDialog):
         self.setFixedSize(500, 150)
         self.label = QLabel("Default workspace")
         self.comboBox = QComboBox()
+        self.setWindowIcon(QIcon(main.resource_path("resources/app_icon")))
         self.comboBox.addItems(list(self.workspaceConfiguration.getWorkspaces()))
         defualt = self.workspaceConfiguration.getDefaultWorkspace()
         self.comboBox.addItem("No default workspace")

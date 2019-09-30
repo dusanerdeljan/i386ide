@@ -69,6 +69,9 @@ class MenuBar(QMenuBar):
         self.editDefaultWorkspace = QAction(QIcon(resource_path("resources/workspace.png")), "Edit default workspace", self)
         self.edit.addAction(self.editDefaultWorkspace)
 
+        self.editCodeSnippets = QAction(QIcon(resource_path("resources/edit_snippets.png")), "Edit code snippets", self)
+        self.edit.addAction(self.editCodeSnippets)
+
     def createViewMenuItemActions(self):
         self.showTerminal = QAction("Show terminal", self)
         self.view.addAction(self.showTerminal)
@@ -87,6 +90,12 @@ class MenuBar(QMenuBar):
 
         self.hideHelp = QAction("Hide help", self)
         self.view.addAction(self.hideHelp)
+
+        self.showAscii = QAction("Show ASCII table", self)
+        self.view.addAction(self.showAscii)
+
+        self.hideAscii = QAction("Hide ASCII table", self)
+        self.view.addAction(self.hideAscii)
 
 
 from main import resource_path #mora ovde na kraju zbog nacina na koji python interpretira fajlove koji importuju jedan iz drugog
