@@ -129,6 +129,7 @@ class TerminalConsole(QTextEdit):
                 self.insertPlainText("\n")
         self.insertHtml(self.getPrompt())
         self.command = ""
+        self.moveCursor(QTextCursor.End)
         return success
 
     def externalShellCommandRun(self, command):

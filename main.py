@@ -33,6 +33,7 @@ from src.view.HelpWidget import HelpWidget
 from src.view.TabWidget import EditorTabWidget, EditorTab
 from src.view.WorkspaceConfigurationEditor import WorkspaceConfigurationEditor
 from src.view.DefaultWorkspaceEditor import DefaultWorkspaceEditor
+from src.view.AsciiTableWidget import AsciiTableWidget
 from src.util.AsemblerSintaksa import AsemblerSintaksa
 from src.util.CSyntax import CSyntax
 from src.model.ProjectNode import ProjectNode, ProjectProxy
@@ -60,10 +61,13 @@ class AsemblerIDE(QMainWindow):
         self.statusBar = StatusBar()
         self.treeView = TreeView(self.configurationManager)
         self.help = HelpWidget()
+        self.ascii = AsciiTableWidget()
         self.setStatusBar(self.statusBar)
         self.addToolBar(self.toolBar)
         self.addDockWidget(Qt.BottomDockWidgetArea, self.terminal)
         self.addDockWidget(Qt.RightDockWidgetArea, self.help)
+        self.addDockWidget(Qt.RightDockWidgetArea, self.ascii)
+        self.splitDockWidget(self.help, self.ascii, Qt.Vertical)
         self.treeDock = QDockWidget()
         self.treeDock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
         self.treeDock.setStyleSheet("background-color: #2D2D30; color: white;")
