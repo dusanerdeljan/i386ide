@@ -18,7 +18,7 @@
 
 from PySide2.QtWidgets import QDialog, QVBoxLayout, QPushButton, QListWidget, QMessageBox, QTextEdit, QHBoxLayout, QListWidgetItem, QInputDialog, QLineEdit
 from PySide2.QtCore import Qt
-from PySide2.QtGui import QIcon
+from PySide2.QtGui import QIcon, QFontMetrics
 from src.controller.SnippetManager import SnippetManager
 from copy import deepcopy
 import main
@@ -32,6 +32,18 @@ class SnippetListWidgetItem(QListWidgetItem):
     def __str__(self):
         return self.text()
 
+class TextEditor(QTextEdit):
+    
+    def __init__(self):
+        super(TextEditor, self).__init__()
+        self.tabSize = 4
+        
+    def keyPressEvent(self, e):
+        if e.key() == Qt.Key_Tab:
+            self.insertPlainText(self.tabSize * " ")
+            return
+        super(TextEditor, self).keyPressEvent(e)
+
 
 class SnippetEditor(QDialog):
     
@@ -41,12 +53,18 @@ class SnippetEditor(QDialog):
         self.snippetDict = deepcopy(self.snippetManager.codeSnippets)
         self.setWindowFlag(Qt.WindowContextHelpButtonHint, False)
         self.setWindowTitle("Edit code snippets")
-        self.setStyleSheet("background-color: #2D2D30; color: white;")
+        self.setStyleSheet("background-color: #3E3E42; color: white;")
         self.setFixedSize(700, 400)
         self.setWindowIcon(QIcon(main.resource_path("resources/app_icon")))
         self.listView = QListWidget()
-        self.editor = QTextEdit()
-        self.editor.setTabStopWidth(16)
+        self.nameEdit = QLineEdit()
+        self.nameEdit.setStyleSheet(
+            "font-size: 14px; background-color: #1E1E1E; color: white; font-family: comic-sans; border: none;")
+        self.editor = TextEditor()
+        self.editor.setStyleSheet(
+            "font-size: 14px; background-color: #1E1E1E; color: white; font-family: comic-sans; border: none;")
+        self.editor.setTabStopWidth(4 * QFontMetrics(self.font()).width(' '))
+        self.listView.setStyleSheet("background-color: #2D2D30; color: white;")
         for snippet in self.snippetManager.getSnippetsAbbs():
             self.listView.addItem(SnippetListWidgetItem(snippet))
         self.hbox = QHBoxLayout()
@@ -55,16 +73,23 @@ class SnippetEditor(QDialog):
         self.vbox = QVBoxLayout()
         self.vbox2 = QVBoxLayout()
         self.addButton = QPushButton("Add")
+        self.addButton.setStyleSheet("background-color: #2D2D30; color: white;")
         self.removeButton = QPushButton("Remove")
+        self.removeButton.setStyleSheet("background-color: #2D2D30; color: white;")
         self.saveItemButton = QPushButton("Save snippet")
+        self.saveItemButton.setStyleSheet("background-color: #2D2D30; color: white;")
         self.cancelButton = QPushButton("Cancel")
+        self.cancelButton.setStyleSheet("background-color: #2D2D30; color: white;")
         self.saveButton = QPushButton("Save configuration")
+        self.saveButton.setStyleSheet("background-color: #2D2D30; color: white;")
         self.resetButton = QPushButton("Reset to default")
+        self.resetButton.setStyleSheet("background-color: #2D2D30; color: white;")
         self.vbox.addWidget(self.listView)
         self.hbox2.addWidget(self.addButton)
         self.hbox2.addWidget(self.removeButton)
         self.hbox2.addWidget(self.saveItemButton)
         self.vbox.addLayout(self.hbox2)
+        self.vbox2.addWidget(self.nameEdit)
         self.vbox2.addWidget(self.editor)
         self.hbox3.addWidget(self.cancelButton)
         self.hbox3.addWidget(self.resetButton)
@@ -85,7 +110,12 @@ class SnippetEditor(QDialog):
     def saveItemButtonClicked(self):
         snippet = self.listView.currentItem()
         if snippet:
-            self.snippetDict[str(snippet)] = self.editor.toPlainText()
+            name = self.nameEdit.text()
+            if not self.checkSnippetName(name):
+                return
+            del self.snippetDict[str(snippet)]
+            self.snippetDict[name] = self.editor.toPlainText()
+            self.updateList()
 
     def resetButtonClicked(self):
         self.snippetDict.clear()
@@ -105,17 +135,40 @@ class SnippetEditor(QDialog):
             del self.snippetDict[str(snippet)]
             self.updateList()
 
+    def checkSnippetName(self, name):
+        if name in self.snippetDict:
+            msg = QMessageBox()
+            msg.setStyleSheet("background-color: #2D2D30; color: white;")
+            msg.setModal(True)
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText("Snippet abbreviation already exists.")
+            msg.setWindowTitle("Wrong snippet abbreviation")
+            msg.exec_()
+            return False
+        if ' ' in name:
+            msg = QMessageBox()
+            msg.setStyleSheet("background-color: #2D2D30; color: white;")
+            msg.setModal(True)
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText("Snippet abbreviation cannot contain whitespace characters.")
+            msg.setWindowTitle("Wrong snippet abbreviation")
+            msg.exec_()
+            return False
+        if name.strip() == '':
+            msg = QMessageBox()
+            msg.setStyleSheet("background-color: #2D2D30; color: white;")
+            msg.setModal(True)
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText("Snippet abbreviation cannot be an empty string.")
+            msg.setWindowTitle("Wrong snippet abbreviation")
+            msg.exec_()
+            return False
+        return True
+
     def addButtonClicked(self):
         name, entered = QInputDialog.getText(None, "Add code snippet", "Enter snippet abbreviation ", QLineEdit.Normal, "")
-        if entered and name:
-            if name in self.snippetDict:
-                msg = QMessageBox()
-                msg.setStyleSheet("background-color: #2D2D30; color: white;")
-                msg.setModal(True)
-                msg.setIcon(QMessageBox.Critical)
-                msg.setText("Snippet abbreviation already exists.")
-                msg.setWindowTitle("Wrong snippet abbreviation")
-                msg.exec_()
+        if entered:
+            if not self.checkSnippetName(name):
                 return
             self.snippetDict[name] = ""
             item = SnippetListWidgetItem(name)
@@ -133,6 +186,7 @@ class SnippetEditor(QDialog):
 
     def updateEditor(self, snippet, previous):
         if snippet:
+            self.nameEdit.setText(str(snippet))
             self.editor.setText(self.snippetDict[str(snippet)])
 
     def cancelButtonClicked(self):
