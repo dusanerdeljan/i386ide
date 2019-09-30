@@ -17,7 +17,7 @@
 """
 
 from PySide2.QtWidgets import QTextEdit, QWidget, QPlainTextEdit, QToolTip
-from PySide2.QtCore import QSize, Qt, QRect, QEvent, Signal
+from PySide2.QtCore import QSize, Qt, QRect, QEvent, Signal, QPoint
 from PySide2.QtGui import QColor, QPainter, QTextFormat, QFont, QTextCursor, QKeyEvent, QPalette, QTextCharFormat
 from src.util.Formater import Formater
 from src.util.AsemblerSintaksa import AsemblerSintaksa
@@ -417,7 +417,21 @@ class CodeEditor(QPlainTextEdit):
             suggestions = None
         self.widget = AutocompleteWidget(suggestions)
         self.widget.setParent(self)
-        self.widget.setGeometry(position.x() + 5, position.y() + 16, 200, 200)
+        bottomRightCorner = QPoint(position.x() + 5 + AutocompleteWidget.WIDTH, position.y() + 16 + AutocompleteWidget.HEIGHT)
+        bottomLeftCorner = QPoint(position.x() + 5, position.y() + 16 + AutocompleteWidget.HEIGHT)
+        if not self.geometry().contains(bottomRightCorner):
+            topRightCorner = QPoint(position.x() + 5 + AutocompleteWidget.WIDTH, position.y())
+            if not self.geometry().contains(topRightCorner):
+                if not self.geometry().contains(bottomLeftCorner):
+                    self.widget.setGeometry(position.x() + 5 - AutocompleteWidget.WIDTH, position.y() - AutocompleteWidget.HEIGHT,
+                                            AutocompleteWidget.HEIGHT, AutocompleteWidget.WIDTH)
+                else:
+                    self.widget.setGeometry(position.x() + 5 - AutocompleteWidget.WIDTH, position.y() + 16, AutocompleteWidget.HEIGHT, AutocompleteWidget.WIDTH)
+            else:
+                self.widget.setGeometry(position.x() + 5, position.y() - AutocompleteWidget.HEIGHT,
+                                        AutocompleteWidget.HEIGHT, AutocompleteWidget.WIDTH)
+        else:
+            self.widget.setGeometry(position.x() + 5, position.y() + 16, 200, 200)
         self.widget.setSize()
         self.widget.exec_()
         self.autocompleteWidgetOpen = False

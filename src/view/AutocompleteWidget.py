@@ -32,6 +32,9 @@ class AutoCompleteListWidgetItem(QListWidgetItem):
 
 class AutocompleteWidget(QDialog):
 
+    WIDTH = 300
+    HEIGHT = 120
+
     def __init__(self, suggestions: list):
         super(AutocompleteWidget, self).__init__()
         self.widget = QListWidget()
@@ -57,7 +60,8 @@ class AutocompleteWidget(QDialog):
 
     def setSize(self):
         self.setFixedSize(self.minimumSizeHint())
-        self.setFixedWidth(300)
+        self.setFixedHeight(AutocompleteWidget.HEIGHT)
+        self.setFixedWidth(AutocompleteWidget.WIDTH)
 
 
     def keyPressEvent(self, e):
