@@ -72,6 +72,9 @@ class MenuBar(QMenuBar):
         self.editCodeSnippets = QAction(QIcon(resource_path("resources/edit_snippets.png")), "Edit code snippets", self)
         self.edit.addAction(self.editCodeSnippets)
 
+        self.editSettings = QAction(QIcon(resource_path("resources/settings.png")), "Edit IDE settings", self)
+        self.edit.addAction(self.editSettings)
+
     def createViewMenuItemActions(self):
         self.showTerminal = QAction("Show terminal", self)
         self.view.addAction(self.showTerminal)

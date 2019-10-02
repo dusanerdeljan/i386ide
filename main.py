@@ -35,6 +35,7 @@ from src.view.WorkspaceConfigurationEditor import WorkspaceConfigurationEditor
 from src.view.DefaultWorkspaceEditor import DefaultWorkspaceEditor
 from src.view.AsciiTableWidget import AsciiTableWidget
 from src.view.SnippetEditor import SnippetEditor
+from src.view.SettingsEditor import SettingsEditor
 from src.util.AsemblerSintaksa import AsemblerSintaksa
 from src.util.CSyntax import CSyntax
 from src.model.ProjectNode import ProjectNode, ProjectProxy
@@ -46,6 +47,7 @@ from src.controller.ConfigurationManager import ConfigurationManager
 from src.controller.WorkspaceConfiguration import WorkspaceConfiguration
 from src.controller.PathManager import PathManager
 from src.controller.SnippetManager import SnippetManager
+from src.controller.TooltipManager import TooltipManager
 
 
 class AsemblerIDE(QMainWindow):
@@ -56,8 +58,9 @@ class AsemblerIDE(QMainWindow):
         PathManager.START_DIRECTORY = os.getcwd()
         self.workspaceConfiguration = WorkspaceConfiguration.loadConfiguration()
         self.snippetManager = SnippetManager.loadSnippetConfiguration()
+        self.tooltipManager = TooltipManager.loadTooltipConfiguration()
         self.configurationManager = ConfigurationManager()
-        self.editorTabs = EditorTabWidget(self.snippetManager)
+        self.editorTabs = EditorTabWidget(self.snippetManager, self.tooltipManager)
         self.menuBar = MenuBar()
         self.terminal = Terminal()
         self.toolBar = ToolBar(self.configurationManager)
@@ -226,6 +229,7 @@ class AsemblerIDE(QMainWindow):
                     return
         self.workspaceConfiguration.saveConfiguration()
         self.snippetManager.saveConfiguration()
+        self.tooltipManager.saveConfiguration()
         super(AsemblerIDE, self).closeEvent(event)
 
     def addMenuBarEventHandlers(self):
@@ -237,6 +241,7 @@ class AsemblerIDE(QMainWindow):
         self.menuBar.saveAction.triggered.connect(self.saveFileAction)
         self.menuBar.editDefaultWorkspace.triggered.connect(self.editDefaultWorkspaceConfiguration)
         self.menuBar.editCodeSnippets.triggered.connect(self.editCodeSnippets)
+        self.menuBar.editSettings.triggered.connect(self.editSettings)
 
         self.menuBar.showTerminal.triggered.connect(lambda: self.terminal.show())
         self.menuBar.hideTerminal.triggered.connect(lambda: self.terminal.hide())
@@ -263,6 +268,11 @@ class AsemblerIDE(QMainWindow):
         editor = SnippetEditor(self.snippetManager)
         if editor.exec_():
             self.snippetManager.saveConfiguration()
+
+    def editSettings(self):
+        editor = SettingsEditor(self.tooltipManager)
+        if editor.exec_():
+            self.tooltipManager.saveConfiguration()
 
     def newWorkspaceAction(self):
         if not self.editorTabs.closeAllTabs():

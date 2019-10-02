@@ -30,7 +30,9 @@ class AsciiTableWidget(QDockWidget):
         self.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
         self.setFeatures(QDockWidget.DockWidgetMovable)
         self.setMinimumWidth(200)
-        self.setTitleBarWidget(QLabel("<center>ASCII table</center>"))
+        self.label = QLabel("<center>ASCII table</center>")
+        self.setTitleBarWidget(self.label)
+        self.titleBarWidget().setStyleSheet("background-color: #007ACC;color: white;font-size: 14px;")
         self.edit.setWordWrapMode(QTextOption.NoWrap)
         self.setStyleSheet("background-color: #2D2D30; color: white;")
         self.edit.insertHtml("""

@@ -22,6 +22,7 @@ from src.view.CodeEditor import CodeEditor
 from src.model.FileNode import FileProxy
 from src.controller.PathManager import PathManager
 from src.controller.SnippetManager import SnippetManager
+from src.controller.TooltipManager import TooltipManager
 import os
 import main
 
@@ -29,9 +30,9 @@ class EditorTab(QWidget):
 
     fileChanged = Signal(FileProxy)
     
-    def __init__(self, fileProxy: FileProxy, snippetManager: SnippetManager):
+    def __init__(self, fileProxy: FileProxy, snippetManager: SnippetManager, tooltipManager: TooltipManager):
         super(EditorTab, self).__init__()
-        self.editor = CodeEditor(fileProxy, snippetManager)
+        self.editor = CodeEditor(fileProxy, snippetManager, tooltipManager)
         #self.editor.setPlainText(fileProxy.text)
         fileProxy.hasUnsavedChanges = False
         self.tabName = "{}/{}".format(fileProxy.parent.path, fileProxy.path)
@@ -39,7 +40,7 @@ class EditorTab(QWidget):
 
 class EditorTabWidget(QTabWidget):
     
-    def __init__(self, snippetManager: SnippetManager):
+    def __init__(self, snippetManager: SnippetManager, tooltipManager: TooltipManager):
         super(EditorTabWidget, self).__init__()
         self.tabBar().setStyleSheet("QTabBar:tab {background-color: #2D2D30; color: white; height: 25px;}"
                                     " QTabBar:tab:selected {background-color: #007ACC;}")
@@ -47,6 +48,7 @@ class EditorTabWidget(QTabWidget):
         self.projectTabs = dict()
         self.tabs = []
         self.snippetManager = snippetManager
+        self.tooltipManager = tooltipManager
         self.closedTabsStyleSheet = "background-image: url(\"{}\"); background-repeat: no-repeat; background-position: center; color: white;".format(main.resource_path("resources/tab_background.png"))
         self.openTabsStyleSheet = "background-color: #2D2D30; color: white;"
         self.setStyleSheet(self.closedTabsStyleSheet)
@@ -61,7 +63,7 @@ class EditorTabWidget(QTabWidget):
             return
         self.setStyleSheet(self.openTabsStyleSheet)
         self.update()
-        tab = EditorTab(fileProxy, self.snippetManager)
+        tab = EditorTab(fileProxy, self.snippetManager, self.tooltipManager)
         tab.fileChanged.connect(self.fileChanged)
         self.projectTabs[key] = tab
         self.addTab(tab.editor, tab.tabName)

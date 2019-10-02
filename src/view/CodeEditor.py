@@ -31,6 +31,7 @@ from src.model.AssemblyFileNode import AssemblyFileProxy
 from src.model.CFileNode import CFileProxy
 from src.util.NumbersInfo import NumbersInfo
 from src.controller.SnippetManager import SnippetManager
+from src.controller.TooltipManager import TooltipManager
 import re
 
 
@@ -50,7 +51,7 @@ class CodeEditor(QPlainTextEdit):
 
     fileChanged = Signal(FileProxy)
 
-    def __init__(self, file: FileProxy, snippetManager: SnippetManager):
+    def __init__(self, file: FileProxy, snippetManager: SnippetManager, tooltipManager: TooltipManager):
         super(CodeEditor, self).__init__()
 
         # podaci vezani za asmeblerski fajl
@@ -65,6 +66,7 @@ class CodeEditor(QPlainTextEdit):
 
         # snipeti
         self.snippetManager = snippetManager
+        self.tooltipManager = tooltipManager
         self.setLineWrapMode(QPlainTextEdit.NoWrap)
         self.tabSize = 4
         self.autocompleteWidgetOpen = False
@@ -202,9 +204,9 @@ class CodeEditor(QPlainTextEdit):
                 self.resetActiveLabelFormat()
             if self.viewport().cursor() == Qt.PointingHandCursor:
                 self.viewport().setCursor(Qt.IBeamCursor)
-        if keyword and keyword in InstructionsInfo.INFO:
+        if keyword and keyword in InstructionsInfo.INFO and self.tooltipManager.showInstructionTooltips:
             QToolTip.showText(e.globalPos(), InstructionsInfo.INFO[keyword])
-        elif keyword and NumbersInfo.checkIfNumber(keyword):
+        elif keyword and NumbersInfo.checkIfNumber(keyword) and self.tooltipManager.showNumberConversion:
             QToolTip.showText(e.globalPos(), NumbersInfo.showConvertedNumbers(keyword))
         else:
             QToolTip.hideText()
