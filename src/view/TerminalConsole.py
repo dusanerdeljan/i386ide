@@ -30,6 +30,8 @@ class TerminalConsole(QTextEdit):
 
     def __init__(self):
         super(TerminalConsole, self).__init__()
+        self.queryWord = ""
+        self.promptText = ""
         self.command = ""
         self.controller = TerminalController()
         self.controller.externalCommand.connect(self.externalShellCommandRun)
@@ -55,6 +57,15 @@ class TerminalConsole(QTextEdit):
         if event.key() == Qt.Key_Down:
             self.getNextPreviousCommandFromHistory(prev=False)
             return
+        if event.key() == Qt.Key_Tab:
+            command = self.textCursor().block().text().replace(self.promptText, "")
+            new_command = self.controller.showCommandAutocomplete(command)
+            if len(new_command) == 1:
+                self.outputAutocompleteResult(new_command[0])
+            else:
+                self.outputAutocompleteSuggestions(new_command[0], new_command[1])
+            return
+
         if event.key() == Qt.Key_Return:
             self.command = self.textCursor().block().text().split("$")[1].strip()
             self.moveCursor(QTextCursor.End)
@@ -91,6 +102,26 @@ class TerminalConsole(QTextEdit):
         self.insertPlainText("\n")
         self.command = command
         return self.outputCommandResult()
+
+    def outputAutocompleteSuggestions(self, new_command, suggestions):
+        while not self.textCursor().positionInBlock() == self.getPromptCursorPosition():
+            self.textCursor().deletePreviousChar()
+        self.moveCursor(QTextCursor.End)
+        output = new_command + suggestions
+        self.insertHtml('<span>{}</span>'.format(output))
+        self.insertPlainText("\n")
+        self.insertHtml(self.getPrompt())
+        self.insertHtml('<span>{}</span>'.format(new_command))
+        self.moveCursor(QTextCursor.End)
+        self.command = new_command
+
+    def outputAutocompleteResult(self, new_command):
+        while not self.textCursor().positionInBlock() == self.getPromptCursorPosition():
+            self.textCursor().deletePreviousChar()
+        self.moveCursor(QTextCursor.End)
+        self.insertHtml('<span>{}</span>'.format(new_command))
+        self.command = new_command
+
 
     def getNextPreviousCommandFromHistory(self, prev=True):
         while not self.textCursor().positionInBlock() == self.getPromptCursorPosition():
@@ -130,6 +161,7 @@ class TerminalConsole(QTextEdit):
         self.insertHtml(self.getPrompt())
         self.command = ""
         self.moveCursor(QTextCursor.End)
+        self.promptText = self.textCursor().block().text()
         return success
 
     def externalShellCommandRun(self, command):
