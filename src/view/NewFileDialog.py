@@ -17,7 +17,8 @@
 """
 
 from PySide2.QtWidgets import QDialog, QComboBox, QHBoxLayout, QLineEdit, QPushButton, QVBoxLayout
-
+from PySide2.QtGui import QIcon
+import main
 
 class NewFileDialog(QDialog):
     
@@ -29,6 +30,7 @@ class NewFileDialog(QDialog):
         self.lineEdit = QLineEdit()
         self.lineEdit.setPlaceholderText("Enter file name...")
         self.setStyleSheet("background-color: #2D2D30; color: white;")
+        self.setWindowIcon(QIcon(main.resource_path("resources/app_icon.ico")))
         self.hbox = QHBoxLayout()
         self.vbox = QVBoxLayout()
         self.create = QPushButton("Create")

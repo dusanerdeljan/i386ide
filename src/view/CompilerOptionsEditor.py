@@ -18,9 +18,11 @@
 
 from PySide2.QtWidgets import QDialog, QLabel, QTextEdit, QPushButton, QVBoxLayout, QHBoxLayout, QLineEdit
 from PySide2.QtCore import Qt
-import os
+from PySide2.QtGui import QIcon
 from src.model.AssemblyFileNode import AssemblyFileProxy
 from src.model.CFileNode import CFileProxy
+import os
+import main
 
 class CompilerOptionsEditor(QDialog):
 
@@ -34,6 +36,7 @@ class CompilerOptionsEditor(QDialog):
         self.setWindowTitle("Edit compiler options")
         self.setWindowFlag(Qt.WindowContextHelpButtonHint, False)
         self.setWindowFlag(Qt.WindowStaysOnTopHint, True)
+        self.setWindowIcon(QIcon(main.resource_path("resources/app_icon.ico")))
         self.setFixedSize(500, 200)
         self.vbox = QVBoxLayout()
         self.optionsLineEdit = QLineEdit()

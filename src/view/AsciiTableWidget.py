@@ -30,12 +30,13 @@ class AsciiTableWidget(QDockWidget):
         self.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
         self.setFeatures(QDockWidget.DockWidgetMovable)
         self.setMinimumWidth(200)
+        self.setTitleBarWidget(QLabel("<center>ASCII table</center>"))
         self.edit.setWordWrapMode(QTextOption.NoWrap)
         self.setStyleSheet("background-color: #2D2D30; color: white;")
         self.edit.insertHtml("""
  <table border="1"; width ="100%">
             <thead>
-            <tr >
+            <tr>
                 <th >DEC</th>
                 <th >OCT</th>
                 <th >HEX</th>

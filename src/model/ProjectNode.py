@@ -269,21 +269,35 @@ class ProjectNode(Node):
         self.eventManager.projectRemoveRequested.emit(self)
 
     def loadProject(self, sourcePath=None):
+        toBeDeleted = []
         for proxy in self.proxy.files:
             file = None
-            if isinstance(proxy, AssemblyFileProxy):
-                file = AssemblyFileNode()
-                file.setIcon(0, QIcon(main.resource_path("resources/s.png")))
-            elif isinstance(proxy, CFileProxy):
-                file = CFileNode()
-                file.setIcon(0, QIcon(main.resource_path("resources/c.png")))
-            if file:
-                proxy.parent = self.proxy
-                file.setText(0, proxy.path)
-                file.path = proxy.path
-                file.proxy = proxy
-                self.addChild(file)
-                self.connectFileEventHandlers(file)
+            if os.path.exists(os.path.join(proxy.getFilePath())):
+                if isinstance(proxy, AssemblyFileProxy):
+                    file = AssemblyFileNode()
+                    file.setIcon(0, QIcon(main.resource_path("resources/s.png")))
+                elif isinstance(proxy, CFileProxy):
+                    file = CFileNode()
+                    file.setIcon(0, QIcon(main.resource_path("resources/c.png")))
+                if file:
+                    proxy.parent = self.proxy
+                    file.setText(0, proxy.path)
+                    file.path = proxy.path
+                    file.proxy = proxy
+                    self.addChild(file)
+                    self.connectFileEventHandlers(file)
+            else:
+                msg = QMessageBox()
+                msg.setStyleSheet("background-color: #2D2D30; color: white;")
+                msg.setModal(True)
+                msg.setIcon(QMessageBox.Critical)
+                msg.setText(
+                    "Failed to import file '{}' because it is deleted from the disk.".format(proxy.path))
+                msg.setWindowTitle("Failed to load a file.")
+                msg.exec_()
+                toBeDeleted.append(proxy)
+        for proxy in toBeDeleted:
+            self.proxy.files.remove(proxy)
         projectPath = self.proxy.getProjectPath() if not sourcePath else sourcePath
         for filePath in os.listdir(projectPath):
             if filePath not in [file.path for file in self.proxy.files]:
