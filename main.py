@@ -36,6 +36,7 @@ from src.view.DefaultWorkspaceEditor import DefaultWorkspaceEditor
 from src.view.AsciiTableWidget import AsciiTableWidget
 from src.view.SnippetEditor import SnippetEditor
 from src.view.SettingsEditor import SettingsEditor
+from src.view.AboutDialog import AboutDialog
 from src.util.AsemblerSintaksa import AsemblerSintaksa
 from src.util.CSyntax import CSyntax
 from src.model.ProjectNode import ProjectNode, ProjectProxy
@@ -251,6 +252,12 @@ class AsemblerIDE(QMainWindow):
         self.menuBar.hideHelp.triggered.connect(lambda: self.help.hide())
         self.menuBar.showAscii.triggered.connect(lambda: self.ascii.show())
         self.menuBar.hideAscii.triggered.connect(lambda: self.ascii.hide())
+
+        self.menuBar.aboutAction.triggered.connect(self.showAbout)
+
+    def showAbout(self):
+        dialog = AboutDialog()
+        dialog.exec_()
 
     def switchWorkspaceAction(self):
         dialog = WorkspaceConfigurationEditor(self.workspaceConfiguration, self, switch=True)
