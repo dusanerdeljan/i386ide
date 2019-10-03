@@ -391,31 +391,36 @@ class AsemblerIDE(QMainWindow):
             self.terminal.executeCommand("cd {}".format(self.workspace.path))
             self.workspaceConfiguration.addWorkspace(self.workspace.proxy.path)
             if workspacePath:
-                self.workspace.saveWorkspace()
+                self.workspace.saveWorkspace(workspacePath)
             return True
 
         except:
             self.workspace.proxy.closedNormally = True
-            self.workspace.saveWorkspace()
-            self.openWorkspaceAction(workspacePath)
+            self.workspace.path = workspacePath
+            self.workspace.proxy.path = workspacePath
+            self.workspace.saveWorkspace(workspacePath)
+            return self.openWorkspaceAction(workspacePath)
 
     def restoreBackupMessage(self, wsName):
-        msg = QMessageBox()
-        msg.setStyleSheet("background-color: #2D2D30; color: white;")
-        msg.setParent(None)
-        msg.setModal(True)
-        msg.setWindowTitle("Workspace recovery")
-        time = strftime('%m/%d/%Y %H:%M:%S', localtime(os.path.getmtime(os.path.join(wsName, ".backup"))))
-        msg.setText("The workplace {} was closed unexpectedly.\n"
-                    "\nTime the backup was created: {}".format(wsName, time))
-        msg.setInformativeText("Would you like to recover from backup?")
-        msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-        msg.setDefaultButton(QMessageBox.Yes)
-        retValue = msg.exec_()
-        if retValue == QMessageBox.Yes:
-            return True
-        else:
-            return
+        try:
+            msg = QMessageBox()
+            msg.setStyleSheet("background-color: #2D2D30; color: white;")
+            msg.setParent(None)
+            msg.setModal(True)
+            msg.setWindowTitle("Workspace recovery")
+            time = strftime('%m/%d/%Y %H:%M:%S', localtime(os.path.getmtime(os.path.join(wsName, ".backup"))))
+            msg.setText("The workplace {} was closed unexpectedly.\n"
+                        "\nTime the backup was created: {}".format(wsName, time))
+            msg.setInformativeText("Would you like to recover from backup?")
+            msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+            msg.setDefaultButton(QMessageBox.Yes)
+            retValue = msg.exec_()
+            if retValue == QMessageBox.Yes:
+                return True
+            else:
+                return
+        except:
+            return False
 
     def openBackupAction(self, workspacePath):
         name = workspacePath
@@ -433,7 +438,7 @@ class AsemblerIDE(QMainWindow):
         self.workspace.path = name
         self.workspace.proxy.path = name
         self.workspace.proxy.closedNormally = False
-        success = self.workspace.loadBackupWorkspace()
+        success = self.workspace.loadBackupWorkspace(workspacePath)
         if not success:
             return False
         self.treeView.setRoot(self.workspace)
@@ -446,7 +451,7 @@ class AsemblerIDE(QMainWindow):
         self.terminal.executeCommand("cd {}".format(self.workspace.path))
         self.workspaceConfiguration.addWorkspace(self.workspace.proxy.path)
         if workspacePath:
-            self.workspace.saveWorkspace()
+            self.workspace.saveWorkspace(workspacePath)
 
         return True
 
@@ -544,6 +549,7 @@ class AsemblerIDE(QMainWindow):
                     file.write(proxy.text)
                     proxy.hasUnsavedChanges = False
                 self.updateEditorTrie(proxy)
+            self.saveWorkspaceAction()
             return True
 
     def openFileAction(self, fileName: FileProxy):

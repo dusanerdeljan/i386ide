@@ -210,25 +210,33 @@ class WorkspaceNode(Node):
             self.connectProjectEventHandlers(project)
             self.eventManager.projectAdded.emit(project)
 
-    def saveBackup(self):
+    def saveBackup(self, ws_path=None):
         try:
             previous_state = self.proxy.closedNormally
         except:
             self.proxy.closedNormally = True
             previous_state = self.proxy.closedNormally
         self.proxy.closedNormally = True
-        with open(os.path.join(self.proxy.path, '.backup'), 'wb') as backup:
+        if ws_path:
+            save_path = ws_path
+        else:
+            save_path = self.proxy.path
+        with open(os.path.join(save_path, '.backup'), 'wb') as backup:
             pickle.dump(self.proxy, backup, protocol=pickle.HIGHEST_PROTOCOL)
         self.proxy.closedNormally = previous_state
 
-    def saveWorkspace(self):
+    def saveWorkspace(self, ws_path=None):
         try:
            test = self.proxy.closedNormally
         except:
             self.proxy.closedNormally = True
-        with open(os.path.join(self.proxy.path, '.metadata'), 'wb') as metadata:
+        if ws_path:
+            save_path = ws_path
+        else:
+            save_path = self.proxy.path
+        with open(os.path.join(save_path, '.metadata'), 'wb') as metadata:
             pickle.dump(self.proxy, metadata, protocol=pickle.HIGHEST_PROTOCOL)
-        self.saveBackup()
+        self.saveBackup(save_path)
 
 
     def connectProjectEventHandlers(self, project: ProjectNode):
@@ -270,7 +278,7 @@ class WorkspaceNode(Node):
         self.removeChild(project)
         self.saveWorkspace()
 
-    def loadBackupWorkspace(self):
+    def loadBackupWorkspace(self, ws_path=None):
         for projectProxy in self.proxy.projects:
             projectProxy.parent = self.proxy
             project = ProjectNode()
