@@ -49,7 +49,7 @@ class EditorTabWidget(QTabWidget):
         self.tabs = []
         self.snippetManager = snippetManager
         self.tooltipManager = tooltipManager
-        self.closedTabsStyleSheet = "background-image: url(\"{}\"); background-repeat: no-repeat; background-position: center; color: white;".format(main.resource_path("resources/tab_background.png"))
+        self.closedTabsStyleSheet = "background-color: #2D2D30; background-image: url(\"{}\"); background-repeat: no-repeat; background-position: center; color: white;".format(main.resource_path("resources/tab_background.png"))
         self.openTabsStyleSheet = "background-color: #2D2D30; color: white;"
         self.setStyleSheet(self.closedTabsStyleSheet)
         self.setTabsClosable(True)

@@ -67,6 +67,10 @@ class MenuBar(QMenuBar):
         # self.file.addAction(self.newAction)
 
     def createEditMenuItemActions(self):
+        self.findAction = QAction(QIcon(resource_path("resources/find_and_replace.png")), "Find and Replace", self)
+        self.findAction.setShortcut(QKeySequence("Ctrl+F"))
+        self.edit.addAction(self.findAction)
+
         self.editDefaultWorkspace = QAction(QIcon(resource_path("resources/workspace.png")), "Edit default workspace", self)
         self.edit.addAction(self.editDefaultWorkspace)
 

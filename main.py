@@ -37,6 +37,7 @@ from src.view.AsciiTableWidget import AsciiTableWidget
 from src.view.SnippetEditor import SnippetEditor
 from src.view.SettingsEditor import SettingsEditor
 from src.view.AboutDialog import AboutDialog
+from src.view.FindDialog import FindDialog
 from src.util.AsemblerSintaksa import AsemblerSintaksa
 from src.util.CSyntax import CSyntax
 from src.model.ProjectNode import ProjectNode, ProjectProxy
@@ -248,6 +249,7 @@ class AsemblerIDE(QMainWindow):
         self.menuBar.switchWorkspaceAction.triggered.connect(self.switchWorkspaceAction)
 
         self.menuBar.saveAction.triggered.connect(self.saveFileAction)
+        self.menuBar.findAction.triggered.connect(self.findAction)
         self.menuBar.editDefaultWorkspace.triggered.connect(self.editDefaultWorkspaceConfiguration)
         self.menuBar.editCodeSnippets.triggered.connect(self.editCodeSnippets)
         self.menuBar.editSettings.triggered.connect(self.editSettings)
@@ -265,6 +267,20 @@ class AsemblerIDE(QMainWindow):
 
     def showAbout(self):
         dialog = AboutDialog()
+        dialog.exec_()
+
+    def findAction(self):
+        currentTab: EditorTabWidget = self.editorTabs.getCurrentTab()
+        if not currentTab:
+            msg = QMessageBox()
+            msg.setStyleSheet("background-color: #2D2D30; color: white;")
+            msg.setModal(True)
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText("Cannot open file and replace window because there is no open file at the moment.")
+            msg.setWindowTitle("Find & Replace error")
+            msg.exec_()
+            return
+        dialog = FindDialog(currentTab.editor)
         dialog.exec_()
 
     def switchWorkspaceAction(self):

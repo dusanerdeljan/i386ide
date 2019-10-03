@@ -63,7 +63,7 @@ class CodeEditor(QPlainTextEdit):
             'cursor': None,
             'format': None
         }
-
+        self.lastFind = None
         # snipeti
         self.snippetManager = snippetManager
         self.tooltipManager = tooltipManager
