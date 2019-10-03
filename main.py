@@ -22,7 +22,7 @@ import pickle
 import re
 import platform
 from PySide2.QtWidgets import QMainWindow, QLineEdit, QApplication, QFileDialog, QMessageBox, QDockWidget, QLabel, QInputDialog
-from PySide2.QtCore import Qt, QDir
+from PySide2.QtCore import Qt, QDir, QTimer
 from PySide2.QtGui import QIcon
 from src.view.MenuBar import MenuBar
 from src.view.Terminal import Terminal
@@ -49,7 +49,7 @@ from src.controller.WorkspaceConfiguration import WorkspaceConfiguration
 from src.controller.PathManager import PathManager
 from src.controller.SnippetManager import SnippetManager
 from src.controller.TooltipManager import TooltipManager
-
+from time import localtime, strftime
 
 class AsemblerIDE(QMainWindow):
 
@@ -97,6 +97,12 @@ class AsemblerIDE(QMainWindow):
         #self.populateTreeView()
         self.statusBar.comboBox.currentTextChanged.connect(self.changeEditorSyntax)
         self.statusBar.tabWidthComboBox.currentTextChanged.connect(self.changeEditorTabWidth)
+        self.timer = QTimer()
+        self.timer.start(600000)
+        self.timer.timeout.connect(self.makeBackupSave)
+
+    def makeBackupSave(self):
+        self.workspace.saveBackup()
 
     def changeEditorTabWidth(self, text):
         currentTab: EditorTab = self.editorTabs.getCurrentTab()
@@ -145,7 +151,7 @@ class AsemblerIDE(QMainWindow):
         self.treeView.fileSave.connect(lambda fileProxy: self.updateEditorTrie(fileProxy))
 
     def renameFile(self, oldPath: str, fileProxy: FileProxy):
-        fileProxy.text = None
+        # fileProxy.text = None
         key = "{}/{}".format(fileProxy.parent.path, oldPath)
         if key in self.editorTabs.projectTabs:
             newKey = "{}/{}".format(fileProxy.parent.path, fileProxy.path)
@@ -231,6 +237,8 @@ class AsemblerIDE(QMainWindow):
         self.workspaceConfiguration.saveConfiguration()
         self.snippetManager.saveConfiguration()
         self.tooltipManager.saveConfiguration()
+        self.workspace.proxy.closedNormally = True
+        self.saveWorkspaceAction()
         super(AsemblerIDE, self).closeEvent(event)
 
     def addMenuBarEventHandlers(self):
@@ -262,6 +270,8 @@ class AsemblerIDE(QMainWindow):
     def switchWorkspaceAction(self):
         dialog = WorkspaceConfigurationEditor(self.workspaceConfiguration, self, switch=True)
         if dialog.exec_() and dialog.workspaceDirectory:
+            self.workspace.proxy.closedNormally = True
+            self.saveWorkspaceAction()
             if not self.editorTabs.closeAllTabs():
                 return
             self.openWorkspaceAction(dialog.workspaceDirectory)
@@ -345,11 +355,85 @@ class AsemblerIDE(QMainWindow):
                 workspace = pickle.load(file)
         self.workspace = WorkspaceNode()
         self.workspace.proxy = workspace
+        try:
+            closed_normally = self.workspace.proxy.closedNormally
+            if not closed_normally:
+                decision = self.restoreBackupMessage(name)
+                if decision:
+                    if self.openBackupAction(workspacePath):
+                        return True
+                    else:
+                        msg = QMessageBox()
+                        msg.setStyleSheet("background-color: #2D2D30; color: white;")
+                        msg.setModal(True)
+                        msg.setIcon(QMessageBox.Critical)
+                        msg.setText(
+                            "Failed to load {} because it is deleted from the disk."
+                            "\nRegular workspace save will be restored.".format(".backup workspace file"))
+                        msg.setWindowTitle("Failed to load backup workspace.")
+                        msg.exec_()
+
+            self.workspace.setIcon(0, QIcon(resource_path("resources/workspace.png")))
+            self.workspace.setText(0, name[name.rindex(os.path.sep) + 1:])
+            self.workspace.path = name
+            self.workspace.proxy.path = name
+            self.workspace.proxy.closedNormally = False
+            success = self.workspace.loadWorkspace()
+            if not success:
+                return False
+            self.treeView.setRoot(self.workspace)
+            projects = self.treeView.getProjects()
+            if projects:
+                self.configurationManager.allProjects.clear()
+                self.configurationManager.allProjects.extend(projects)
+            self.toolBar.updateComboBox()
+            self.treeView.expandAll()
+            self.terminal.executeCommand("cd {}".format(self.workspace.path))
+            self.workspaceConfiguration.addWorkspace(self.workspace.proxy.path)
+            if workspacePath:
+                self.workspace.saveWorkspace()
+            return True
+
+        except:
+            self.workspace.proxy.closedNormally = True
+            self.workspace.saveWorkspace()
+            self.openWorkspaceAction(workspacePath)
+
+    def restoreBackupMessage(self, wsName):
+        msg = QMessageBox()
+        msg.setStyleSheet("background-color: #2D2D30; color: white;")
+        msg.setParent(None)
+        msg.setModal(True)
+        msg.setWindowTitle("Workspace recovery")
+        time = strftime('%m/%d/%Y %H:%M:%S', localtime(os.path.getmtime(os.path.join(wsName, ".backup"))))
+        msg.setText("The workplace {} was closed unexpectedly.\n"
+                    "\nTime the backup was created: {}".format(wsName, time))
+        msg.setInformativeText("Would you like to recover from backup?")
+        msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        msg.setDefaultButton(QMessageBox.Yes)
+        retValue = msg.exec_()
+        if retValue == QMessageBox.Yes:
+            return True
+        else:
+            return
+
+    def openBackupAction(self, workspacePath):
+        name = workspacePath
+        workspace = WorkspaceProxy()
+        path = os.path.join(name, ".backup")
+        if os.path.exists(path):
+            with open(path, 'rb') as file:
+                workspace = pickle.load(file)
+        else:
+            return False
+        self.workspace = WorkspaceNode()
+        self.workspace.proxy = workspace
         self.workspace.setIcon(0, QIcon(resource_path("resources/workspace.png")))
-        self.workspace.setText(0, name[name.rindex(os.path.sep)+1:])
+        self.workspace.setText(0, name[name.rindex(os.path.sep) + 1:])
         self.workspace.path = name
         self.workspace.proxy.path = name
-        success = self.workspace.loadWorkspace()
+        self.workspace.proxy.closedNormally = False
+        success = self.workspace.loadBackupWorkspace()
         if not success:
             return False
         self.treeView.setRoot(self.workspace)
@@ -363,6 +447,7 @@ class AsemblerIDE(QMainWindow):
         self.workspaceConfiguration.addWorkspace(self.workspace.proxy.path)
         if workspacePath:
             self.workspace.saveWorkspace()
+
         return True
 
     def addToolBarEventHandlers(self):

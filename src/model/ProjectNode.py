@@ -133,7 +133,7 @@ class ProjectNode(Node):
         if entered:
             parentDir = os.path.abspath(os.path.join(self.proxy.getProjectPath(), os.pardir))
             newPath = os.path.join(parentDir, name)
-            print(newPath)
+            # print(newPath)
             regex = re.compile('[@!#$%^&*()<>?/\|}{~:]')
             if " " in name or regex.search(name):
                 msg = QMessageBox()
@@ -174,7 +174,7 @@ class ProjectNode(Node):
 
     def importFile(self):
         name, entered = QFileDialog.getOpenFileName(None, "Select file to import", ".", "Assembly files (*.S);;C files (*.c)")
-        if entered:
+        if name:
             fileName = os.path.basename(name)
             filePath = os.path.join(self.proxy.getProjectPath(), fileName)
             regex = re.compile('[@!#$%^&*()<>?/\|}{~:]')
@@ -267,6 +267,31 @@ class ProjectNode(Node):
 
     def deleteProject(self):
         self.eventManager.projectRemoveRequested.emit(self)
+
+    def loadProjectBackup(self):
+        for proxy in self.proxy.files:
+            node = None
+            if isinstance(proxy, AssemblyFileProxy):
+                node = AssemblyFileNode()
+                node.setIcon(0, QIcon(main.resource_path("resources/s.png")))
+            elif isinstance(proxy, CFileProxy):
+                node = CFileNode()
+                node.setIcon(0, QIcon(main.resource_path("resources/c.png")))
+            if node:
+                proxy.parent = self.proxy
+                node.setText(0, proxy.path)
+                node.path = proxy.path
+                node.proxy = proxy
+                try:
+                    with open(proxy.getFilePath(), 'w') as file:
+                        file.write(proxy.text)
+                        proxy.hasUnsavedChanges = False
+                except:
+                    print("Could not write to file {}".format(proxy.getFilePath()))
+
+                self.addChild(node)
+                self.connectFileEventHandlers(node)
+
 
     def loadProject(self, sourcePath=None):
         toBeDeleted = []

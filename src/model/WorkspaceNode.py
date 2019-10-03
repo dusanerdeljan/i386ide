@@ -33,6 +33,7 @@ class WorkspaceProxy(object):
     def __init__(self):
         self.path = None
         self.projects = []
+        self.closedNormally = True
 
     def addProject(self, projectProxy):
         self.projects.append(projectProxy)
@@ -209,9 +210,26 @@ class WorkspaceNode(Node):
             self.connectProjectEventHandlers(project)
             self.eventManager.projectAdded.emit(project)
 
+    def saveBackup(self):
+        try:
+            previous_state = self.proxy.closedNormally
+        except:
+            self.proxy.closedNormally = True
+            previous_state = self.proxy.closedNormally
+        self.proxy.closedNormally = True
+        with open(os.path.join(self.proxy.path, '.backup'), 'wb') as backup:
+            pickle.dump(self.proxy, backup, protocol=pickle.HIGHEST_PROTOCOL)
+        self.proxy.closedNormally = previous_state
+
     def saveWorkspace(self):
-        with open(os.path.join(self.path, '.metadata'), 'wb') as metadata:
+        try:
+           test = self.proxy.closedNormally
+        except:
+            self.proxy.closedNormally = True
+        with open(os.path.join(self.proxy.path, '.metadata'), 'wb') as metadata:
             pickle.dump(self.proxy, metadata, protocol=pickle.HIGHEST_PROTOCOL)
+        self.saveBackup()
+
 
     def connectProjectEventHandlers(self, project: ProjectNode):
         project.eventManager.projectCompileRequested.connect(lambda proxy: self.eventManager.projectCompile.emit(proxy))
@@ -252,8 +270,22 @@ class WorkspaceNode(Node):
         self.removeChild(project)
         self.saveWorkspace()
 
+    def loadBackupWorkspace(self):
+        for projectProxy in self.proxy.projects:
+            projectProxy.parent = self.proxy
+            project = ProjectNode()
+            project.setIcon(0, QIcon(main.resource_path("resources/project.png")))
+            project.setText(0, projectProxy.path)
+            project.path = projectProxy.path
+            project.proxy = projectProxy
+            project.loadProjectBackup()
+            self.addChild(project)
+            self.connectProjectEventHandlers(project)
+        return True
+
     def loadWorkspace(self):
         toBeDeleted = []
+
         for projectProxy in self.proxy.projects:
             if os.path.exists(projectProxy.getProjectPath()):
                 projectProxy.parent = self.proxy
