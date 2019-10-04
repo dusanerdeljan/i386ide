@@ -16,7 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 """
 
-from PySide2.QtWidgets import QDialog, QLineEdit, QPlainTextEdit, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox
+from PySide2.QtWidgets import QDialog, QLineEdit, QPlainTextEdit, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox, QWidget, QFrame
 from PySide2.QtGui import QIcon, QTextCursor
 from PySide2.QtCore import Qt, Signal
 import re
@@ -35,11 +35,15 @@ class FindLineEdit(QLineEdit):
         super(FindLineEdit, self).keyPressEvent(e)
 
 
-class FindDialog(QDialog):
+class FindDialog(QFrame):
+
+    escapePressed = Signal()
 
     def __init__(self, editor: QPlainTextEdit):
         super(FindDialog, self).__init__()
-        self.setStyleSheet("background-color: #232323; color: white;")
+        self.setLineWidth(0)
+        self.setFrameShape(QFrame.NoFrame)
+        self.setStyleSheet("background-color: #232323; color: white; padding: 0px; margin: 0px;")
         self.setWindowFlags(Qt.Dialog)
         self.setWindowFlag(Qt.WindowContextHelpButtonHint, False)
         self.setWindowFlag(Qt.WindowStaysOnTopHint, True)
@@ -49,8 +53,6 @@ class FindDialog(QDialog):
         self.text = self.editor.toPlainText()
         self.lastMatch = None
         self.findLabel = FindLineEdit()
-        if self.editor.lastFind:
-            self.findLabel.setText(self.editor.lastFind)
         self.findLabel.setFixedWidth(200)
         self.findLabel.enterPressed.connect(self.findLabelEnterPressed)
         self.findLabel.setPlaceholderText("Find...")
@@ -59,33 +61,22 @@ class FindDialog(QDialog):
         self.replaceLabel.setPlaceholderText("Replace...")
         self.replaceLabel.setFixedWidth(200)
         self.replaceLabel.enterPressed.connect(self.replaceLabelEnterPressed)
-        self.hbox1 = QHBoxLayout()
-        self.hbox2 = QHBoxLayout()
-        self.vbox = QVBoxLayout()
-        self.lbl1 = QLabel("Find: ")
-        self.lbl1.setFixedWidth(60)
-        self.hbox1.addWidget(self.lbl1)
-        self.hbox1.addWidget(self.findLabel)
-        self.lbl2 = QLabel("Replace: ")
-        self.lbl2.setFixedWidth(60)
-        self.hbox2.addWidget(self.lbl2)
-        self.hbox2.addWidget(self.replaceLabel)
-        self.vbox.addLayout(self.hbox1)
-        self.vbox.addLayout(self.hbox2)
+        self.hbox = QHBoxLayout()
+        self.hbox.addWidget(self.findLabel)
+        self.hbox.addWidget(self.replaceLabel)
         self.replaceAllCheckBox = QCheckBox("Replace all occurrences")
-        self.vbox.addWidget(self.replaceAllCheckBox)
-        self.setLayout(self.vbox)
+        self.hbox.addWidget(self.replaceAllCheckBox)
+        self.setLayout(self.hbox)
         self.findLabel.setFocus()
-        self.setFixedSize(300, 120)
+        self.setFixedHeight(40)
         
     def keyPressEvent(self, e):
         if e.key() == Qt.Key_Escape:
-            self.close()
+            self.hideWidget()
         super(FindDialog, self).keyPressEvent(e)
-        
-    def closeEvent(self, arg__1):
-        self.editor.setFocus()
-        super(FindDialog, self).closeEvent(arg__1)
+
+    def hideWidget(self):
+        self.escapePressed.emit()
 
     def findLabelEnterPressed(self):
         success = self.find(continueSearch=True)
@@ -121,4 +112,5 @@ class FindDialog(QDialog):
             self.moveCursor(self.lastMatch.start(), self.lastMatch.end())
             return True
         else:
+            self.editor.moveCursor(QTextCursor.End)
             return False

@@ -57,6 +57,7 @@ class AsemblerIDE(QMainWindow):
     def __init__(self):
         super(AsemblerIDE, self).__init__()
         self.workspace = None
+        self.backupTimer = 600000
         PathManager.START_DIRECTORY = os.getcwd()
         self.workspaceConfiguration = WorkspaceConfiguration.loadConfiguration()
         self.snippetManager = SnippetManager.loadSnippetConfiguration()
@@ -99,7 +100,7 @@ class AsemblerIDE(QMainWindow):
         self.statusBar.comboBox.currentTextChanged.connect(self.changeEditorSyntax)
         self.statusBar.tabWidthComboBox.currentTextChanged.connect(self.changeEditorTabWidth)
         self.timer = QTimer()
-        self.timer.start(600000)
+        self.timer.start(self.backupTimer)
         self.timer.timeout.connect(self.makeBackupSave)
 
     def makeBackupSave(self):
@@ -108,17 +109,17 @@ class AsemblerIDE(QMainWindow):
     def changeEditorTabWidth(self, text):
         currentTab: EditorTab = self.editorTabs.getCurrentTab()
         if currentTab:
-            currentTab.editor.tabSize = int(text)
+            currentTab.widget.editor.tabSize = int(text)
 
 
     def changeEditorSyntax(self, text):
         currentTab: EditorTab = self.editorTabs.getCurrentTab()
         if currentTab:
             if text == "Assembly":
-                currentTab.editor.sintaksa = AsemblerSintaksa(currentTab.editor.document())
+                currentTab.widget.editor.sintaksa = AsemblerSintaksa(currentTab.widget.editor.document())
             elif text == "C":
-                currentTab.editor.sintaksa = CSyntax(currentTab.editor.document())
-            currentTab.editor.update()
+                currentTab.widget.editor.sintaksa = CSyntax(currentTab.widget.editor.document())
+            currentTab.widget.editor.update()
 
     def checkWorkspaceConfiguration(self):
         defaultWorkspace = self.workspaceConfiguration.getDefaultWorkspace()
@@ -160,7 +161,8 @@ class AsemblerIDE(QMainWindow):
             self.editorTabs.projectTabs[newKey] = tab
             tab.tabName = newKey
             index = self.editorTabs.tabs.index(fileProxy)
-            self.editorTabs.setTabText(index, newKey)
+            tabText = newKey+"*" if fileProxy.hasUnsavedChanges else newKey
+            self.editorTabs.setTabText(index, tabText)
 
     def renameProject(self, oldPath: str, project: ProjectNode):
         self.toolBar.updateComboBox()
@@ -193,7 +195,7 @@ class AsemblerIDE(QMainWindow):
         proxy = self.editorTabs.tabs[index]
         key = "{}/{}".format(proxy.parent.path, proxy.path)
         self.statusBar.comboBox.setCurrentText(syntax)
-        self.statusBar.tabWidthComboBox.setCurrentText(str(self.editorTabs.projectTabs[key].editor.tabSize))
+        self.statusBar.tabWidthComboBox.setCurrentText(str(self.editorTabs.projectTabs[key].widget.editor.tabSize))
         self.changeEditorSyntax(syntax)
 
     def populateTreeView(self):
@@ -280,8 +282,10 @@ class AsemblerIDE(QMainWindow):
             msg.setWindowTitle("Find & Replace error")
             msg.exec_()
             return
-        dialog = FindDialog(currentTab.editor)
-        dialog.exec_()
+        currentTab.widget.find.setVisible(True)
+        if currentTab.widget.editor.lastFind:
+            currentTab.widget.find.findLabel.setText(currentTab.widget.editor.lastFind)
+        currentTab.widget.find.findLabel.setFocus()
 
     def switchWorkspaceAction(self):
         dialog = WorkspaceConfigurationEditor(self.workspaceConfiguration, self, switch=True)
@@ -554,7 +558,7 @@ class AsemblerIDE(QMainWindow):
     def updateEditorTrie(self, proxy: FileProxy):
         key = "{}/{}".format(proxy.parent.path, proxy.path)
         if key in self.editorTabs.projectTabs:
-            self.editorTabs.projectTabs[key].editor.updateTrie()
+            self.editorTabs.projectTabs[key].widget.editor.updateTrie()
             self.editorTabs.removeChangeIdentificator(proxy)
 
     def saveFileAction(self):

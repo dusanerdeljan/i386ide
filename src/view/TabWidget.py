@@ -16,9 +16,10 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 """
 
-from PySide2.QtWidgets import QTabWidget, QWidget, QMessageBox
+from PySide2.QtWidgets import QTabWidget, QWidget, QMessageBox, QVBoxLayout
 from PySide2.QtCore import Signal
 from src.view.CodeEditor import CodeEditor
+from src.view.FindDialog import FindDialog
 from src.model.FileNode import FileProxy
 from src.controller.PathManager import PathManager
 from src.controller.SnippetManager import SnippetManager
@@ -26,17 +27,30 @@ from src.controller.TooltipManager import TooltipManager
 import os
 import main
 
+class TabWidget(QWidget):
+    def __init__(self, fileProxy: FileProxy, snippetManager: SnippetManager, tooltipManager: TooltipManager):
+        super(TabWidget, self).__init__()
+        self.editor = CodeEditor(fileProxy, snippetManager, tooltipManager)
+        self.find = FindDialog(self.editor)
+        self.find.setVisible(False)
+        self.find.escapePressed.connect(lambda: self.find.hide())
+        self.editor.escapePressed.connect(lambda: self.find.hide())
+        self.vbox = QVBoxLayout()
+        self.vbox.setSpacing(0)
+        self.vbox.addWidget(self.find)
+        self.vbox.addWidget(self.editor)
+        self.setLayout(self.vbox)
+
 class EditorTab(QWidget):
 
     fileChanged = Signal(FileProxy)
     
     def __init__(self, fileProxy: FileProxy, snippetManager: SnippetManager, tooltipManager: TooltipManager):
         super(EditorTab, self).__init__()
-        self.editor = CodeEditor(fileProxy, snippetManager, tooltipManager)
-        #self.editor.setPlainText(fileProxy.text)
+        self.widget = TabWidget(fileProxy, snippetManager, tooltipManager)
         fileProxy.hasUnsavedChanges = False
         self.tabName = "{}/{}".format(fileProxy.parent.path, fileProxy.path)
-        self.editor.fileChanged.connect(lambda fileProxy: self.fileChanged.emit(fileProxy))
+        self.widget.editor.fileChanged.connect(lambda fileProxy: self.fileChanged.emit(fileProxy))
 
 class EditorTabWidget(QTabWidget):
     
@@ -66,7 +80,7 @@ class EditorTabWidget(QTabWidget):
         tab = EditorTab(fileProxy, self.snippetManager, self.tooltipManager)
         tab.fileChanged.connect(self.fileChanged)
         self.projectTabs[key] = tab
-        self.addTab(tab.editor, tab.tabName)
+        self.addTab(tab.widget, tab.tabName)
         if update:
             self.tabs.append(fileProxy)
         self.setCurrentIndex(self.tabs.index(fileProxy))

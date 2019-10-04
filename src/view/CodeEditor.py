@@ -50,6 +50,7 @@ class QLineNumberArea(QWidget):
 class CodeEditor(QPlainTextEdit):
 
     fileChanged = Signal(FileProxy)
+    escapePressed = Signal()
 
     def __init__(self, file: FileProxy, snippetManager: SnippetManager, tooltipManager: TooltipManager):
         super(CodeEditor, self).__init__()
@@ -297,6 +298,7 @@ class CodeEditor(QPlainTextEdit):
         elif e.key() == Qt.Key_Escape:
             if self.autocompleteWidgetOpen:
                 self.closeAutoSuggestionWidget()
+            self.escapePressed.emit()
         elif e.key() == Qt.Key_ParenLeft:
             insertRightPar = True
         elif e.key() == Qt.Key_BracketLeft:
