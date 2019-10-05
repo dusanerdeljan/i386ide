@@ -57,7 +57,7 @@ class AsemblerIDE(QMainWindow):
     def __init__(self):
         super(AsemblerIDE, self).__init__()
         self.workspace = None
-        self.backupTimer = 600000
+        self.backupTimer = 300000
         PathManager.START_DIRECTORY = os.getcwd()
         self.workspaceConfiguration = WorkspaceConfiguration.loadConfiguration()
         self.snippetManager = SnippetManager.loadSnippetConfiguration()
@@ -105,6 +105,7 @@ class AsemblerIDE(QMainWindow):
 
     def makeBackupSave(self):
         self.workspace.saveBackup()
+        self.timer.setInterval(self.backupTimer)  # interval has to be reset cause the timer may have been paused
 
     def changeEditorTabWidth(self, text):
         currentTab: EditorTab = self.editorTabs.getCurrentTab()
@@ -288,13 +289,17 @@ class AsemblerIDE(QMainWindow):
         currentTab.widget.find.findLabel.setFocus()
 
     def switchWorkspaceAction(self):
+        remaining = self.timer.remainingTime()
+        self.timer.stop()  # timer for creating backups needs to be paused when switching ws
         dialog = WorkspaceConfigurationEditor(self.workspaceConfiguration, self, switch=True)
         if dialog.exec_() and dialog.workspaceDirectory:
             self.workspace.proxy.closedNormally = True
             self.saveWorkspaceAction()
             if not self.editorTabs.closeAllTabs():
+                self.timer.start(remaining)  # timer for saving backups is resumed
                 return
             self.openWorkspaceAction(dialog.workspaceDirectory)
+        self.timer.start(remaining)  # timer for saving backups is resumed
 
     def editDefaultWorkspaceConfiguration(self):
         editor = DefaultWorkspaceEditor(self.workspaceConfiguration)
@@ -345,21 +350,19 @@ class AsemblerIDE(QMainWindow):
             return True
         return False
 
-    def saveWorkspaceAction(self):
+    def saveWorkspaceAction(self, workspacePath=None):
         if self.workspace:
-            self.workspace.saveWorkspace()
+            self.workspace.saveWorkspace(workspacePath)
 
     def openWorkspaceAction(self, workspacePath=None):
         if not self.editorTabs.closeAllTabs():
             return
         if not workspacePath:
-            name = QFileDialog.getExistingDirectory(self, "Open workspace", "select new workspace directory")
-            if not name:
+            workspacePath = QFileDialog.getExistingDirectory(self, "Open workspace", "select new workspace directory")
+            if not workspacePath:
                 return
-        else:
-            name = workspacePath
         regex = re.compile('[@!#$%^&*()<>?/\|}{~:]')
-        if ' ' in name or regex.search(os.path.basename(name)):
+        if ' ' in workspacePath or regex.search(os.path.basename(workspacePath)):
             msg = QMessageBox()
             msg.setStyleSheet("background-color: #2D2D30; color: white;")
             msg.setModal(True)
@@ -369,59 +372,61 @@ class AsemblerIDE(QMainWindow):
             msg.exec_()
             return False
         workspace = WorkspaceProxy()
-        path = os.path.join(name, ".metadata")
+        path = os.path.join(workspacePath, ".metadata")
         if os.path.exists(path):
-            with open(path, 'rb') as file:
-                workspace = pickle.load(file)
+            try:  # in try block in case there is a corrupted .metadata file on the path
+                with open(path, 'rb') as file:
+                    workspace = pickle.load(file)
+            except:
+                workspace.closedNormally = False  # set it to false to trigger backup msg in case .metadata is corrupted
         self.workspace = WorkspaceNode()
         self.workspace.proxy = workspace
-        try:
-            closed_normally = self.workspace.proxy.closedNormally
-            if not closed_normally:
-                decision = self.restoreBackupMessage(name)
-                if decision:
-                    if self.openBackupAction(workspacePath):
-                        return True
-                    else:
-                        msg = QMessageBox()
-                        msg.setStyleSheet("background-color: #2D2D30; color: white;")
-                        msg.setModal(True)
-                        msg.setIcon(QMessageBox.Critical)
-                        msg.setText(
-                            "Failed to load {} because it is deleted from the disk."
-                            "\nRegular workspace save will be restored.".format(".backup workspace file"))
-                        msg.setWindowTitle("Failed to load backup workspace.")
-                        msg.exec_()
+        self.applyWsCompatibilityFix(workspacePath)
+        attempted_backup = False
+        if not self.workspace.proxy.closedNormally:
+            if self.restoreBackupMessage(workspacePath):
+                attempted_backup = True
+                if self.loadWorkspaceAction(workspacePath, backup=True):  # attempt to load backup
+                    return True
+                else:
+                    self.messageBackupError("closedAbruptly")
 
-            self.workspace.setIcon(0, QIcon(resource_path("resources/workspace.png")))
-            self.workspace.setText(0, name[name.rindex(os.path.sep) + 1:])
-            self.workspace.path = name
-            self.workspace.proxy.path = name
-            self.workspace.proxy.closedNormally = False
-            success = self.workspace.loadWorkspace()
-            if not success:
-                return False
-            self.treeView.setRoot(self.workspace)
-            projects = self.treeView.getProjects()
-            if projects:
-                self.configurationManager.allProjects.clear()
-                self.configurationManager.allProjects.extend(projects)
-            self.toolBar.updateComboBox()
-            self.treeView.expandAll()
-            self.terminal.executeCommand("cd {}".format(self.workspace.path))
-            self.workspaceConfiguration.addWorkspace(self.workspace.proxy.path)
-            if workspacePath:
-                self.workspace.saveWorkspace(workspacePath)
+        if self.loadWorkspaceAction(workspacePath, backup=False):  # attempt to load regular ws file
             return True
+        # If the regular file won't load for some reason and there was no backup attempt, ask to load the backup file
+        elif not attempted_backup and self.restoreBackupMessage(workspacePath, failedToLoad=True):
+            if self.loadWorkspaceAction(workspacePath, backup=True):  # attempt to load the backup file
+                return True
+            else:
+                self.messageBackupError()
+        return False
 
-        except:
-            self.workspace.proxy.closedNormally = True
-            self.workspace.path = workspacePath
-            self.workspace.proxy.path = workspacePath
-            self.workspace.saveWorkspace(workspacePath)
-            return self.openWorkspaceAction(workspacePath)
 
-    def restoreBackupMessage(self, wsName):
+    def messageBackupError(self, msgType=None):
+        msg = QMessageBox()
+        msg.setStyleSheet("background-color: #2D2D30; color: white;")
+        msg.setModal(True)
+        msg.setIcon(QMessageBox.Critical)
+        if msgType == "closedAbruptly":
+            msg.setText(
+                "Failed to load {}."
+                "\nRegular workspace save will be restored.".format(".backup workspace file"))
+        else:
+            msg.setText(
+                "Failed to load {}.".format(".backup workspace file"))
+        msg.setWindowTitle("Failed to load backup workspace.")
+        msg.exec_()
+
+    def applyWsCompatibilityFix(self, workspacePath):
+        try:
+            closedNormally = self.workspace.proxy.closedNormally
+        except AttributeError:
+            closedNormally = True
+        self.workspace.proxy.closedNormally = closedNormally  # adds attribute to old ws files
+        self.workspace.path = workspacePath  # changes the path to currently selected dir, in case it was moved
+        self.workspace.proxy.path = workspacePath
+
+    def restoreBackupMessage(self, wsName, failedToLoad=False):
         try:
             msg = QMessageBox()
             msg.setStyleSheet("background-color: #2D2D30; color: white;")
@@ -429,8 +434,12 @@ class AsemblerIDE(QMainWindow):
             msg.setModal(True)
             msg.setWindowTitle("Workspace recovery")
             time = strftime('%m/%d/%Y %H:%M:%S', localtime(os.path.getmtime(os.path.join(wsName, ".backup"))))
-            msg.setText("The workplace {} was closed unexpectedly.\n"
-                        "\nTime the backup was created: {}".format(wsName, time))
+            if failedToLoad:
+                msg.setText("The workplace {} could not be loaded.\n"
+                            "\nTime the backup was created: {}".format(wsName, time))
+            else:
+                msg.setText("The workplace {} was closed unexpectedly.\n"
+                            "\nTime the backup was created: {}".format(wsName, time))
             msg.setInformativeText("Would you like to recover from backup?")
             msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
             msg.setDefaultButton(QMessageBox.Yes)
@@ -442,23 +451,29 @@ class AsemblerIDE(QMainWindow):
         except:
             return False
 
-    def openBackupAction(self, workspacePath):
-        name = workspacePath
-        workspace = WorkspaceProxy()
-        path = os.path.join(name, ".backup")
+    def loadWorkspaceAction(self, workspacePath, backup=False):
+        if backup:
+            path = os.path.join(workspacePath, ".backup")
+        else:
+            path = os.path.join(workspacePath, ".metadata")
         if os.path.exists(path):
-            with open(path, 'rb') as file:
-                workspace = pickle.load(file)
+            try:  # in try block in case there is a corrupted .metadata file on the path
+                with open(path, 'rb') as file:
+                    workspace = pickle.load(file)
+            except:
+                return False
         else:
             return False
         self.workspace = WorkspaceNode()
         self.workspace.proxy = workspace
+        self.applyWsCompatibilityFix(workspacePath)
         self.workspace.setIcon(0, QIcon(resource_path("resources/workspace.png")))
-        self.workspace.setText(0, name[name.rindex(os.path.sep) + 1:])
-        self.workspace.path = name
-        self.workspace.proxy.path = name
+        self.workspace.setText(0, workspacePath[workspacePath.rindex(os.path.sep) + 1:])
         self.workspace.proxy.closedNormally = False
-        success = self.workspace.loadBackupWorkspace(workspacePath)
+        if backup:
+            success = self.workspace.loadBackupWorkspace(workspacePath)
+        else:
+            success = self.workspace.loadWorkspace()
         if not success:
             return False
         self.treeView.setRoot(self.workspace)
@@ -471,8 +486,7 @@ class AsemblerIDE(QMainWindow):
         self.terminal.executeCommand("cd {}".format(self.workspace.path))
         self.workspaceConfiguration.addWorkspace(self.workspace.proxy.path)
         if workspacePath:
-            self.workspace.saveWorkspace(workspacePath)
-
+            self.saveWorkspaceAction(workspacePath)
         return True
 
     def addToolBarEventHandlers(self):
