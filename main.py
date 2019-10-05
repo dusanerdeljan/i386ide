@@ -280,16 +280,44 @@ class AsemblerIDE(QMainWindow):
         self.menuBar.editCodeSnippets.triggered.connect(self.editCodeSnippets)
         self.menuBar.editSettings.triggered.connect(self.editSettings)
 
-        self.menuBar.showTerminal.triggered.connect(lambda: self.terminal.show())
-        self.menuBar.hideTerminal.triggered.connect(lambda: self.terminal.hide())
-        self.menuBar.showTree.triggered.connect(lambda: self.treeDock.show())
-        self.menuBar.hideTree.triggered.connect(lambda: self.treeDock.hide())
-        self.menuBar.showHelp.triggered.connect(lambda: self.help.show())
-        self.menuBar.hideHelp.triggered.connect(lambda: self.help.hide())
-        self.menuBar.showAscii.triggered.connect(lambda: self.ascii.show())
-        self.menuBar.hideAscii.triggered.connect(lambda: self.ascii.hide())
+        self.menuBar.showTerminal.triggered.connect(self.toggleTerminal)
+        self.menuBar.showTree.triggered.connect(self.toggleTree)
+        self.menuBar.showHelp.triggered.connect(self.toggleHelp)
+        self.menuBar.showAscii.triggered.connect(self.toggleAsci)
 
         self.menuBar.aboutAction.triggered.connect(self.showAbout)
+
+    def toggleTerminal(self):
+        if self.terminal.isHidden():
+            self.terminal.show()
+            self.menuBar.showTerminal.setText("Hide terminal")
+        else:
+            self.terminal.hide()
+            self.menuBar.showTerminal.setText("Show terminal")
+
+    def toggleTree(self):
+        if self.treeDock.isHidden():
+            self.treeDock.show()
+            self.menuBar.showTree.setText("Hide project explorer")
+        else:
+            self.treeDock.hide()
+            self.menuBar.showTree.setText("Show project explorer")
+
+    def toggleHelp(self):
+        if self.help.isHidden():
+            self.help.show()
+            self.menuBar.showHelp.setText("Hide help")
+        else:
+            self.help.hide()
+            self.menuBar.showHelp.setText("Show help")
+
+    def toggleAsci(self):
+        if self.ascii.isHidden():
+            self.ascii.show()
+            self.menuBar.showAscii.setText("Hide ASCII table")
+        else:
+            self.ascii.hide()
+            self.menuBar.showAscii.setText("Show ASCII table")
 
     def showAbout(self):
         dialog = AboutDialog()

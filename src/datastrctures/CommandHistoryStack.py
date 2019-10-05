@@ -26,6 +26,7 @@ class CommandHistoryStack(object):
     def push(self, command):
         if len(self.history) > 0:
             if command == self.history[-1]:
+                self.currentIndex = len(self.history)
                 return
         self.history.append(command)
         if len(self.history) > self.limit:

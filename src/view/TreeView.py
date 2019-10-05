@@ -84,6 +84,7 @@ class TreeView(QTreeWidget):
         return children
 
     def newProject(self, project: ProjectNode):
+        project.setExpanded(True)
         self.configurationManager.allProjects.append(project)
         self.newProjectAdded.emit(project)
 

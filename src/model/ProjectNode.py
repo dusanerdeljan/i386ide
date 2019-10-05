@@ -262,6 +262,7 @@ class ProjectNode(Node):
             os.mknod(filePath)
             self.proxy.addFile(node.proxy)
             self.connectFileEventHandlers(node)
+            self.setExpanded(True)
             shutil.copyfile(name, filePath)
             # with open(filePath, 'w') as file:
             #     with open(name, 'r') as inputFile:
@@ -313,6 +314,7 @@ class ProjectNode(Node):
             os.mknod(rootPath)
             self.proxy.addFile(node.proxy)
             self.connectFileEventHandlers(node)
+            self.setExpanded(True)
 
 
     def deleteProject(self):

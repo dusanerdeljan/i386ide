@@ -81,29 +81,19 @@ class MenuBar(QMenuBar):
         self.edit.addAction(self.editSettings)
 
     def createViewMenuItemActions(self):
-        self.showTerminal = QAction("Show terminal", self)
+        self.showTerminal = QAction("Hide terminal", self)
         self.view.addAction(self.showTerminal)
 
-        self.hideTerminal = QAction("Hide terminal", self)
-        self.view.addAction(self.hideTerminal)
-
-        self.showTree = QAction("Show project explorer", self)
+        self.showTree = QAction("Hide project explorer", self)
         self.view.addAction(self.showTree)
 
-        self.hideTree = QAction("Hide project explorer", self)
-        self.view.addAction(self.hideTree)
-
-        self.showHelp = QAction("Show help", self)
+        self.showHelp = QAction("Hide help", self)
         self.view.addAction(self.showHelp)
 
-        self.hideHelp = QAction("Hide help", self)
-        self.view.addAction(self.hideHelp)
 
-        self.showAscii = QAction("Show ASCII table", self)
+        self.showAscii = QAction("Hide ASCII table", self)
         self.view.addAction(self.showAscii)
 
-        self.hideAscii = QAction("Hide ASCII table", self)
-        self.view.addAction(self.hideAscii)
 
     def createHelpMenuItemActions(self):
         self.aboutAction = QAction("About", self)
