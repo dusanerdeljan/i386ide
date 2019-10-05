@@ -112,7 +112,6 @@ class AsemblerIDE(QMainWindow):
         if currentTab:
             currentTab.widget.editor.tabSize = int(text)
 
-
     def changeEditorSyntax(self, text):
         currentTab: EditorTab = self.editorTabs.getCurrentTab()
         if currentTab:
@@ -451,7 +450,6 @@ class AsemblerIDE(QMainWindow):
             else:
                 self.messageBackupError()
         return False
-
 
     def messageBackupError(self, msgType=None):
         msg = QMessageBox()

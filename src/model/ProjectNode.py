@@ -234,15 +234,31 @@ class ProjectNode(Node):
                 msg.setWindowTitle("File import error")
                 msg.exec_()
                 return
+            alreadyInProject = False
+            inSameDir = False
             if os.path.exists(filePath):
-                msg = QMessageBox()
-                msg.setStyleSheet("background-color: #2D2D30; color: white;")
-                msg.setModal(True)
-                msg.setIcon(QMessageBox.Critical)
-                msg.setText("File with the same name already exists.")
-                msg.setWindowTitle("File import error")
-                msg.exec_()
-                return
+                for proxy in self.proxy.files:
+                    if proxy.getFilePath() == name:
+                        alreadyInProject = True
+                inSameDir = os.path.join(self.proxy.getProjectPath(), os.path.basename(filePath)) == name
+                if alreadyInProject:
+                    msg = QMessageBox()
+                    msg.setStyleSheet("background-color: #2D2D30; color: white;")
+                    msg.setModal(True)
+                    msg.setIcon(QMessageBox.Critical)
+                    msg.setText("File is already a part of the project.")
+                    msg.setWindowTitle("File import error")
+                    msg.exec_()
+                    return
+                if not inSameDir:
+                    msg = QMessageBox()
+                    msg.setStyleSheet("background-color: #2D2D30; color: white;")
+                    msg.setModal(True)
+                    msg.setIcon(QMessageBox.Critical)
+                    msg.setText("File with the same name already exists.")
+                    msg.setWindowTitle("File import error")
+                    msg.exec_()
+                    return
             node = None
             if fileName[-1] == "S":
                 node = AssemblyFileNode()
@@ -259,11 +275,13 @@ class ProjectNode(Node):
             node.proxy.path = fileName
             node.proxy.parent = self.proxy
             self.addChild(node)
-            os.mknod(filePath)
+            # if not inSameDir:
+            #     os.mknod(filePath)
             self.proxy.addFile(node.proxy)
             self.connectFileEventHandlers(node)
+            if not inSameDir:
+                shutil.copyfile(name, filePath)
             self.setExpanded(True)
-            shutil.copyfile(name, filePath)
             # with open(filePath, 'w') as file:
             #     with open(name, 'r') as inputFile:
             #         file.write(inputFile.read())
