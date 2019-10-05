@@ -141,7 +141,7 @@ class AsemblerIDE(QMainWindow):
 
     def addTreeViewEventHandlers(self):
         self.treeView.fileDoubleCliked.connect(self.loadFileText)
-        self.treeView.workspaceReload.connect(lambda wsProxy: self.openWorkspaceAction(wsProxy.path))
+        self.treeView.workspaceReload.connect(lambda wsProxy: self.openWorkspaceAction(wsProxy.path, updateWorkspace=True))
         self.treeView.workspaceRename.connect(lambda oldPath, wsProxy: self.workspaceConfiguration.replaceWorkpsace(oldPath, wsProxy.path))
         self.treeView.newProjectAdded.connect(lambda: self.toolBar.updateComboBox())
         self.treeView.projectCompile.connect(lambda proxy: self.compileAction(proxy))
@@ -152,6 +152,20 @@ class AsemblerIDE(QMainWindow):
         self.treeView.fileRemove.connect(lambda fileProxy: self.removeFile(fileProxy))
         self.treeView.fileRename.connect(lambda oldPath, fileProxy: self.renameFile(oldPath, fileProxy))
         self.treeView.fileSave.connect(lambda fileProxy: self.updateEditorTrie(fileProxy))
+        self.treeView.invalidWorkspace.connect(self.invalidWorkspace)
+
+    def invalidWorkspace(self, workspace: WorkspaceNode):
+        workspace.deleted = True
+        msg = QMessageBox()
+        msg.setStyleSheet("background-color: #2D2D30; color: white;")
+        msg.setModal(True)
+        msg.setIcon(QMessageBox.Critical)
+        msg.setText("Workspace '{}' has been deleted from the disk.".format(workspace.path))
+        msg.setWindowTitle("Invalid workspace")
+        msg.exec_()
+        if workspace.path in self.workspaceConfiguration.getWorkspaces():
+            self.workspaceConfiguration.removeWorkspace(workspace.path)
+        self.switchWorkspaceAction()
 
     def renameFile(self, oldPath: str, fileProxy: FileProxy):
         # fileProxy.text = None
@@ -187,6 +201,10 @@ class AsemblerIDE(QMainWindow):
             if file in self.editorTabs.tabs:
                 self.editorTabs.closeTab(self.editorTabs.tabs.index(file), askToSave=False)
         self.toolBar.updateComboBox()
+
+    def checkIfWorkspaceDeleted(self):
+        if not os.path.exists(self.workspace.path):
+            self.workspace.deleted = True
 
     def activeTabChanged(self, index):
         if index == -1:
@@ -241,8 +259,13 @@ class AsemblerIDE(QMainWindow):
         self.workspaceConfiguration.saveConfiguration()
         self.snippetManager.saveConfiguration()
         self.tooltipManager.saveConfiguration()
-        self.workspace.proxy.closedNormally = True
-        self.saveWorkspaceAction()
+        self.checkIfWorkspaceDeleted()
+        if not self.workspace.deleted:
+            self.workspace.proxy.closedNormally = True
+            self.saveWorkspaceAction()
+        else:
+            if self.workspace.path in self.workspaceConfiguration.getWorkspaces():
+                self.workspaceConfiguration.removeWorkspace(self.workspace.path)
         super(AsemblerIDE, self).closeEvent(event)
 
     def addMenuBarEventHandlers(self):
@@ -354,7 +377,7 @@ class AsemblerIDE(QMainWindow):
         if self.workspace:
             self.workspace.saveWorkspace(workspacePath)
 
-    def openWorkspaceAction(self, workspacePath=None):
+    def openWorkspaceAction(self, workspacePath=None, updateWorkspace=False):
         if not self.editorTabs.closeAllTabs():
             return
         if not workspacePath:
@@ -384,7 +407,7 @@ class AsemblerIDE(QMainWindow):
         self.applyWsCompatibilityFix(workspacePath)
         attempted_backup = False
         if not self.workspace.proxy.closedNormally:
-            if self.restoreBackupMessage(workspacePath):
+            if self.restoreBackupMessage(workspacePath, updateWorkspace=updateWorkspace):
                 attempted_backup = True
                 if self.loadWorkspaceAction(workspacePath, backup=True):  # attempt to load backup
                     return True
@@ -426,7 +449,7 @@ class AsemblerIDE(QMainWindow):
         self.workspace.path = workspacePath  # changes the path to currently selected dir, in case it was moved
         self.workspace.proxy.path = workspacePath
 
-    def restoreBackupMessage(self, wsName, failedToLoad=False):
+    def restoreBackupMessage(self, wsName, failedToLoad=False, updateWorkspace=False):
         try:
             msg = QMessageBox()
             msg.setStyleSheet("background-color: #2D2D30; color: white;")
@@ -437,10 +460,16 @@ class AsemblerIDE(QMainWindow):
             if failedToLoad:
                 msg.setText("The workplace {} could not be loaded.\n"
                             "\nTime the backup was created: {}".format(wsName, time))
+            elif updateWorkspace:
+                msg.setText("Choose if you want to reload workspace or to recover from backup.\n"
+                            "\nTime the backup was created: {}".format(wsName, time))
             else:
                 msg.setText("The workplace {} was closed unexpectedly.\n"
                             "\nTime the backup was created: {}".format(wsName, time))
-            msg.setInformativeText("Would you like to recover from backup?")
+            if not updateWorkspace:
+                msg.setInformativeText("Would you like to recover from backup?")
+            else:
+                msg.setInformativeText("Would you like to recover from backup? Select No if you just want to update the workspace.")
             msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
             msg.setDefaultButton(QMessageBox.Yes)
             retValue = msg.exec_()
@@ -496,6 +525,9 @@ class AsemblerIDE(QMainWindow):
 
     def debugAction(self, projectProxy=None):
         currentProject: ProjectNode = self.configurationManager.currentProject
+        if not os.path.exists(currentProject.proxy.getProjectPath()):
+            currentProject.eventManager.invalidProject.emit(currentProject)
+            return
         proxy = None
         if projectProxy:
             proxy = projectProxy
@@ -521,6 +553,9 @@ class AsemblerIDE(QMainWindow):
 
     def runAction(self, projectProxy=None):
         currentProject: ProjectNode = self.configurationManager.currentProject
+        if not os.path.exists(currentProject.proxy.getProjectPath()):
+            currentProject.eventManager.invalidProject.emit(currentProject)
+            return
         proxy = None
         if projectProxy:
             proxy = projectProxy
@@ -536,6 +571,9 @@ class AsemblerIDE(QMainWindow):
 
     def compileAction(self, projectProxy=None):
         currentProject: ProjectNode = self.configurationManager.currentProject
+        if not os.path.exists(currentProject.proxy.getProjectPath()):
+            currentProject.eventManager.invalidProject.emit(currentProject)
+            return
         proxy = None
         if projectProxy:
             proxy = projectProxy

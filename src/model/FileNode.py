@@ -59,6 +59,9 @@ class FileNode(Node):
         self.connectActions()
 
     def renameFile(self):
+        if not os.path.exists(self.proxy.getFilePath()):
+            self.eventManager.invalidFile.emit(self)
+            return
         type = self.path.split(".")[1]
         name, entered = QInputDialog.getText(None, "Rename file", "Enter new file name: ", QLineEdit.Normal, self.path.split(".")[0])
         if entered:
@@ -95,9 +98,15 @@ class FileNode(Node):
         return self.menu
 
     def connectActions(self):
-        self.deleteAction.triggered.connect(lambda: self.eventManager.fileRemoveRequsted.emit(self))
+        self.deleteAction.triggered.connect(self.deleteActionTriggered)
         self.saveAction.triggered.connect(self.saveFile)
         self.renameAction.triggered.connect(self.renameFile)
+
+    def deleteActionTriggered(self):
+        if not os.path.exists(self.proxy.getFilePath()):
+            self.eventManager.invalidFile.emit(self)
+            return
+        self.eventManager.fileRemoveRequsted.emit(self)
 
     def saveFile(self):
         if self.proxy.hasUnsavedChanges:
@@ -112,6 +121,8 @@ class FileEventManager(QObject):
     fileRemoveRequsted = Signal(FileNode)
     fileRename = Signal(str, FileProxy)
     fileSave = Signal(FileProxy)
+
+    invalidFile = Signal(FileNode)
 
     def __init__(self):
         super(FileEventManager, self).__init__()

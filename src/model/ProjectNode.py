@@ -86,7 +86,7 @@ class ProjectNode(Node):
         self.newFileAction = QAction(QIcon(main.resource_path("resources/new_file.png")), "New file")
         self.importFileAction = QAction(QIcon(main.resource_path("resources/import_file.png")), "Import file")
         self.compilerOptionsAction = QAction(QIcon(main.resource_path("resources/compiler_options.png")), "Compiler options")
-        self.menu.addAction(self.saveAction)
+        #self.menu.addAction(self.saveAction)
         self.menu.addAction(self.compilerOptionsAction)
         self.menu.addAction(self.compileAction)
         self.menu.addAction(self.debugAction)
@@ -111,6 +111,7 @@ class ProjectNode(Node):
         file.eventManager.fileRemoveRequsted.connect(self.removeFile)
         file.eventManager.fileRename.connect(lambda oldPath, fileProxy: self.eventManager.fileRename.emit(oldPath, fileProxy))
         file.eventManager.fileSave.connect(lambda fileProxy: self.eventManager.fileSave.emit(fileProxy))
+        file.eventManager.invalidFile.connect(self.detachFile)
 
     def connectActions(self):
         self.newFileAction.triggered.connect(self.createNewFile)
@@ -118,17 +119,60 @@ class ProjectNode(Node):
         self.deleteAction.triggered.connect(self.deleteProject)
         self.renameAction.triggered.connect(self.renameProject)
         self.compilerOptionsAction.triggered.connect(self.editCompilerOptions)
-        self.eraseAction.triggered.connect(lambda: self.eventManager.projectDeleteFromDiskRequested.emit(self))
-        self.compileAction.triggered.connect(lambda: self.eventManager.projectCompileRequested.emit(self.proxy))
-        self.debugAction.triggered.connect(lambda: self.eventManager.projectDebugRequested.emit(self.proxy))
-        self.runAction.triggered.connect(lambda: self.eventManager.projectRunRequested.emit(self.proxy))
+        self.eraseAction.triggered.connect(self.eraseActionTriggered)
+        self.compileAction.triggered.connect(self.compileActionTriggered)
+        self.debugAction.triggered.connect(self.debugActionTriggered)
+        self.runAction.triggered.connect(self.runActionTriggered)
+
+    def detachFile(self, fileNode: FileNode):
+        msg = QMessageBox()
+        msg.setStyleSheet("background-color: #2D2D30; color: white;")
+        msg.setModal(True)
+        msg.setIcon(QMessageBox.Critical)
+        msg.setText("File '{}' has been deleted from the disk.".format(fileNode.proxy.path))
+        msg.setWindowTitle("Invalid file")
+        msg.exec_()
+        self.proxy.files.remove(fileNode.proxy)
+        self.removeChild(fileNode)
+        self.parent().saveWorkspace()
+        self.eventManager.fileRemove.emit(fileNode.proxy)
+
+    def eraseActionTriggered(self):
+        if not os.path.exists(self.proxy.getProjectPath()):
+            self.eventManager.invalidProject.emit(self)
+            return
+        self.eventManager.projectDeleteFromDiskRequested.emit(self)
+
+    def compileActionTriggered(self):
+        if not os.path.exists(self.proxy.getProjectPath()):
+            self.eventManager.invalidProject.emit(self)
+            return
+        self.eventManager.projectCompileRequested.emit(self.proxy)
+
+    def debugActionTriggered(self):
+        if not os.path.exists(self.proxy.getProjectPath()):
+            self.eventManager.invalidProject.emit(self)
+            return
+        self.eventManager.projectDebugRequested.emit(self.proxy)
+
+    def runActionTriggered(self):
+        if not os.path.exists(self.proxy.getProjectPath()):
+            self.eventManager.invalidProject.emit(self)
+            return
+        self.eventManager.projectRunRequested.emit(self.proxy)
 
     def editCompilerOptions(self):
+        if not os.path.exists(self.proxy.getProjectPath()):
+            self.eventManager.invalidProject.emit(self)
+            return
         editor = CompilerOptionsEditor(self.proxy)
         if editor.exec_():
             self.parent().saveWorkspace()
 
     def renameProject(self):
+        if not os.path.exists(self.proxy.getProjectPath()):
+            self.eventManager.invalidProject.emit(self)
+            return
         name, entered = QInputDialog.getText(None, "Rename project", "Enter new workspace name: ", QLineEdit.Normal, self.path)
         if entered:
             parentDir = os.path.abspath(os.path.join(self.proxy.getProjectPath(), os.pardir))
@@ -173,6 +217,9 @@ class ProjectNode(Node):
         self.parent().saveWorkspace()
 
     def importFile(self):
+        if not os.path.exists(self.proxy.getProjectPath()):
+            self.eventManager.invalidProject.emit(self)
+            return
         name, entered = QFileDialog.getOpenFileName(None, "Select file to import", ".", "Assembly files (*.S);;C files (*.c)")
         if name:
             fileName = os.path.basename(name)
@@ -221,6 +268,9 @@ class ProjectNode(Node):
             #         file.write(inputFile.read())
 
     def createNewFile(self):
+        if not os.path.exists(self.proxy.getProjectPath()):
+            self.eventManager.invalidProject.emit(self)
+            return
         dialog = NewFileDialog()
         dialog.exec_()
         if dialog.result:
@@ -266,6 +316,9 @@ class ProjectNode(Node):
 
 
     def deleteProject(self):
+        if not os.path.exists(self.proxy.getProjectPath()):
+            self.eventManager.invalidProject.emit(self)
+            return
         self.eventManager.projectRemoveRequested.emit(self)
 
     def loadProjectBackup(self):
@@ -359,6 +412,9 @@ class ProjectEventManager(QObject):
     fileRemove = Signal(FileProxy)
     fileRename = Signal(str, FileProxy)
     fileSave = Signal(FileProxy)
+
+    invalidProject = Signal(ProjectNode)
+    invalidFile = Signal(FileNode)
 
     def __init__(self):
         super(ProjectEventManager, self).__init__()

@@ -22,6 +22,7 @@ from src.model.WorkspaceNode import WorkspaceNode, WorkspaceProxy
 from src.model.FileNode import FileNode, FileProxy
 from src.model.ProjectNode import ProjectNode, ProjectProxy
 from src.controller.ConfigurationManager import ConfigurationManager
+import os
 
 class TreeView(QTreeWidget):
 
@@ -39,6 +40,8 @@ class TreeView(QTreeWidget):
     fileRemove = Signal(FileProxy)
     fileRename = Signal(str, FileProxy)
     fileSave = Signal(FileProxy)
+
+    invalidWorkspace = Signal(WorkspaceNode)
     
     def __init__(self, configurationManager: ConfigurationManager):
         super(TreeView, self).__init__()
@@ -56,7 +59,10 @@ class TreeView(QTreeWidget):
             return
         super(TreeView, self).mouseDoubleClickEvent(event)
         if isinstance(item, FileNode):
-            self.fileDoubleCliked.emit(item.proxy)
+            if not os.path.exists(item.proxy.getFilePath()):
+                item.eventManager.invalidFile.emit(item)
+            else:
+                self.fileDoubleCliked.emit(item.proxy)
 
     def showContextMenu(self, pos):
         item = self.itemAt(pos)
@@ -103,6 +109,7 @@ class TreeView(QTreeWidget):
         self.rootNode.eventManager.fileRemove.connect(lambda fileProxy: self.fileRemove.emit(fileProxy))
         self.rootNode.eventManager.fileRename.connect(lambda oldPath, fileProxy: self.fileRename.emit(oldPath, fileProxy))
         self.rootNode.eventManager.fileSave.connect(lambda fileProxy: self.fileSave.emit(fileProxy))
+        self.rootNode.eventManager.invalidWorkspace.connect(lambda workspace: self.invalidWorkspace.emit(workspace))
 
     def setRoot(self, item: QTreeWidgetItem):
         self.clear()

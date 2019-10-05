@@ -39,31 +39,11 @@ class WorkspaceProxy(object):
         self.projects.append(projectProxy)
 
 
-class WorkspaceEventManager(QObject):
-
-    projectAdded = Signal(ProjectNode)
-    workspaceReload = Signal(WorkspaceProxy)
-    workspaceRename = Signal(str, WorkspaceProxy)
-
-    projectCompile = Signal(ProjectProxy)
-    projectDebug = Signal(ProjectProxy)
-    projectRun = Signal(ProjectProxy)
-    projectRemove = Signal(ProjectNode)
-    projectDeleteFromDisk = Signal(ProjectNode)
-    projectRename = Signal(str, ProjectNode)
-
-    fileRemove = Signal(FileProxy)
-    fileRename = Signal(str, FileProxy)
-    fileSave = Signal(FileProxy)
-
-    def __init__(self):
-        super(WorkspaceEventManager, self).__init__()
-
-
 class WorkspaceNode(Node):
     
     def __init__(self):
         super(WorkspaceNode, self).__init__()
+        self.deleted = False
         self.eventManager = WorkspaceEventManager()
         self.menu = QMenu()
         self.menu.setStyleSheet("background-color: #3E3E42; color: white;")
@@ -91,9 +71,18 @@ class WorkspaceNode(Node):
         self.newProjectAction.triggered.connect(self.createNewProject)
         self.importProjectAction.triggered.connect(self.importProject)
         self.saveAction.triggered.connect(self.saveWorkspace)
-        self.updateAction.triggered.connect(lambda: self.eventManager.workspaceReload.emit(self.proxy))
+        self.updateAction.triggered.connect(self.reloadWorkspace)
+
+    def reloadWorkspace(self):
+        if not os.path.exists(self.path):
+            self.eventManager.invalidWorkspace.emit(self)
+            return
+        self.eventManager.workspaceReload.emit(self.proxy)
 
     def renameWorkspace(self):
+        if not os.path.exists(self.path):
+            self.eventManager.invalidWorkspace.emit(self)
+            return
         name, entered = QInputDialog.getText(None, "Rename workspace", "Enter new workspace name: ", QLineEdit.Normal, os.path.basename(self.path))
         if entered:
             parentDir = os.path.abspath(os.path.join(self.path, os.pardir))
@@ -125,6 +114,9 @@ class WorkspaceNode(Node):
             self.eventManager.workspaceRename.emit(oldPath, self.proxy)
 
     def importProject(self):
+        if not os.path.exists(self.path):
+            self.eventManager.invalidWorkspace.emit(self)
+            return
         name = QFileDialog.getExistingDirectory(None, "Import project", ".", QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks)
         if name:
             projectName = os.path.basename(name)
@@ -175,6 +167,9 @@ class WorkspaceNode(Node):
             self.eventManager.projectAdded.emit(project)
 
     def createNewProject(self):
+        if not os.path.exists(self.path):
+            self.eventManager.invalidWorkspace.emit(self)
+            return
         name, entered = QInputDialog.getText(None, "New project", "Enter project name: ", QLineEdit.Normal, "New project")
         if entered:
             regex = re.compile('[@!#$%^&*()<>?/\|}{~:]')
@@ -226,6 +221,9 @@ class WorkspaceNode(Node):
         self.proxy.closedNormally = previous_state
 
     def saveWorkspace(self, ws_path=None):
+        if not os.path.exists(self.path):
+            self.eventManager.invalidWorkspace.emit(self)
+            return
         try:
            test = self.proxy.closedNormally
         except:
@@ -249,17 +247,27 @@ class WorkspaceNode(Node):
         project.eventManager.fileRemove.connect(lambda fileProxy: self.eventManager.fileRemove.emit(fileProxy))
         project.eventManager.fileRename.connect(lambda oldPath, fileProxy: self.renameFile(oldPath, fileProxy))
         project.eventManager.fileSave.connect(lambda fileProxy: self.eventManager.fileSave.emit(fileProxy))
+        project.eventManager.invalidProject.connect(lambda projectNode: self.removeProject(projectNode, ask=False))
 
     def renameFile(self, oldPath, fileProxy):
         self.saveWorkspace()
         self.eventManager.fileRename.emit(oldPath, fileProxy)
 
-    def removeProject(self, project: ProjectNode):
-        answer = QMessageBox.question(None, "Delete project",
-                                      "Are you sure you want to remove project {} from the workspace?".format(project.proxy.path),
-                                      QMessageBox.Yes | QMessageBox.No)
-        if not answer == QMessageBox.Yes:
-            return
+    def removeProject(self, project: ProjectNode, ask=True):
+        if ask:
+            answer = QMessageBox.question(None, "Delete project",
+                                          "Are you sure you want to remove project {} from the workspace?".format(project.proxy.path),
+                                          QMessageBox.Yes | QMessageBox.No)
+            if not answer == QMessageBox.Yes:
+                return
+        else:
+            msg = QMessageBox()
+            msg.setStyleSheet("background-color: #2D2D30; color: white;")
+            msg.setModal(True)
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText("Project '{}' has been deleted from the disk.".format(project.proxy.path))
+            msg.setWindowTitle("Invalid project")
+            msg.exec_()
         self.proxy.projects.remove(project.proxy)
         self.eventManager.projectRemove.emit(project)
         self.removeChild(project)
@@ -321,3 +329,25 @@ class WorkspaceNode(Node):
             return True
         except:
             return False
+
+class WorkspaceEventManager(QObject):
+
+    projectAdded = Signal(ProjectNode)
+    workspaceReload = Signal(WorkspaceProxy)
+    workspaceRename = Signal(str, WorkspaceProxy)
+
+    projectCompile = Signal(ProjectProxy)
+    projectDebug = Signal(ProjectProxy)
+    projectRun = Signal(ProjectProxy)
+    projectRemove = Signal(ProjectNode)
+    projectDeleteFromDisk = Signal(ProjectNode)
+    projectRename = Signal(str, ProjectNode)
+
+    fileRemove = Signal(FileProxy)
+    fileRename = Signal(str, FileProxy)
+    fileSave = Signal(FileProxy)
+
+    invalidWorkspace = Signal(WorkspaceNode)
+
+    def __init__(self):
+        super(WorkspaceEventManager, self).__init__()
