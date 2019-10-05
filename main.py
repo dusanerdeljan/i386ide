@@ -555,6 +555,10 @@ class AsemblerIDE(QMainWindow):
         return None
 
     def loadFileText(self, fileProxy):
+        key = "{}/{}".format(fileProxy.parent.path, fileProxy.path)
+        if key in self.editorTabs.projectTabs:
+            self.editorTabs.setCurrentIndex(self.editorTabs.tabs.index(fileProxy))
+            return
         text = self.openFileAction(fileProxy)
         fileProxy.text = text
         fileProxy.hasUnsavedChanges = False
