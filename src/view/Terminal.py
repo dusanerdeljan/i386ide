@@ -26,11 +26,12 @@ class Terminal(QDockWidget):
     def __init__(self):
         super(Terminal, self).__init__()
         self.setAllowedAreas(Qt.BottomDockWidgetArea | Qt.RightDockWidgetArea)
-        self.setFeatures(QDockWidget.DockWidgetMovable)
+        self.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetClosable)
         self.titleLabel = QLabel()
         self.titleLabel.setStyleSheet("background-color: #3E3E42; color: white")
         self.titleLabel.setText("Terminal")
         self.setTitleBarWidget(self.titleLabel)
+        self.setWindowTitle("Terminal")
         self.console = TerminalConsole()
         self.setWidget(self.console)
 

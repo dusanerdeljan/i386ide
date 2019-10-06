@@ -28,6 +28,7 @@ class AboutDialog(QDialog):
         self.setStyleSheet("background-color: #232323;")
         self.setWindowFlags(Qt.Window)
         self.setWindowFlag(Qt.WindowContextHelpButtonHint, False)
+        self.setWindowFlag(Qt.WindowMinMaxButtonsHint, False)
         self.setWindowFlag(Qt.WindowStaysOnTopHint, True)
         self.setWindowIcon(QIcon(main.resource_path("resources/app_icon.ico")))
         self.setWindowTitle("About i386ide")

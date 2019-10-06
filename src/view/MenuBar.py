@@ -34,7 +34,7 @@ class MenuBar(QMenuBar):
 
         self.createFileMenuItemActions()
         self.createEditMenuItemActions()
-        self.createViewMenuItemActions()
+        # self.createViewMenuItemActions()
         self.createHelpMenuItemActions()
 
     def createFileMenuItemActions(self):
@@ -80,19 +80,18 @@ class MenuBar(QMenuBar):
         self.editSettings = QAction(QIcon(resource_path("resources/settings.png")), "Edit IDE settings", self)
         self.edit.addAction(self.editSettings)
 
-    def createViewMenuItemActions(self):
-        self.showTerminal = QAction("Hide terminal", self)
-        self.view.addAction(self.showTerminal)
-
-        self.showTree = QAction("Hide project explorer", self)
-        self.view.addAction(self.showTree)
-
-        self.showHelp = QAction("Hide help", self)
-        self.view.addAction(self.showHelp)
-
-
-        self.showAscii = QAction("Hide ASCII table", self)
-        self.view.addAction(self.showAscii)
+    # def createViewMenuItemActions(self):
+    #     self.showTerminal = QAction("Hide terminal", self)
+    #     self.view.addAction(self.showTerminal)
+    #
+    #     self.showTree = QAction("Hide project explorer", self)
+    #     self.view.addAction(self.showTree)
+    #
+    #     self.showHelp = QAction("Hide help", self)
+    #     self.view.addAction(self.showHelp)
+    #
+    #     self.showAscii = QAction("Hide ASCII table", self)
+    #     self.view.addAction(self.showAscii)
 
 
     def createHelpMenuItemActions(self):
