@@ -110,8 +110,17 @@ class FileNode(Node):
 
     def saveFile(self):
         if self.proxy.hasUnsavedChanges:
-            self.proxy.saveFile()
-            self.eventManager.fileSave.emit(self.proxy)
+            try:
+                self.proxy.saveFile()
+                self.eventManager.fileSave.emit(self.proxy)
+            except:
+                msg = QMessageBox()
+                msg.setStyleSheet("background-color: #2D2D30; color: white;")
+                msg.setModal(True)
+                msg.setIcon(QMessageBox.Critical)
+                msg.setText("The following file could not be saved: {}".format(self.proxy.path))
+                msg.setWindowTitle("File save error")
+                msg.exec_()
 
     def getFilePath(self):
         return os.path.join(self.proxy.parent.parent.path, self.proxy.parent.path, self.proxy.path)

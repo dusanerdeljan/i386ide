@@ -270,7 +270,7 @@ class AsemblerIDE(QMainWindow):
 
     def addMenuBarEventHandlers(self):
         self.menuBar.newWorkspaceAction.triggered.connect(self.newWorkspaceAction)
-        self.menuBar.saveWorkspaceAction.triggered.connect(self.saveWorkspaceAction)
+        self.menuBar.saveWorkspaceAction.triggered.connect(self.saveWorkpsaceAllFiles)
         self.menuBar.openWorkspaceAction.triggered.connect(self.openWorkspaceAction)
         self.menuBar.switchWorkspaceAction.triggered.connect(self.switchWorkspaceAction)
 
@@ -373,6 +373,10 @@ class AsemblerIDE(QMainWindow):
     def saveWorkspaceAction(self, workspacePath=None):
         if self.workspace:
             self.workspace.saveWorkspace(workspacePath)
+
+    def saveWorkpsaceAllFiles(self):
+        self.saveAllFiles()
+        self.saveWorkspaceAction()
 
     def openWorkspaceAction(self, workspacePath=None, updateWorkspace=False):
         if not self.editorTabs.closeAllTabs():
@@ -507,7 +511,7 @@ class AsemblerIDE(QMainWindow):
             self.configurationManager.allProjects.clear()
             self.configurationManager.allProjects.extend(projects)
         self.toolBar.updateComboBox()
-        self.treeView.expandAll()
+        #self.treeView.expandAll()
         self.terminal.executeCommand("cd {}".format(self.workspace.path))
         self.workspaceConfiguration.addWorkspace(self.workspace.proxy.path)
         if workspacePath:
@@ -613,16 +617,49 @@ class AsemblerIDE(QMainWindow):
             self.editorTabs.projectTabs[key].widget.editor.updateTrie()
             self.editorTabs.removeChangeIdentificator(proxy)
 
+    def saveAllFiles(self):
+        couldNotBeSaved = []
+        for i in range(len(self.editorTabs.tabs)):
+            fileProxy = self.editorTabs.tabs[i]
+            try:
+                if fileProxy and fileProxy.hasUnsavedChanges:
+                    with open(fileProxy.getFilePath(), 'w') as file:
+                        file.write(fileProxy.text)
+                        fileProxy.hasUnsavedChanges = False
+                    self.updateEditorTrie(fileProxy)
+            except:
+                couldNotBeSaved.append(fileProxy.path)
+        self.saveWorkspaceAction()
+        if couldNotBeSaved:
+            msg = QMessageBox()
+            msg.setStyleSheet("background-color: #2D2D30; color: white;")
+            msg.setModal(True)
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText("The following file(s) could not be saved: {}".format(
+                ','.join(couldNotBeSaved)))
+            msg.setWindowTitle("File save error")
+            msg.exec_()
+
+
     def saveFileAction(self):
         if len(self.editorTabs.tabs):
-            proxy = self.editorTabs.getCurrentFileProxy()
-            if proxy and proxy.hasUnsavedChanges:
-                with open(proxy.getFilePath(), 'w') as file:
-                    file.write(proxy.text)
-                    proxy.hasUnsavedChanges = False
-                self.updateEditorTrie(proxy)
-            self.saveWorkspaceAction()
-            return True
+                proxy = self.editorTabs.getCurrentFileProxy()
+                if proxy and proxy.hasUnsavedChanges:
+                    try:
+                        with open(proxy.getFilePath(), 'w') as file:
+                            file.write(proxy.text)
+                            proxy.hasUnsavedChanges = False
+                        self.updateEditorTrie(proxy)
+                    except:
+                        msg = QMessageBox()
+                        msg.setStyleSheet("background-color: #2D2D30; color: white;")
+                        msg.setModal(True)
+                        msg.setIcon(QMessageBox.Critical)
+                        msg.setText("The following file could not be saved: {}".format(proxy.path))
+                        msg.setWindowTitle("File save error")
+                        msg.exec_()
+                self.saveWorkspaceAction()
+                return True
 
     def openFileAction(self, fileName: FileProxy):
         text = None

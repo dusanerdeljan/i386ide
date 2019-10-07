@@ -16,7 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 """
 
-from PySide2.QtWidgets import QDialog, QLineEdit, QPlainTextEdit, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox, QWidget, QFrame
+from PySide2.QtWidgets import QDialog, QLineEdit, QPlainTextEdit, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QWidget, QFrame
 from PySide2.QtGui import QIcon, QTextCursor
 from PySide2.QtCore import Qt, Signal
 import re
@@ -64,8 +64,10 @@ class FindDialog(QFrame):
         self.hbox = QHBoxLayout()
         self.hbox.addWidget(self.findLabel)
         self.hbox.addWidget(self.replaceLabel)
-        self.replaceAllCheckBox = QCheckBox("Replace all occurrences")
-        self.hbox.addWidget(self.replaceAllCheckBox)
+        self.replaceAllButton = QPushButton("Repalce all")
+        self.replaceAllButton.setStyleSheet("background-color: #232323; color: white;")
+        self.replaceAllButton.clicked.connect(self.replaceAllButtonClicked)
+        self.hbox.addWidget(self.replaceAllButton)
         self.setLayout(self.hbox)
         self.findLabel.setFocus()
         self.setFixedHeight(40)
@@ -89,12 +91,15 @@ class FindDialog(QFrame):
         cursor.movePosition(QTextCursor.Right, QTextCursor.KeepAnchor, end-start)
         self.editor.setTextCursor(cursor)
 
-    def replaceLabelEnterPressed(self):
-        if not self.replaceAllCheckBox.isChecked():
+    def replaceAllButtonClicked(self):
+        previousCursor = self.editor.textCursor()
+        while self.find():
             self.replace()
-        else:
-            while self.find():
-                self.replace()
+            previousCursor = self.editor.textCursor()
+        self.editor.setTextCursor(previousCursor)
+
+    def replaceLabelEnterPressed(self):
+        self.replace()
 
     def replace(self):
         if self.lastMatch and self.editor.textCursor().hasSelection():
@@ -103,6 +108,8 @@ class FindDialog(QFrame):
 
     def find(self, continueSearch=None):
         searchTerm = re.escape(self.findLabel.text())
+        if searchTerm == "":
+            return False
         self.text = self.editor.toPlainText()
         regex = re.compile(searchTerm, re.I)
         start = self.lastMatch.start() + 1 if (self.lastMatch and continueSearch) else 0

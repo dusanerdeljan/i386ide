@@ -40,7 +40,7 @@ class ToolBar(QToolBar):
         self.configurationManager = configurationManager
         self.setStyleSheet("background-color: #2D2D30; color: white; font-weight: 500")
         self.setMovable(False)
-        self.setWindowTitle("Tool bar")
+        self.setWindowTitle("Toolbar")
         self.compile = QAction(QIcon(main.resource_path("resources/compile.png")), "Compile", self)
         self.compile.setShortcut(QKeySequence("Ctrl+Shift+B"))
         self.debug = QAction(QIcon(main.resource_path("resources/debug.png")), "Debug", self)
