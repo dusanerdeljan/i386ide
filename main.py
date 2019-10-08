@@ -395,15 +395,23 @@ class AsemblerIDE(QMainWindow):
             msg.setWindowTitle("Workspace creation error")
             msg.exec_()
             return False
-        workspace = WorkspaceProxy()
         path = os.path.join(workspacePath, ".metadata")
+        backup_path = os.path.join(workspacePath, ".backup")
+        if os.path.isdir(path) or os.path.isdir(backup_path):
+            self.msgInvalidFolderError(workspacePath)
+            return
+        workspace = WorkspaceProxy()
+        self.workspace = WorkspaceNode()
         if os.path.exists(path):
             try:  # in try block in case there is a corrupted .metadata file on the path
                 with open(path, 'rb') as file:
                     workspace = pickle.load(file)
             except:
                 workspace.closedNormally = False  # set it to false to trigger backup msg in case .metadata is corrupted
-        self.workspace = WorkspaceNode()
+        elif not os.path.exists(backup_path):  # creates a .metadata file for a clean new workspace
+            self.workspace.proxy = workspace
+            self.applyWsCompatibilityFix(workspacePath)
+            self.saveWorkspaceAction(workspacePath)
         self.workspace.proxy = workspace
         self.applyWsCompatibilityFix(workspacePath)
         attempted_backup = False
@@ -424,6 +432,17 @@ class AsemblerIDE(QMainWindow):
             else:
                 self.messageBackupError()
         return False
+
+    def msgInvalidFolderError(self, path):
+        msg = QMessageBox()
+        msg.setStyleSheet("background-color: #2D2D30; color: white;")
+        msg.setModal(True)
+        msg.setIcon(QMessageBox.Critical)
+        msg.setText(
+            "Invalid folder for a workspace."
+            "\nEnsure there are no .metadata and .backup folders in \n{}".format(path))
+        msg.setWindowTitle("Failed to load workspace.")
+        msg.exec_()
 
     def messageBackupError(self, msgType=None):
         msg = QMessageBox()

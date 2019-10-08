@@ -216,8 +216,11 @@ class WorkspaceNode(Node):
             save_path = ws_path
         else:
             save_path = self.proxy.path
-        with open(os.path.join(save_path, '.backup'), 'wb') as backup:
-            pickle.dump(self.proxy, backup, protocol=pickle.HIGHEST_PROTOCOL)
+        try:
+            with open(os.path.join(save_path, '.backup'), 'wb') as backup:
+                pickle.dump(self.proxy, backup, protocol=pickle.HIGHEST_PROTOCOL)
+        except:
+            return
         self.proxy.closedNormally = previous_state
 
     def saveWorkspace(self, ws_path=None):
@@ -232,8 +235,11 @@ class WorkspaceNode(Node):
             save_path = ws_path
         else:
             save_path = self.proxy.path
-        with open(os.path.join(save_path, '.metadata'), 'wb') as metadata:
-            pickle.dump(self.proxy, metadata, protocol=pickle.HIGHEST_PROTOCOL)
+        try:
+            with open(os.path.join(save_path, '.metadata'), 'wb') as metadata:
+                pickle.dump(self.proxy, metadata, protocol=pickle.HIGHEST_PROTOCOL)
+        except:
+            return
         self.saveBackup(save_path)
 
 
