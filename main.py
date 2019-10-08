@@ -98,7 +98,7 @@ class AsemblerIDE(QMainWindow):
         self.addTreeViewEventHandlers()
         self.checkWorkspaceConfiguration()
         #self.populateTreeView()
-        self.statusBar.comboBox.currentTextChanged.connect(self.changeEditorSyntax)
+        #self.statusBar.comboBox.currentTextChanged.connect(self.changeEditorSyntax)
         self.statusBar.tabWidthComboBox.currentTextChanged.connect(self.changeEditorTabWidth)
         self.timer = QTimer()
         self.timer.start(self.backupTimer)
@@ -215,7 +215,7 @@ class AsemblerIDE(QMainWindow):
         key = "{}/{}".format(proxy.parent.path, proxy.path)
         self.statusBar.comboBox.setCurrentText(syntax)
         self.statusBar.tabWidthComboBox.setCurrentText(str(self.editorTabs.projectTabs[key].widget.editor.tabSize))
-        self.changeEditorSyntax(syntax)
+        #self.changeEditorSyntax(syntax)
 
     def populateTreeView(self):
         workspace = WorkspaceNode()
@@ -610,6 +610,10 @@ class AsemblerIDE(QMainWindow):
             update = False
         self.editorTabs.addNewTab(fileProxy, update)
         self.statusBar.comboBox.setCurrentText(currentText)
+        if currentText == "Assembly":
+            self.editorTabs.projectTabs[key].widget.editor.sintaksa = AsemblerSintaksa(self.editorTabs.projectTabs[key].widget.editor.document())
+        elif currentText == "C":
+            self.editorTabs.projectTabs[key].widget.editor.sintaksa = CSyntax(self.editorTabs.projectTabs[key].widget.editor.document())
 
     def updateEditorTrie(self, proxy: FileProxy):
         key = "{}/{}".format(proxy.parent.path, proxy.path)
