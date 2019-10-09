@@ -544,6 +544,9 @@ class AsemblerIDE(QMainWindow):
 
     def debugAction(self, projectProxy=None):
         currentProject: ProjectNode = self.configurationManager.currentProject
+        if not currentProject:
+            self.showNoCurrentProjectMessage("Debug")
+            return
         if not os.path.exists(currentProject.proxy.getProjectPath()):
             currentProject.eventManager.invalidProject.emit(currentProject)
             return
@@ -572,6 +575,9 @@ class AsemblerIDE(QMainWindow):
 
     def runAction(self, projectProxy=None):
         currentProject: ProjectNode = self.configurationManager.currentProject
+        if not currentProject:
+            self.showNoCurrentProjectMessage("Run")
+            return
         if not os.path.exists(currentProject.proxy.getProjectPath()):
             currentProject.eventManager.invalidProject.emit(currentProject)
             return
@@ -590,6 +596,9 @@ class AsemblerIDE(QMainWindow):
 
     def compileAction(self, projectProxy=None):
         currentProject: ProjectNode = self.configurationManager.currentProject
+        if not currentProject:
+            self.showNoCurrentProjectMessage("Compile")
+            return
         if not os.path.exists(currentProject.proxy.getProjectPath()):
             currentProject.eventManager.invalidProject.emit(currentProject)
             return
@@ -604,6 +613,15 @@ class AsemblerIDE(QMainWindow):
             self.terminal.console.setFocus()
             self.terminal.executeCommand(commandString)
             self.toolBar.projectComboBox.setCurrentText(proxy.path)
+
+    def showNoCurrentProjectMessage(self, action: str):
+        msg = QMessageBox()
+        msg.setStyleSheet("background-color: #2D2D30; color: white;")
+        msg.setModal(True)
+        msg.setIcon(QMessageBox.Critical)
+        msg.setText("You have to select a project first.")
+        msg.setWindowTitle("{} error".format(action.capitalize()))
+        msg.exec_()
 
     def checkExecutable(self):
         if self.editor.filePath:

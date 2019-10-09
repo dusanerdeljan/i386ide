@@ -37,7 +37,7 @@ class WorkspaceConfigurationEditor(QDialog):
         self.setWindowTitle("Choose a workspace directory")
         self.setStyleSheet("background-color: #2D2D30; color: white;")
         self.setWindowFlag(Qt.WindowContextHelpButtonHint, False)
-        self.setWindowFlag(Qt.WindowStaysOnTopHint, True)
+        #self.setWindowFlag(Qt.WindowStaysOnTopHint, True)
         self.setFixedSize(500, 150)
         self.comboBox = QComboBox()
         self.updateComboBox()
