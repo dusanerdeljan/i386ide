@@ -342,6 +342,11 @@ class AsemblerIDE(QMainWindow):
         workspace = WorkspaceNode()
         name = QFileDialog.getExistingDirectory(self, "New workspace", "select new workspace directory")
         if name:
+            path = os.path.join(name, ".metadata")
+            backup_path = os.path.join(name, ".backup")
+            if os.path.isdir(path) or os.path.isdir(backup_path):
+                self.msgInvalidFolderError(name)
+                return
             wsname = name[name.rindex(os.path.sep)+1:]
             regex = re.compile('[@!#$%^&*()<>?/\|}{~:]')
             if ' ' in name or regex.search(wsname):

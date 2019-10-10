@@ -97,7 +97,7 @@ class WorkspaceConfigurationEditor(QDialog):
                 msg.setStyleSheet("background-color: #2D2D30; color: white;")
                 msg.setModal(True)
                 msg.setIcon(QMessageBox.Critical)
-                msg.setText("Failed to load '{}' because it is deleted from the disk.".format(self.comboBox.currentText()))
+                msg.setText("Failed to load '{}'.".format(self.comboBox.currentText()))
                 msg.setWindowTitle("Failed to load workspace.")
                 msg.exec_()
                 self.workspaceConfiguration.removeWorkspace(self.comboBox.currentText())
