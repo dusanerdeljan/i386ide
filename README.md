@@ -14,6 +14,9 @@ This program is built for Linux operating system (Ubuntu 16.04 or higher) and re
 
 To run this program from the source code you need **Python 3.6 or higher** and you have to install **PySide2** library. Run command is *python3 main.py*.
 
+## Download executable file
+[i386ide v1.0.0 for Ubuntu 18.04 or newer](https://drive.google.com/file/d/1Z7bS9fTf1BKzwe0CxKGKaJdArIC95riq/view?usp=sharing)
+
 ## Credits
 
 All the icons in our program are downloaded from https://remixicon.com/.
