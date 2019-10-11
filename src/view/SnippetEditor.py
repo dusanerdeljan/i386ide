@@ -189,7 +189,7 @@ class SnippetEditor(QDialog):
         self.accept()
 
     def updateEditor(self, snippet, previous):
-        if snippet:
+        if snippet and str(snippet) in self.snippetDict:
             self.nameEdit.setText(str(snippet))
             self.editor.setText(self.snippetDict[str(snippet)])
 
