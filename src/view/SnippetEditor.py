@@ -111,7 +111,7 @@ class SnippetEditor(QDialog):
         snippet = self.listView.currentItem()
         if snippet:
             name = self.nameEdit.text()
-            if not self.checkSnippetName(name):
+            if not self.checkSnippetName(name, checkSelected=True):
                 return
             del self.snippetDict[str(snippet)]
             self.snippetDict[name] = self.editor.toPlainText()
@@ -135,8 +135,12 @@ class SnippetEditor(QDialog):
             del self.snippetDict[str(snippet)]
             self.updateList()
 
-    def checkSnippetName(self, name):
-        if name in self.snippetDict:
+    def checkSnippetName(self, name, checkSelected=False):
+        if checkSelected:
+            isSelected = name == str(self.listView.currentItem())
+        else:
+            isSelected = False
+        if not isSelected and name in self.snippetDict:
             msg = QMessageBox()
             msg.setStyleSheet("background-color: #2D2D30; color: white;")
             msg.setModal(True)

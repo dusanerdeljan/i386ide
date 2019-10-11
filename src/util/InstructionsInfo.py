@@ -20,19 +20,19 @@ class InstructionsInfo(object):
     # TODO: Ovde treba upisati opise svih instrukcija
     INFO = {
         # ======= ADC ======
-        'adc': """<b>adc</b> <em>src</em>, <em>dst</em><p>Sabira izvorni i odredišni operand i rezultat smešta u od,
-        redišni operand. Prilikom sabiranja,zatečeni prenos se uzima u obzir.</p>""",
+        'adc': """<b>adc</b> <em>src</em>, <em>dst</em><p>Sabira izvorni i odredišni operand i rezultat smešta u odredišni operand. Prilikom sabiranja, 
+        zatečeni prenos se uzima u obzir.</p>""",
         'adcb': """<b>adcb</b> <em>src</em>, <em>dst</em><p>Sabira izvorni i odredišni operand i rezultat smešta u 
-        odredišni operand. Prilikom sabiranja,zatečeni prenos se uzima u obzir.</p>""",
+        odredišni operand. Prilikom sabiranja, zatečeni prenos se uzima u obzir.</p>""",
         'adcw': """<b>adcw</b> <em>src</em>, <em>dst</em><p>Sabira izvorni i odredišni operand i rezultat smešta u 
-        odredišni operand. Prilikom sabiranja,zatečeni prenos se uzima u obzir.</p>""",
+        odredišni operand. Prilikom sabiranja, zatečeni prenos se uzima u obzir.</p>""",
         'adcl': """<b>adcl</b> <em>src</em>, <em>dst</em><p>Sabira izvorni i odredišni operand i rezultat smešta u
-         odredišni operand. Prilikom sabiranja,zatečeni prenos se uzima u obzir.</p>""",
+         odredišni operand. Prilikom sabiranja, zatečeni prenos se uzima u obzir.</p>""",
         # ======= ADD ======
-        'add': """<b>add</b> <em>src</em>, <em>dst</em><p>Sabira izvorni i odredišni operand i rezultat smešta u odredišni operand. Prilikom sabiranja,zatečeni prenos se ne uzima u obzir.</p>""",
-        'addb': """<b>addb</b> <em>src</em>, <em>dst</em><p>Sabira izvorni i odredišni operand i rezultat smešta u odredišni operand. Prilikom sabiranja,zatečeni prenos se ne uzima u obzir.</p>""",
-        'addw': """<b>addw</b> <em>src</em>, <em>dst</em><p>Sabira izvorni i odredišni operand i rezultat smešta u odredišni operand. Prilikom sabiranja,zatečeni prenos se ne uzima u obzir.</p>""",
-        'addl': """<b>addl</b> <em>src</em>, <em>dst</em><p>Sabira izvorni i odredišni operand i rezultat smešta u odredišni operand. Prilikom sabiranja,zatečeni prenos se ne uzima u obzir.</p>""",
+        'add': """<b>add</b> <em>src</em>, <em>dst</em><p>Sabira izvorni i odredišni operand i rezultat smešta u odredišni operand. Prilikom sabiranja, zatečeni prenos se ne uzima u obzir.</p>""",
+        'addb': """<b>addb</b> <em>src</em>, <em>dst</em><p>Sabira izvorni i odredišni operand i rezultat smešta u odredišni operand. Prilikom sabiranja, zatečeni prenos se ne uzima u obzir.</p>""",
+        'addw': """<b>addw</b> <em>src</em>, <em>dst</em><p>Sabira izvorni i odredišni operand i rezultat smešta u odredišni operand. Prilikom sabiranja, zatečeni prenos se ne uzima u obzir.</p>""",
+        'addl': """<b>addl</b> <em>src</em>, <em>dst</em><p>Sabira izvorni i odredišni operand i rezultat smešta u odredišni operand. Prilikom sabiranja, zatečeni prenos se ne uzima u obzir.</p>""",
         # ======= AND ======
         'and': """<b>and</b> <em>src</em>, <em>dst</em><p>Vrši operaciju logičkog I između korespondentnih bita izvornog i odredišnog operanda i rezultat
 smešta u odredišni.</p>""",
@@ -490,16 +490,16 @@ Najmanje značajni bit dobija vrednost 0. Ukoliko se pomera za više od jednog m
 je nedefinisan. Indikator carry ima vrednost poslednjeg bita istisnutog sa najviše značajne pozicije.</p>""",
         # ======= SHR ======
         'shr': """<b>shr</b> <em>cnt</em>, <em>dst</em><p>Pomera odredišni operand u desno za navedeni broj mesta (neposredni operand ili registar cl).
-Naznačajniji bit dobija vrednost 0. Ukoliko se pomera za više od jednog mesta, indikator overflow je
+Najznačajniji bit dobija vrednost 0. Ukoliko se pomera za više od jednog mesta, indikator overflow je
 nedefinisan. Indikator carry ima vrednost poslednjeg bita istisnutog sa najmanje značajne pozicije.</p>""",
         'shrb': """<b>shrb</b> <em>cnt</em>, <em>dst</em><p>Pomera odredišni operand u desno za navedeni broj mesta (neposredni operand ili registar cl).
-Naznačajniji bit dobija vrednost 0. Ukoliko se pomera za više od jednog mesta, indikator overflow je
+Najznačajniji bit dobija vrednost 0. Ukoliko se pomera za više od jednog mesta, indikator overflow je
 nedefinisan. Indikator carry ima vrednost poslednjeg bita istisnutog sa najmanje značajne pozicije.</p>""",
         'shrw': """<b>shrw</b> <em>cnt</em>, <em>dst</em><p>Pomera odredišni operand u desno za navedeni broj mesta (neposredni operand ili registar cl).
-Naznačajniji bit dobija vrednost 0. Ukoliko se pomera za više od jednog mesta, indikator overflow je
+Najznačajniji bit dobija vrednost 0. Ukoliko se pomera za više od jednog mesta, indikator overflow je
 nedefinisan. Indikator carry ima vrednost poslednjeg bita istisnutog sa najmanje značajne pozicije.</p>""",
         'shrl': """<b>shrl</b> <em>cnt</em>, <em>dst</em><p>Pomera odredišni operand u desno za navedeni broj mesta (neposredni operand ili registar cl).
-Naznačajniji bit dobija vrednost 0. Ukoliko se pomera za više od jednog mesta, indikator overflow je
+Najznačajniji bit dobija vrednost 0. Ukoliko se pomera za više od jednog mesta, indikator overflow je
 nedefinisan. Indikator carry ima vrednost poslednjeg bita istisnutog sa najmanje značajne pozicije.</p>""",
         # ======= STC ======
         'stc': """<b>stc</b><p>Postavlja carry indikator na 1.</p>""",
