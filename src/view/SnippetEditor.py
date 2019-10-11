@@ -76,48 +76,54 @@ class SnippetEditor(QDialog):
         self.addButton.setStyleSheet("background-color: #2D2D30; color: white;")
         self.removeButton = QPushButton("Remove")
         self.removeButton.setStyleSheet("background-color: #2D2D30; color: white;")
-        self.saveItemButton = QPushButton("Save snippet")
-        self.saveItemButton.setStyleSheet("background-color: #2D2D30; color: white;")
+        self.applyButton = QPushButton("Apply")
+        self.applyButton.setStyleSheet("background-color: #2D2D30; color: white;")
         self.cancelButton = QPushButton("Cancel")
         self.cancelButton.setStyleSheet("background-color: #2D2D30; color: white;")
-        self.saveButton = QPushButton("Save configuration")
-        self.saveButton.setStyleSheet("background-color: #2D2D30; color: white;")
+        self.okButton = QPushButton("OK")
+        self.okButton.setStyleSheet("background-color: #2D2D30; color: white;")
         self.resetButton = QPushButton("Reset to default")
         self.resetButton.setStyleSheet("background-color: #2D2D30; color: white;")
         self.vbox.addWidget(self.listView)
         self.hbox2.addWidget(self.addButton)
         self.hbox2.addWidget(self.removeButton)
-        self.hbox2.addWidget(self.saveItemButton)
+        self.hbox2.addWidget(self.applyButton)
         self.vbox.addLayout(self.hbox2)
         self.vbox2.addWidget(self.nameEdit)
         self.vbox2.addWidget(self.editor)
         self.hbox3.addWidget(self.cancelButton)
         self.hbox3.addWidget(self.resetButton)
-        self.hbox3.addWidget(self.saveButton)
+        self.hbox3.addWidget(self.okButton)
         self.vbox2.addLayout(self.hbox3)
         self.hbox.addLayout(self.vbox)
         self.hbox.addLayout(self.vbox2)
         self.setLayout(self.hbox)
 
         self.listView.currentItemChanged.connect(self.updateEditor)
-        self.saveButton.clicked.connect(self.saveButtonClicked)
+        self.okButton.clicked.connect(self.okButtonClicked)
         self.removeButton.clicked.connect(self.removeButtonClicked)
         self.addButton.clicked.connect(self.addButtonClicked)
-        self.saveItemButton.clicked.connect(self.saveItemButtonClicked)
+        self.applyButton.clicked.connect(self.appyButtonClicked)
         self.cancelButton.clicked.connect(self.cancelButtonClicked)
         self.resetButton.clicked.connect(self.resetButtonClicked)
 
-    def saveItemButtonClicked(self):
-        snippet = self.listView.currentItem()
-        if snippet:
-            name = self.nameEdit.text()
-            if not self.checkSnippetName(name, checkSelected=True):
-                return
-            del self.snippetDict[str(snippet)]
-            self.snippetDict[name] = self.editor.toPlainText()
-            self.updateList()
+    def resetingSnippetsWarning(self):
+        msg = QMessageBox()
+        msg.setStyleSheet("background-color: #2D2D30; color: white;")
+        msg.setParent(None)
+        msg.setModal(True)
+        msg.setWindowTitle("Confirm reset to default")
+        msg.setText("This will delete all snippets that were created by the user!")
+        msg.setInformativeText("Do you want to continue?")
+        msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        msg.setDefaultButton(QMessageBox.Yes)
+        retValue = msg.exec_()
+        if retValue == QMessageBox.Yes:
+            return True
 
     def resetButtonClicked(self):
+        if not self.resetingSnippetsWarning():
+            return
         self.snippetDict.clear()
         for key in SnippetManager.DEFAULT_SNIPPETS:
             self.snippetDict[key] = SnippetManager.DEFAULT_SNIPPETS[key]
@@ -179,14 +185,33 @@ class SnippetEditor(QDialog):
             self.listView.addItem(item)
             self.listView.setCurrentItem(item)
 
-    def updateList(self):
+    def updateList(self, selectedName=""):
         self.listView.clear()
         for snippet in self.snippetDict:
             self.listView.addItem(SnippetListWidgetItem(snippet))
+        if selectedName:
+            items = self.listView.findItems(selectedName, Qt.MatchExactly)
+            if len(items) > 0:
+                for item in items:
+                    self.listView.setItemSelected(item, True)
 
-    def saveButtonClicked(self):
+    def appyButtonClicked(self):
+        snippet = self.listView.currentItem()
+        if snippet:
+            name = self.nameEdit.text()
+            if not self.checkSnippetName(name, checkSelected=True):
+                return
+            del self.snippetDict[str(snippet)]
+            self.snippetDict[name] = self.editor.toPlainText()
+            self.updateList(selectedName=name)
+            self.snippetManager.updateSnippets(self.snippetDict)
+        return True
+
+
+    def okButtonClicked(self):
         self.snippetManager.updateSnippets(self.snippetDict)
-        self.accept()
+        if self.appyButtonClicked():
+            self.accept()
 
     def updateEditor(self, snippet, previous):
         if snippet and str(snippet) in self.snippetDict:
