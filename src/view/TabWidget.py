@@ -28,6 +28,7 @@ import os
 import main
 
 class TabWidget(QWidget):
+
     def __init__(self, fileProxy: FileProxy, snippetManager: SnippetManager, tooltipManager: TooltipManager):
         super(TabWidget, self).__init__()
         self.editor = CodeEditor(fileProxy, snippetManager, tooltipManager)
@@ -44,6 +45,7 @@ class TabWidget(QWidget):
 class EditorTab(QWidget):
 
     fileChanged = Signal(FileProxy)
+    tabSwitchRequested = Signal()
     
     def __init__(self, fileProxy: FileProxy, snippetManager: SnippetManager, tooltipManager: TooltipManager):
         super(EditorTab, self).__init__()
@@ -51,8 +53,11 @@ class EditorTab(QWidget):
         fileProxy.hasUnsavedChanges = False
         self.tabName = "{}/{}".format(fileProxy.parent.path, fileProxy.path)
         self.widget.editor.fileChanged.connect(lambda fileProxy: self.fileChanged.emit(fileProxy))
+        self.widget.editor.tabSwitchRequested.connect(lambda: self.tabSwitchRequested.emit())
 
 class EditorTabWidget(QTabWidget):
+
+    tabSwitchRequested = Signal()
     
     def __init__(self, snippetManager: SnippetManager, tooltipManager: TooltipManager):
         super(EditorTabWidget, self).__init__()
@@ -79,6 +84,7 @@ class EditorTabWidget(QTabWidget):
         self.update()
         tab = EditorTab(fileProxy, self.snippetManager, self.tooltipManager)
         tab.fileChanged.connect(self.fileChanged)
+        tab.tabSwitchRequested.connect(lambda: self.tabSwitchRequested.emit())
         self.projectTabs[key] = tab
         self.addTab(tab.widget, tab.tabName)
         if update:

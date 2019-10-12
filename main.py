@@ -37,7 +37,7 @@ from src.view.AsciiTableWidget import AsciiTableWidget
 from src.view.SnippetEditor import SnippetEditor
 from src.view.SettingsEditor import SettingsEditor
 from src.view.AboutDialog import AboutDialog
-from src.view.FindDialog import FindDialog
+from src.view.TabSwitcher import TabSwitcher
 from src.util.AsemblerSintaksa import AsemblerSintaksa
 from src.util.CSyntax import CSyntax
 from src.model.ProjectNode import ProjectNode, ProjectProxy
@@ -103,6 +103,11 @@ class AsemblerIDE(QMainWindow):
         self.timer = QTimer()
         self.timer.start(self.backupTimer)
         self.timer.timeout.connect(self.makeBackupSave)
+
+        self.editorTabs.setFocus()
+        self.tabSwitcher = TabSwitcher(self.editorTabs)
+        self.tabSwitcher.hide()
+        self.editorTabs.tabSwitchRequested.connect(self.showTabSwitcher)
 
     def makeBackupSave(self):
         self.workspace.saveBackup()
@@ -235,6 +240,8 @@ class AsemblerIDE(QMainWindow):
         self.workspace = workspace
 
     def closeEvent(self, event):
+        if self.tabSwitcher.isActiveWindow():
+            self.tabSwitcher.hide()
         for proxy in self.editorTabs.tabs:
             if proxy.hasUnsavedChanges:
                 msg = QMessageBox()
@@ -714,6 +721,16 @@ class AsemblerIDE(QMainWindow):
         with open(fileName.getFilePath(), 'r') as file:
             text = file.read()
         return text
+    
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Tab and event.modifiers() == Qt.ControlModifier:
+            self.showTabSwitcher()
+        super(AsemblerIDE, self).keyPressEvent(event)
+
+    def showTabSwitcher(self):
+        if self.tabSwitcher.isHidden() and len(self.editorTabs.tabs):
+            self.tabSwitcher.showSwitcher()
+            self.tabSwitcher.setFocus()
 
 
 def resource_path(relative_path):

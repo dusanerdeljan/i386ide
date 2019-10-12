@@ -51,6 +51,7 @@ class CodeEditor(QPlainTextEdit):
 
     fileChanged = Signal(FileProxy)
     escapePressed = Signal()
+    tabSwitchRequested = Signal()
 
     def __init__(self, file: FileProxy, snippetManager: SnippetManager, tooltipManager: TooltipManager):
         super(CodeEditor, self).__init__()
@@ -256,6 +257,9 @@ class CodeEditor(QPlainTextEdit):
             if isinstance(self.sintaksa, AsemblerSintaksa):
                 self.insertLabelInTrie()
         elif e.key() == Qt.Key_Tab:
+            if e.modifiers() == Qt.ControlModifier:
+                self.tabSwitchRequested.emit()
+                return
             self.queryWord = ""
             self.insertPlainText(self.tabSize * " ")
             return

@@ -34,7 +34,7 @@ class AsemblerSintaksa(QSyntaxHighlighter):
                 'rcl', 'rcll', 'rclw', 'rclb', 'rcr', 'rcrl', 'rcrw', 'rcrb', 'ret', 'rol', 'roll', 'rolw', 'rolb',
                 'std','stc', 'stos', 'xchg', 'xchgl', 'xchgw', 'xchgb', 'jmp', 'adc', 'adcl', 'adcw', 'adcb', 'sbbl', 'sbb', 'sbbw', 'sbbb']
     registers = ['%eax', '%ebx', '%ecx', '%edx', '%ax', '%al', '%ah', '%bx', '%bl', '%bh', '%cx', '%cl', '%ch', '%dx', '%dl', '%dh', '%esi', '%edi', '%esp', '%ebp']
-    declarations = ['section', 'data', 'text', 'marco', 'ascii', 'globl', 'long', 'byte', 'quad', 'fill']
+    declarations = ['section', 'data', 'text', 'macro', 'ascii', 'globl', 'long', 'byte', 'quad', 'fill', 'endm', 'skip', 'align', 'if', 'endif', 'bss']
 
     def __init__(self, dokument):
         super(AsemblerSintaksa, self).__init__(dokument)
