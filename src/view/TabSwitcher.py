@@ -78,13 +78,15 @@ class TabSwitcher(QDialog):
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Tab or event.key() == Qt.Key_Down:
             self.latestTabIndex = (self.latestTabIndex + 1) % self.tabs.count()
-        elif event.key() == Qt.Key_Up:
+        elif event.key() == Qt.Key_Up or event.key() == Qt.Key_Backtab:
             self.latestTabIndex -= 1
             if self.latestTabIndex < 0:
                 self.latestTabIndex = self.tabs.count() - 1
         self.updateTabListCurrentItem(self.latestTabIndex)
 
     def keyReleaseEvent(self, event):
+        if event.key() == Qt.Key_Backtab:
+            return
         if event.modifiers() != Qt.ControlModifier:
             if self.latestTabIndex != -1:
                 self.tabs.setCurrentIndex(self.latestTabIndex)
