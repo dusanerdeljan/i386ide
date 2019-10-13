@@ -37,6 +37,8 @@ class TreeView(QTreeWidget):
     projectRemove = Signal(ProjectProxy)
     projectRename = Signal(str, ProjectNode)
 
+    projectSave = Signal(ProjectProxy)
+
     fileRemove = Signal(FileProxy)
     fileRename = Signal(str, FileProxy)
     fileSave = Signal(FileProxy)
@@ -111,6 +113,7 @@ class TreeView(QTreeWidget):
         self.rootNode.eventManager.fileRename.connect(lambda oldPath, fileProxy: self.fileRename.emit(oldPath, fileProxy))
         self.rootNode.eventManager.fileSave.connect(lambda fileProxy: self.fileSave.emit(fileProxy))
         self.rootNode.eventManager.invalidWorkspace.connect(lambda workspace: self.invalidWorkspace.emit(workspace))
+        self.rootNode.eventManager.projectSave.connect(lambda projectProxy: self.projectSave.emit(projectProxy))
 
     def setRoot(self, item: QTreeWidgetItem):
         self.clear()

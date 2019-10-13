@@ -86,7 +86,7 @@ class ProjectNode(Node):
         self.newFileAction = QAction(QIcon(main.resource_path("resources/new_file.png")), "New file")
         self.importFileAction = QAction(QIcon(main.resource_path("resources/import_file.png")), "Import file")
         self.compilerOptionsAction = QAction(QIcon(main.resource_path("resources/compiler_options.png")), "Compiler options")
-        #self.menu.addAction(self.saveAction)
+        self.menu.addAction(self.saveAction)
         self.menu.addAction(self.compilerOptionsAction)
         self.menu.addAction(self.compileAction)
         self.menu.addAction(self.debugAction)
@@ -114,6 +114,7 @@ class ProjectNode(Node):
         file.eventManager.invalidFile.connect(self.detachFile)
 
     def connectActions(self):
+        self.saveAction.triggered.connect(self.saveProject)
         self.newFileAction.triggered.connect(self.createNewFile)
         self.importFileAction.triggered.connect(self.importFile)
         self.deleteAction.triggered.connect(self.deleteProject)
@@ -123,6 +124,12 @@ class ProjectNode(Node):
         self.compileAction.triggered.connect(self.compileActionTriggered)
         self.debugAction.triggered.connect(self.debugActionTriggered)
         self.runAction.triggered.connect(self.runActionTriggered)
+
+    def saveProject(self):
+        if not os.path.exists(self.proxy.getProjectPath()):
+            self.eventManager.invalidProject.emit(self)
+            return
+        self.eventManager.projectSave.emit(self.proxy)
 
     def detachFile(self, fileNode: FileNode):
         msg = QMessageBox()
@@ -432,6 +439,8 @@ class ProjectEventManager(QObject):
     fileRemove = Signal(FileProxy)
     fileRename = Signal(str, FileProxy)
     fileSave = Signal(FileProxy)
+
+    projectSave = Signal(ProjectProxy)
 
     invalidProject = Signal(ProjectNode)
     invalidFile = Signal(FileNode)

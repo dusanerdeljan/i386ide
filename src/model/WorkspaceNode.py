@@ -254,6 +254,7 @@ class WorkspaceNode(Node):
         project.eventManager.fileRename.connect(lambda oldPath, fileProxy: self.renameFile(oldPath, fileProxy))
         project.eventManager.fileSave.connect(lambda fileProxy: self.eventManager.fileSave.emit(fileProxy))
         project.eventManager.invalidProject.connect(lambda projectNode: self.removeProject(projectNode, ask=False))
+        project.eventManager.projectSave.connect(lambda projectProxy: self.eventManager.projectSave.emit(projectProxy))
 
     def renameFile(self, oldPath, fileProxy):
         self.saveWorkspace()
@@ -348,6 +349,8 @@ class WorkspaceEventManager(QObject):
     projectRemove = Signal(ProjectNode)
     projectDeleteFromDisk = Signal(ProjectNode)
     projectRename = Signal(str, ProjectNode)
+
+    projectSave = Signal(ProjectProxy)
 
     fileRemove = Signal(FileProxy)
     fileRename = Signal(str, FileProxy)

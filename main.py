@@ -158,6 +158,10 @@ class AsemblerIDE(QMainWindow):
         self.treeView.fileRename.connect(lambda oldPath, fileProxy: self.renameFile(oldPath, fileProxy))
         self.treeView.fileSave.connect(lambda fileProxy: self.updateEditorTrie(fileProxy))
         self.treeView.invalidWorkspace.connect(self.invalidWorkspace)
+        self.treeView.projectSave.connect(self.saveProject)
+
+    def saveProject(self, projectProxy: ProjectProxy):
+        self.saveAllFiles(projectProxy)
 
     def invalidWorkspace(self, workspace: WorkspaceNode):
         workspace.deleted = True
@@ -194,7 +198,8 @@ class AsemblerIDE(QMainWindow):
                 self.editorTabs.projectTabs[newKey] = tab
                 tab.tabName = newKey
                 index = self.editorTabs.tabs.index(fileProxy)
-                self.editorTabs.setTabText(index, newKey)
+                tabText = newKey + "*" if fileProxy.hasUnsavedChanges else newKey
+                self.editorTabs.setTabText(index, tabText)
 
     def removeFile(self, proxy: FileProxy):
         key = "{}/{}".format(proxy.parent.path, proxy.path)
@@ -670,12 +675,14 @@ class AsemblerIDE(QMainWindow):
             self.editorTabs.projectTabs[key].widget.editor.updateTrie()
             self.editorTabs.removeChangeIdentificator(proxy)
 
-    def saveAllFiles(self):
+    def saveAllFiles(self, projectProxy=None):
         couldNotBeSaved = []
         for i in range(len(self.editorTabs.tabs)):
             fileProxy = self.editorTabs.tabs[i]
             try:
                 if fileProxy and fileProxy.hasUnsavedChanges:
+                    if projectProxy and fileProxy.parent.path != projectProxy.path:
+                        continue
                     with open(fileProxy.getFilePath(), 'w') as file:
                         file.write(fileProxy.text)
                         fileProxy.hasUnsavedChanges = False
