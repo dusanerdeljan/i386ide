@@ -19,7 +19,7 @@ To run this program from the source code you need **Python 3.6 or higher** and y
 
 ## Installation
 
-Download [shell scripts](https://drive.google.com/file/d/1MgTbTgGpr16GuK1IJCpvoz_XHTS4MuH8/view?usp=sharing).</br>
+Download [shell scripts](https://drive.google.com/file/d/1BRER0d4rbPBAYZ4uZy9sGxDVAn13u1i-/view?usp=sharing).</br>
 Download executable file, extract it and copy & paste install.sh in the extracted directory. </br>Position yourself in the extracted folder and run ***sudo bash install.sh*** to install the program. This will create a desktop entry. </bre>If you want to uninstall the program, run ***sudo bash uninstall.sh*** from any location.
  
 ## Credits

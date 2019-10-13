@@ -36,4 +36,5 @@ Name=i386ide
 Icon=${DEST_ICON_PATH}" >> ./i386ide.desktop
 sudo mv $DESKTOP_FILE_PATH /usr/share/applications/
 sudo install -m 0755 ${DEST_EXE_PATH} /usr/local/bin
-sudo rm -f "${DIR}/install.sh"
+SCRIPT_NAME="$(basename "$(test -L "$0" && readlink "$0" || echo "$0")")"
+sudo rm -f "${DIR}/${SCRIPT_NAME}"
