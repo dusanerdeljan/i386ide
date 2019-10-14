@@ -95,7 +95,9 @@ class FindDialog(QFrame):
 
     def replaceAllButtonClicked(self):
         previousCursor = self.editor.textCursor()
-        while self.find():
+        self.find()
+        self.replace()
+        while self.find(continueSearch=True):
             self.replace()
             previousCursor = self.editor.textCursor()
         self.editor.setTextCursor(previousCursor)
