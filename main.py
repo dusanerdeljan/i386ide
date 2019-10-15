@@ -40,6 +40,7 @@ from src.view.SnippetEditor import SnippetEditor
 from src.view.SettingsEditor import SettingsEditor
 from src.view.AboutDialog import AboutDialog
 from src.view.TabSwitcher import TabSwitcher
+from src.view.ProjectSwitcher import ProjectSwitcher
 from src.util.AsemblerSintaksa import AsemblerSintaksa
 from src.util.CSyntax import CSyntax
 from src.model.ProjectNode import ProjectNode, ProjectProxy
@@ -109,7 +110,10 @@ class AsemblerIDE(QMainWindow):
         self.editorTabs.setFocus()
         self.tabSwitcher = TabSwitcher(self.editorTabs)
         self.tabSwitcher.hide()
+        self.projectSwitcher = ProjectSwitcher(self.configurationManager, self.toolBar.projectComboBox)
+        self.projectSwitcher.hide()
         self.editorTabs.tabSwitchRequested.connect(self.showTabSwitcher)
+        self.editorTabs.projectSwitchRequested.connect(self.showProjectSwitcher)
 
     def makeBackupSave(self):
         self.workspace.saveBackup()
@@ -351,8 +355,13 @@ class AsemblerIDE(QMainWindow):
             self.tooltipManager.saveConfiguration()
 
     def newWorkspaceAction(self):
+        remaining = self.timer.remainingTime()
+        self.timer.stop()  # timer for creating backups needs to be paused when switching ws
         if not self.editorTabs.closeAllTabs():
+            self.timer.start(remaining)  # timer for saving backups is resumed
             return False
+        self.workspace.proxy.closedNormally = True
+        self.saveWorkspaceAction()
         workspace = WorkspaceNode()
         name = QFileDialog.getExistingDirectory(self, "New workspace", "select new workspace directory")
         if name:
@@ -360,6 +369,7 @@ class AsemblerIDE(QMainWindow):
             backup_path = os.path.join(name, ".backup")
             if os.path.isdir(path) or os.path.isdir(backup_path):
                 self.msgInvalidFolderError(name)
+                self.timer.start(remaining)  # timer for saving backups is resumed
                 return
             wsname = name[name.rindex(os.path.sep)+1:]
             regex = re.compile('[@!#$%^&*()<>?/\|}{~:]')
@@ -371,6 +381,7 @@ class AsemblerIDE(QMainWindow):
                 msg.setText("Workspace path/name cannot contain whitespace or special characters.")
                 msg.setWindowTitle("Workspace creation error")
                 msg.exec_()
+                self.timer.start(remaining)  # timer for saving backups is resumed
                 return False
             workspace.path = name
             proxy = WorkspaceProxy()
@@ -386,7 +397,9 @@ class AsemblerIDE(QMainWindow):
             self.toolBar.updateComboBox()
             self.terminal.executeCommand("cd {}".format(self.workspace.path))
             self.workspaceConfiguration.addWorkspace(self.workspace.proxy.path)
+            self.timer.start(remaining)  # timer for saving backups is resumed
             return True
+        self.timer.start(remaining)  # timer for saving backups is resumed
         return False
 
     def saveWorkspaceAction(self, workspacePath=None):
@@ -396,6 +409,15 @@ class AsemblerIDE(QMainWindow):
     def saveWorkpsaceAllFiles(self):
         self.saveAllFiles()
         self.saveWorkspaceAction()
+
+    def updateProjectList(self):
+        self.configurationManager.allProjects = []
+        self.configurationManager.currentProject = None
+        projects = self.treeView.getProjects()
+        if len(projects):
+            self.configurationManager.allProjects = self.treeView.getProjects()
+            self.configurationManager.currentProject = projects[0]
+        self.toolBar.updateComboBox()
 
     def openWorkspaceAction(self, workspacePath=None, updateWorkspace=False):
         if not self.editorTabs.closeAllTabs():
@@ -438,15 +460,18 @@ class AsemblerIDE(QMainWindow):
             if self.restoreBackupMessage(workspacePath, updateWorkspace=updateWorkspace):
                 attempted_backup = True
                 if self.loadWorkspaceAction(workspacePath, backup=True):  # attempt to load backup
+                    self.updateProjectList()
                     return True
                 else:
                     self.messageBackupError("closedAbruptly")
 
         if self.loadWorkspaceAction(workspacePath, backup=False):  # attempt to load regular ws file
+            self.updateProjectList()
             return True
         # If the regular file won't load for some reason and there was no backup attempt, ask to load the backup file
         elif not attempted_backup and self.restoreBackupMessage(workspacePath, failedToLoad=True):
             if self.loadWorkspaceAction(workspacePath, backup=True):  # attempt to load the backup file
+                self.updateProjectList()
                 return True
             else:
                 self.messageBackupError()
@@ -732,9 +757,17 @@ class AsemblerIDE(QMainWindow):
         return text
     
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Tab and event.modifiers() == Qt.ControlModifier:
-            self.showTabSwitcher()
+        if event.modifiers() == Qt.ControlModifier:
+            if event.key() == Qt.Key_Tab:
+                self.showTabSwitcher()
+            elif event.key() == Qt.Key_E:
+                self.showProjectSwitcher()
         super(AsemblerIDE, self).keyPressEvent(event)
+
+    def showProjectSwitcher(self):
+        if self.projectSwitcher.isHidden() and len(self.configurationManager.allProjects):
+            self.projectSwitcher.showSwitcher()
+            self.projectSwitcher.setFocus()
 
     def showTabSwitcher(self):
         if self.tabSwitcher.isHidden() and len(self.editorTabs.tabs):
