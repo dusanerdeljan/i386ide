@@ -165,6 +165,7 @@ class AsemblerIDE(QMainWindow):
         self.treeView.fileSave.connect(lambda fileProxy: self.updateEditorTrie(fileProxy))
         self.treeView.invalidWorkspace.connect(self.invalidWorkspace)
         self.treeView.projectSave.connect(self.saveProject)
+        self.treeView.quickAssemblyFile.connect(self.loadFileText)
 
     def saveProject(self, projectProxy: ProjectProxy):
         self.saveAllFiles(projectProxy)

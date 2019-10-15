@@ -45,11 +45,14 @@ class TreeView(QTreeWidget):
     fileRename = Signal(str, FileProxy)
     fileSave = Signal(FileProxy)
 
+    quickAssemblyFile = Signal(FileProxy)
+
     invalidWorkspace = Signal(WorkspaceNode)
     
     def __init__(self, configurationManager: ConfigurationManager):
         super(TreeView, self).__init__()
         self.configurationManager = configurationManager
+        self.setRootIsDecorated(False)
         self.setStyleSheet("background-color: #2D2D30; color: white;")
         self.setColumnCount(1)
         self.setHeaderLabel("Workspace explorer")
@@ -71,6 +74,8 @@ class TreeView(QTreeWidget):
     def showContextMenu(self, pos):
         item = self.itemAt(pos)
         if not item:
+            if self.rootNode:
+                self.rootNode.getContextMenu().exec_(self.viewport().mapToGlobal(pos))
             return
         menu = item.getContextMenu()
         if menu:
@@ -116,6 +121,7 @@ class TreeView(QTreeWidget):
         self.rootNode.eventManager.fileSave.connect(lambda fileProxy: self.fileSave.emit(fileProxy))
         self.rootNode.eventManager.invalidWorkspace.connect(lambda workspace: self.invalidWorkspace.emit(workspace))
         self.rootNode.eventManager.projectSave.connect(lambda projectProxy: self.projectSave.emit(projectProxy))
+        self.rootNode.eventManager.quickAssemblyFile.connect(lambda fileProxy: self.quickAssemblyFile.emit(fileProxy))
 
     def setRoot(self, item: QTreeWidgetItem):
         self.clear()

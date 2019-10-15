@@ -51,12 +51,14 @@ class WorkspaceNode(Node):
         self.menu.setStyleSheet("background-color: #3E3E42; color: white;")
         self.proxy = WorkspaceProxy()
         self.newProjectAction = QAction(QIcon(main.resource_path("resources/new_folder.png")), "New project")
+        self.quickAssemblyProjectAction = QAction(QIcon(main.resource_path("resources/new_folder.png")), "Quick assembly project")
         self.importProjectAction = QAction(QIcon(main.resource_path("resources/open_folder.png")), "Import project")
         self.saveAction = QAction(QIcon(main.resource_path("resources/save_folder.png")), "Save workspace")
         self.renameAction = QAction(QIcon(main.resource_path("resources/rename_folder.png")), "Rename workspace")
         self.switchAction = QAction(QIcon(main.resource_path("resources/switch_folder.png")), "Switch workspace")
         self.updateAction = QAction(QIcon(main.resource_path("resources/update_folder.png")), "Update workspace")
         self.menu.addAction(self.newProjectAction)
+        self.menu.addAction(self.quickAssemblyProjectAction)
         self.menu.addAction(self.importProjectAction)
         self.menu.addAction(self.saveAction)
         self.menu.addAction(self.switchAction)
@@ -71,6 +73,7 @@ class WorkspaceNode(Node):
     def connectActions(self):
         self.renameAction.triggered.connect(self.renameWorkspace)
         self.newProjectAction.triggered.connect(self.createNewProject)
+        self.quickAssemblyProjectAction.triggered.connect(self.createQuickAssemblyProject)
         self.importProjectAction.triggered.connect(self.importProject)
         self.saveAction.triggered.connect(self.saveWorkspace)
         self.updateAction.triggered.connect(self.reloadWorkspace)
@@ -168,11 +171,19 @@ class WorkspaceNode(Node):
             self.connectProjectEventHandlers(project)
             self.eventManager.projectAdded.emit(project)
 
-    def createNewProject(self):
+    def createQuickAssemblyProject(self):
+        project = self.createNewProject(quickAssembly=True)
+        if not project:
+            return
+        fileNode = project.createQuickAssemblyFile()
+        self.eventManager.quickAssemblyFile.emit(fileNode.proxy)
+
+    def createNewProject(self, quickAssembly=False):
         if not os.path.exists(self.path):
             self.eventManager.invalidWorkspace.emit(self)
             return
-        name, entered = QInputDialog.getText(None, "New project", "Enter project name: ", QLineEdit.Normal, "New project")
+        dialogText = "New assembly project" if quickAssembly else "New project"
+        name, entered = QInputDialog.getText(None, dialogText, "Enter project name: ", QLineEdit.Normal, "New project")
         if entered:
             regex = re.compile('[@!#$%^&*()<>?/\|}{~:]')
             if " " in name or regex.search(name):
@@ -206,6 +217,7 @@ class WorkspaceNode(Node):
             self.saveWorkspace()
             self.connectProjectEventHandlers(project)
             self.eventManager.projectAdded.emit(project)
+            return project
 
     def saveBackup(self, ws_path=None):
         try:
@@ -357,6 +369,8 @@ class WorkspaceEventManager(QObject):
     fileRemove = Signal(FileProxy)
     fileRename = Signal(str, FileProxy)
     fileSave = Signal(FileProxy)
+
+    quickAssemblyFile = Signal(FileProxy)
 
     invalidWorkspace = Signal(WorkspaceNode)
 

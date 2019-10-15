@@ -295,6 +295,22 @@ class ProjectNode(Node):
             #     with open(name, 'r') as inputFile:
             #         file.write(inputFile.read())
 
+    def createQuickAssemblyFile(self):
+        fileName = self.path + ".S"
+        node = AssemblyFileNode()
+        node.setIcon(0, QIcon(main.resource_path("resources/s.png")))
+        node.setText(0, fileName)
+        node.path = fileName
+        node.proxy = AssemblyFileProxy()
+        node.proxy.path = fileName
+        node.proxy.parent = self.proxy
+        self.addChild(node)
+        os.mknod(os.path.join(self.proxy.getProjectPath(), fileName))
+        self.proxy.addFile(node.proxy)
+        self.connectFileEventHandlers(node)
+        self.setExpanded(True)
+        return node
+
     def createNewFile(self):
         if not os.path.exists(self.proxy.getProjectPath()):
             self.eventManager.invalidProject.emit(self)
