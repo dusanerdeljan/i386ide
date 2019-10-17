@@ -182,6 +182,7 @@ class WorkspaceNode(Node):
         if not project:
             return
         fileNode = project.createQuickAssemblyFile()
+        self.saveWorkspace()
         self.eventManager.quickAssemblyFile.emit(fileNode.proxy)
 
     def openFileAsAssemblyProject(self):
@@ -325,6 +326,7 @@ class WorkspaceNode(Node):
         project.eventManager.fileSave.connect(lambda fileProxy: self.eventManager.fileSave.emit(fileProxy))
         project.eventManager.invalidProject.connect(lambda projectNode: self.removeProject(projectNode, ask=False))
         project.eventManager.projectSave.connect(lambda projectProxy: self.eventManager.projectSave.emit(projectProxy))
+        project.eventManager.newFile.connect(lambda fileProxy: self.eventManager.newFile.emit(fileProxy))
 
     def renameFile(self, oldPath, fileProxy):
         self.saveWorkspace()
@@ -425,6 +427,7 @@ class WorkspaceEventManager(QObject):
     fileRemove = Signal(FileProxy)
     fileRename = Signal(str, FileProxy)
     fileSave = Signal(FileProxy)
+    newFile = Signal(FileProxy)
 
     quickAssemblyFile = Signal(FileProxy)
 

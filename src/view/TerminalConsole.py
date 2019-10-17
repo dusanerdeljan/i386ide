@@ -19,7 +19,7 @@
 """
 
 from PySide2.QtWidgets import QTextEdit, QMessageBox
-from PySide2.QtCore import Qt
+from PySide2.QtCore import Qt, Signal
 from PySide2.QtGui import QTextCursor
 from src.controller.TerminalController import TerminalController
 from src.datastrctures.CommandHistoryStack import CommandHistoryStack
@@ -29,6 +29,9 @@ import getpass
 
 
 class TerminalConsole(QTextEdit):
+
+    projectSwitchRequested = Signal()
+    tabSwitchRequested = Signal()
 
     def __init__(self):
         super(TerminalConsole, self).__init__()
@@ -50,6 +53,9 @@ class TerminalConsole(QTextEdit):
 
     def keyPressEvent(self, event):
         enterPressed = False
+        if event.key() == Qt.Key_E and event.modifiers() == Qt.ControlModifier:
+            self.projectSwitchRequested.emit()
+            return
         if event.key() == Qt.Key_Left:
             if self.textCursor().positionInBlock() <= self.getPromptCursorPosition():
                 return
@@ -60,6 +66,8 @@ class TerminalConsole(QTextEdit):
             self.getNextPreviousCommandFromHistory(prev=False)
             return
         if event.key() == Qt.Key_Tab:
+            if event.modifiers() == Qt.ControlModifier:
+                self.tabSwitchRequested.emit()
             command = self.textCursor().block().text().replace(self.promptText, "")
             new_command = self.controller.showCommandAutocomplete(command)
             if len(new_command) == 1:

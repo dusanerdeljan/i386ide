@@ -291,6 +291,7 @@ class ProjectNode(Node):
             if not inSameDir:
                 shutil.copyfile(name, filePath)
             self.setExpanded(True)
+            self.eventManager.newFile.emit(node.proxy)
             # with open(filePath, 'w') as file:
             #     with open(name, 'r') as inputFile:
             #         file.write(inputFile.read())
@@ -358,6 +359,7 @@ class ProjectNode(Node):
             self.proxy.addFile(node.proxy)
             self.connectFileEventHandlers(node)
             self.setExpanded(True)
+            self.eventManager.newFile.emit(node.proxy)
 
 
     def deleteProject(self):
@@ -457,6 +459,7 @@ class ProjectEventManager(QObject):
     fileRemove = Signal(FileProxy)
     fileRename = Signal(str, FileProxy)
     fileSave = Signal(FileProxy)
+    newFile = Signal(FileProxy)
 
     projectSave = Signal(ProjectProxy)
 

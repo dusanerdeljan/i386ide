@@ -19,11 +19,14 @@
 """
 
 from PySide2.QtWidgets import QDockWidget, QLabel
-from PySide2.QtCore import Qt
+from PySide2.QtCore import Qt, Signal
 from src.view.TerminalConsole import TerminalConsole
 
 
 class Terminal(QDockWidget):
+
+    projectSwitchRequested = Signal()
+    tabSwitchRequested = Signal()
 
     def __init__(self):
         super(Terminal, self).__init__()
@@ -36,6 +39,8 @@ class Terminal(QDockWidget):
         self.setWindowTitle("Terminal")
         self.console = TerminalConsole()
         self.setWidget(self.console)
+        self.console.projectSwitchRequested.connect(lambda: self.projectSwitchRequested.emit())
+        self.console.tabSwitchRequested.connect(lambda: self.tabSwitchRequested.emit())
 
     def executeCommand(self, command):
         return self.console.executeCommand(command)

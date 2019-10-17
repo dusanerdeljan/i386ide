@@ -109,11 +109,13 @@ class AsemblerIDE(QMainWindow):
         self.timer.start(self.backupTimer)
         self.timer.timeout.connect(self.makeBackupSave)
 
-        self.editorTabs.setFocus()
+        self.terminal.console.setFocus()
         self.tabSwitcher = TabSwitcher(self.editorTabs)
         self.tabSwitcher.hide()
         self.projectSwitcher = ProjectSwitcher(self.configurationManager, self.toolBar.projectComboBox)
         self.projectSwitcher.hide()
+        self.terminal.projectSwitchRequested.connect(self.showProjectSwitcher)
+        self.terminal.tabSwitchRequested.connect(self.showTabSwitcher)
         self.editorTabs.tabSwitchRequested.connect(self.showTabSwitcher)
         self.editorTabs.projectSwitchRequested.connect(self.showProjectSwitcher)
 
@@ -168,6 +170,7 @@ class AsemblerIDE(QMainWindow):
         self.treeView.invalidWorkspace.connect(self.invalidWorkspace)
         self.treeView.projectSave.connect(self.saveProject)
         self.treeView.quickAssemblyFile.connect(self.loadFileText)
+        self.treeView.newFile.connect(self.loadFileText)
 
     def saveProject(self, projectProxy: ProjectProxy):
         self.saveAllFiles(projectProxy)

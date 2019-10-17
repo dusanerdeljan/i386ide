@@ -44,6 +44,7 @@ class TreeView(QTreeWidget):
     fileRemove = Signal(FileProxy)
     fileRename = Signal(str, FileProxy)
     fileSave = Signal(FileProxy)
+    newFile = Signal(FileProxy)
 
     quickAssemblyFile = Signal(FileProxy)
 
@@ -122,6 +123,7 @@ class TreeView(QTreeWidget):
         self.rootNode.eventManager.invalidWorkspace.connect(lambda workspace: self.invalidWorkspace.emit(workspace))
         self.rootNode.eventManager.projectSave.connect(lambda projectProxy: self.projectSave.emit(projectProxy))
         self.rootNode.eventManager.quickAssemblyFile.connect(lambda fileProxy: self.quickAssemblyFile.emit(fileProxy))
+        self.rootNode.eventManager.newFile.connect(lambda fileProxy: self.newFile.emit(fileProxy))
 
     def setRoot(self, item: QTreeWidgetItem):
         self.clear()
