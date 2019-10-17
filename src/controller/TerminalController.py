@@ -125,7 +125,7 @@ class TerminalController(QObject):
 
     def commandEnteredHandler(self, command: str):
         command = command.strip()
-        if command.startswith("./") or command.startswith("/"):
+        if command.startswith("./") or command.startswith("/") or command.startswith("gdb"):
             try :
                 thread = threading.Thread(target=self.runShell, args=[command, not command.startswith("ddd")])
                 thread.start()
