@@ -235,12 +235,16 @@ class WorkspaceNode(Node):
         self.eventManager.projectAdded.emit(project)
         self.eventManager.quickAssemblyFile.emit(fileNode.proxy)
 
-    def createNewProject(self, quickAssembly=False):
+    def createNewProject(self, quickAssembly=False, path=None):
         if not os.path.exists(self.path):
             self.eventManager.invalidWorkspace.emit(self)
             return
         dialogText = "New assembly project" if quickAssembly else "New project"
-        name, entered = QInputDialog.getText(None, dialogText, "Enter project name: ", QLineEdit.Normal, "New project")
+        if not path:
+            name, entered = QInputDialog.getText(None, dialogText, "Enter project name: ", QLineEdit.Normal, "New project")
+        else:
+            name = os.path.basename(path)
+            entered = True
         if entered:
             regex = re.compile('[@!#$%^&*()<>?/\|}{~:]')
             if " " in name or regex.search(name):

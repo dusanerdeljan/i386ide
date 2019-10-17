@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 """
 
-from PySide2.QtWidgets import QTreeWidget, QTreeWidgetItem, QMenu, QAction, QLabel
+from PySide2.QtWidgets import QTreeWidget, QTreeWidgetItem, QMenu, QAction, QLabel, QMessageBox
 from PySide2.QtCore import Qt, Signal
 from src.model.WorkspaceNode import WorkspaceNode, WorkspaceProxy
 from src.model.FileNode import FileNode, FileProxy
@@ -60,6 +60,7 @@ class TreeView(QTreeWidget):
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.showContextMenu)
         self.rootNode: WorkspaceNode = None
+        self.setAcceptDrops(True)
 
     def mouseDoubleClickEvent(self, event):
         item = self.itemAt(event.pos())
@@ -71,6 +72,59 @@ class TreeView(QTreeWidget):
                 item.eventManager.invalidFile.emit(item)
             else:
                 self.fileDoubleCliked.emit(item.proxy)
+
+    def dragEnterEvent(self, event):
+        event.acceptProposedAction()
+
+    def dragMoveEvent(self, event):
+        event.acceptProposedAction()
+
+    def dragLeaveEvent(self, event):
+        event.accept()
+
+    def dropEvent(self, event):
+        if not os.path.exists(self.rootNode.path):
+            self.rootNode.eventManager.invalidWorkspace.emit(self.rootNode)
+            return
+        mimeData = event.mimeData()
+        position = event.pos()
+        dropDestItem = self.itemAt(position)
+        if not mimeData.hasUrls():
+            return
+        urls = mimeData.urls()
+        if dropDestItem and isinstance(dropDestItem, ProjectNode):
+            for i in range(len(urls)):
+                fileUrl = urls[i].toLocalFile()
+                if fileUrl.endswith(".S"):
+                    dropDestItem.importFile(fileUrl)
+        elif dropDestItem and isinstance(dropDestItem, FileNode):
+            project = dropDestItem.parent()
+            for i in range(len(urls)):
+                fileUrl = urls[i].toLocalFile()
+                if fileUrl.endswith(".S"):
+                    project.importFile(fileUrl)
+        else:
+            answer = QMessageBox.question(None, "Import file(s)", "Do you want to create a project?", QMessageBox.Yes | QMessageBox.No)
+            if not answer == QMessageBox.Yes:
+                return
+            validUrls = []
+            for i in range(len(urls)):
+                url = urls[i].toLocalFile()
+                if url.endswith(".S") or url.endswith(".c"):
+                    validUrls.append(url)
+            if len(validUrls) == 0:
+                return
+            projectName = validUrls[0][:-2] if len(validUrls) == 1 else "Project"
+            projectPath = os.path.join(self.rootNode.path, projectName)
+            while os.path.exists(projectPath):
+                projectName += "_1"
+                projectPath = os.path.join(self.rootNode.path, projectName)
+            projectNode = self.rootNode.createNewProject(path=projectPath)
+            for fileUrl in validUrls:
+                projectNode.importFile(fileUrl)
+        self.rootNode.saveWorkspace()
+        event.acceptProposedAction()
+
 
     def showContextMenu(self, pos):
         item = self.itemAt(pos)

@@ -225,11 +225,14 @@ class ProjectNode(Node):
         self.removeChild(file)
         self.parent().saveWorkspace()
 
-    def importFile(self):
+    def importFile(self, path=None):
         if not os.path.exists(self.proxy.getProjectPath()):
             self.eventManager.invalidProject.emit(self)
             return
-        name, entered = QFileDialog.getOpenFileName(None, "Select file to import", ".", "Assembly files (*.S);;C files (*.c)")
+        if not path:
+            name, entered = QFileDialog.getOpenFileName(None, "Select file to import", ".", "Assembly files (*.S);;C files (*.c)")
+        else:
+            name = path
         if name:
             fileName = os.path.basename(name)
             filePath = os.path.join(self.proxy.getProjectPath(), fileName)
@@ -264,7 +267,7 @@ class ProjectNode(Node):
                     msg.setStyleSheet("background-color: #2D2D30; color: white;")
                     msg.setModal(True)
                     msg.setIcon(QMessageBox.Critical)
-                    msg.setText("File with the same name already exists.")
+                    msg.setText("File with the same name ('{}') already exists.".format(fileName))
                     msg.setWindowTitle("File import error")
                     msg.exec_()
                     return
@@ -291,6 +294,7 @@ class ProjectNode(Node):
             if not inSameDir:
                 shutil.copyfile(name, filePath)
             self.setExpanded(True)
+            self.parent().saveWorkspace()
             self.eventManager.newFile.emit(node.proxy)
             # with open(filePath, 'w') as file:
             #     with open(name, 'r') as inputFile:
