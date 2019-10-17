@@ -24,6 +24,7 @@ from PySide2.QtGui import QIcon
 from src.model.Node import Node, PathManager
 from src.model.ProjectNode import ProjectNode, ProjectProxy
 from src.model.FileNode import FileProxy
+from src.model.AssemblyFileNode import AssemblyFileProxy, AssemblyFileNode
 import os
 import pickle
 import re
@@ -51,15 +52,19 @@ class WorkspaceNode(Node):
         self.menu.setStyleSheet("background-color: #3E3E42; color: white;")
         self.proxy = WorkspaceProxy()
         self.newProjectAction = QAction(QIcon(main.resource_path("resources/new_folder.png")), "New project")
-        self.quickAssemblyProjectAction = QAction(QIcon(main.resource_path("resources/new_folder.png")), "Quick assembly project")
+        self.quickAssemblyProjectAction = QAction(QIcon(main.resource_path("resources/new_s.png")), "Quick assembly project")
+        self.openFileAsAssemblyProjectAction = QAction(QIcon(main.resource_path("resources/open_s.png")), "Open file as assembly project")
         self.importProjectAction = QAction(QIcon(main.resource_path("resources/open_folder.png")), "Import project")
         self.saveAction = QAction(QIcon(main.resource_path("resources/save_folder.png")), "Save workspace")
         self.renameAction = QAction(QIcon(main.resource_path("resources/rename_folder.png")), "Rename workspace")
         self.switchAction = QAction(QIcon(main.resource_path("resources/switch_folder.png")), "Switch workspace")
         self.updateAction = QAction(QIcon(main.resource_path("resources/update_folder.png")), "Update workspace")
         self.menu.addAction(self.newProjectAction)
-        self.menu.addAction(self.quickAssemblyProjectAction)
         self.menu.addAction(self.importProjectAction)
+        self.menu.addSeparator()
+        self.menu.addAction(self.quickAssemblyProjectAction)
+        self.menu.addAction(self.openFileAsAssemblyProjectAction)
+        self.menu.addSeparator()
         self.menu.addAction(self.saveAction)
         self.menu.addAction(self.switchAction)
         self.menu.addAction(self.renameAction)
@@ -74,6 +79,7 @@ class WorkspaceNode(Node):
         self.renameAction.triggered.connect(self.renameWorkspace)
         self.newProjectAction.triggered.connect(self.createNewProject)
         self.quickAssemblyProjectAction.triggered.connect(self.createQuickAssemblyProject)
+        self.openFileAsAssemblyProjectAction.triggered.connect(self.openFileAsAssemblyProject)
         self.importProjectAction.triggered.connect(self.importProject)
         self.saveAction.triggered.connect(self.saveWorkspace)
         self.updateAction.triggered.connect(self.reloadWorkspace)
@@ -176,6 +182,56 @@ class WorkspaceNode(Node):
         if not project:
             return
         fileNode = project.createQuickAssemblyFile()
+        self.eventManager.quickAssemblyFile.emit(fileNode.proxy)
+
+    def openFileAsAssemblyProject(self):
+        if not os.path.exists(self.path):
+            self.eventManager.invalidWorkspace.emit(self)
+            return
+        name, entered = QFileDialog.getOpenFileName(None, "Select assembly file to open", ".","Assembly files (*.S)")
+        if not name:
+            return
+        regex = re.compile('[@!#$%^&*()<>?/\|}{~:]')
+        fileName = os.path.basename(name)
+        if " " in fileName or regex.search(fileName):
+            msg = QMessageBox()
+            msg.setStyleSheet("background-color: #2D2D30; color: white;")
+            msg.setModal(True)
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText("File name cannot contain whitespace or special characters.")
+            msg.setWindowTitle("File import error")
+            msg.exec_()
+            return
+        fileNode = AssemblyFileNode()
+        fileNode.setIcon(0, QIcon(main.resource_path("resources/s.png")))
+        fileNode.setText(0, fileName)
+        fileNode.path = fileName
+        fileNode.proxy = AssemblyFileProxy()
+        fileNode.proxy.path = fileName
+        projectName = fileName.strip(".S")
+        projectPath = os.path.join(self.path, projectName)
+        while os.path.exists(projectPath):
+            projectName += "_1"
+            projectPath = os.path.join(self.path, projectName)
+        os.mkdir(projectPath)
+        project = ProjectNode()
+        project.path = projectName
+        project.proxy.path = projectName
+        project.proxy.parent = self.proxy
+        fileNode.proxy.parent = project.proxy
+        project.setIcon(0, QIcon(main.resource_path("resources/project.png")))
+        project.setText(0, projectName)
+        self.addChild(project)
+        project.addChild(fileNode)
+        project.proxy.addFile(fileNode.proxy)
+        self.proxy.addProject(project.proxy)
+        filePath = os.path.join(projectPath, fileName)
+        shutil.copyfile(name, filePath)
+        project.connectFileEventHandlers(fileNode)
+        self.saveWorkspace()
+        self.connectProjectEventHandlers(project)
+        project.setExpanded(True)
+        self.eventManager.projectAdded.emit(project)
         self.eventManager.quickAssemblyFile.emit(fileNode.proxy)
 
     def createNewProject(self, quickAssembly=False):

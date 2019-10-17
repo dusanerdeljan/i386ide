@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 """
 
-from PySide2.QtWidgets import QTreeWidget, QTreeWidgetItem, QMenu, QAction
+from PySide2.QtWidgets import QTreeWidget, QTreeWidgetItem, QMenu, QAction, QLabel
 from PySide2.QtCore import Qt, Signal
 from src.model.WorkspaceNode import WorkspaceNode, WorkspaceProxy
 from src.model.FileNode import FileNode, FileProxy
@@ -55,7 +55,7 @@ class TreeView(QTreeWidget):
         self.setRootIsDecorated(False)
         self.setStyleSheet("background-color: #2D2D30; color: white;")
         self.setColumnCount(1)
-        self.setHeaderLabel("Workspace explorer")
+        self.setHeaderHidden(True)
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.showContextMenu)
         self.rootNode: WorkspaceNode = None
@@ -127,6 +127,5 @@ class TreeView(QTreeWidget):
         self.clear()
         self.rootNode = item
         self.addTopLevelItem(item)
-        self.setHeaderLabel(item.text(0))
         self.connectWorkspaceEventHandlers()
         item.setExpanded(True)
