@@ -22,6 +22,8 @@ from PySide2.QtWidgets import QDialog, QVBoxLayout, QPushButton, QListWidget, QM
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QIcon, QFontMetrics
 from src.controller.SnippetManager import SnippetManager
+from src.util.AsemblerSintaksa import AsemblerSintaksa
+from src.util.CSyntax import CSyntax
 from copy import deepcopy
 import main
 
@@ -175,7 +177,26 @@ class SnippetEditor(QDialog):
             msg.setWindowTitle("Wrong snippet abbreviation")
             msg.exec_()
             return False
+        if name.strip() in AsemblerSintaksa.keywords or name.strip() in AsemblerSintaksa.declarations or name.strip() \
+            in AsemblerSintaksa.registers or name.strip() in CSyntax.functions or name.strip() in CSyntax.keywords_c:
+            if not self.nameOvershadowedMsg(name.strip()):
+                return False
         return True
+
+    def nameOvershadowedMsg(self, name):
+        msg = QMessageBox()
+        msg.setStyleSheet("background-color: #2D2D30; color: white;")
+        msg.setParent(None)
+        msg.setModal(True)
+        msg.setWindowTitle("Name overshadowed")
+        msg.setText("Shippet name '{}' overshadows a built in name."
+                    "\n\nThis may interfere with auto completion of the overshadowed name.".format(name))
+        msg.setInformativeText("Do you want to use '{}' for the snippet name regardlessly?".format(name))
+        msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        msg.setDefaultButton(QMessageBox.Yes)
+        retValue = msg.exec_()
+        if retValue == QMessageBox.Yes:
+            return True
 
     def addButtonClicked(self):
         name, entered = QInputDialog.getText(None, "Add code snippet", "Enter snippet abbreviation ", QLineEdit.Normal, "")

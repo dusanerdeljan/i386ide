@@ -287,7 +287,7 @@ class CodeEditor(QPlainTextEdit):
             self.loadQueryWord()
             #if isinstance(self.sintaksa, AsemblerSintaksa):
             if self.queryWord in self.snippetManager:
-                while not self.textCursor().atBlockStart():
+                for i in range(len(self.queryWord)):
                     self.textCursor().deletePreviousChar()
                 self.insertPlainText(self.snippetManager[self.queryWord])
                 self.file.text = self.toPlainText()
