@@ -95,15 +95,21 @@ class TreeView(QTreeWidget):
         if dropDestItem and isinstance(dropDestItem, ProjectNode):
             for i in range(len(urls)):
                 fileUrl = urls[i].toLocalFile()
-                if fileUrl.endswith(".S"):
+                if fileUrl.endswith(".S") and os.path.isfile(fileUrl):
                     dropDestItem.importFile(fileUrl)
         elif dropDestItem and isinstance(dropDestItem, FileNode):
             project = dropDestItem.parent()
             for i in range(len(urls)):
                 fileUrl = urls[i].toLocalFile()
-                if fileUrl.endswith(".S"):
+                if fileUrl.endswith(".S") and os.path.isfile(fileUrl):
                     project.importFile(fileUrl)
         else:
+            if len(urls) == 1:
+                folderPath = urls[0].toLocalFile()
+                if os.path.isdir(folderPath):
+                    self.rootNode.importProject(folderPath)
+                    self.rootNode.saveWorkspace()
+                    return
             answer = QMessageBox.question(None, "Import file(s)", "Do you want to create a project?", QMessageBox.Yes | QMessageBox.No)
             if not answer == QMessageBox.Yes:
                 return
@@ -111,7 +117,8 @@ class TreeView(QTreeWidget):
             for i in range(len(urls)):
                 url = urls[i].toLocalFile()
                 if url.endswith(".S") or url.endswith(".c"):
-                    validUrls.append(url)
+                    if os.path.isfile(url):
+                        validUrls.append(url)
             if len(validUrls) == 0:
                 return
             projectName = validUrls[0][:-2] if len(validUrls) == 1 else "Project"

@@ -124,15 +124,18 @@ class WorkspaceNode(Node):
             self.saveWorkspace()
             self.eventManager.workspaceRename.emit(oldPath, self.proxy)
 
-    def importProject(self):
+    def importProject(self, path=None):
         if not os.path.exists(self.path):
             self.eventManager.invalidWorkspace.emit(self)
             return
-        name = QFileDialog.getExistingDirectory(None, "Import project", ".", QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks)
+        if not path:
+            name = QFileDialog.getExistingDirectory(None, "Import project", ".", QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks)
+        else:
+            name = path
         if name:
             projectName = os.path.basename(name)
             regex = re.compile('[@!#$%^&*()<>?/\|}{~:]')
-            if " " in name or regex.search(projectName):
+            if " " in projectName or regex.search(projectName):
                 msg = QMessageBox()
                 msg.setStyleSheet("background-color: #2D2D30; color: white;")
                 msg.setModal(True)
@@ -227,7 +230,7 @@ class WorkspaceNode(Node):
         project.proxy.addFile(fileNode.proxy)
         self.proxy.addProject(project.proxy)
         filePath = os.path.join(projectPath, fileName)
-        shutil.copyfile(name, filePath)
+        shutil.copy2(name, filePath)
         project.connectFileEventHandlers(fileNode)
         self.saveWorkspace()
         self.connectProjectEventHandlers(project)
