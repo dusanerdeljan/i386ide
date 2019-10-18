@@ -254,6 +254,8 @@ class ProjectNode(Node):
                         alreadyInProject = True
                 inSameDir = os.path.join(self.proxy.getProjectPath(), os.path.basename(filePath)) == name
                 if alreadyInProject:
+                    if path:
+                        return name
                     msg = QMessageBox()
                     msg.setStyleSheet("background-color: #2D2D30; color: white;")
                     msg.setModal(True)
@@ -263,6 +265,8 @@ class ProjectNode(Node):
                     msg.exec_()
                     return
                 if not inSameDir:
+                    if path:
+                        return name
                     msg = QMessageBox()
                     msg.setStyleSheet("background-color: #2D2D30; color: white;")
                     msg.setModal(True)

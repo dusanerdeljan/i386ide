@@ -93,16 +93,24 @@ class TreeView(QTreeWidget):
             return
         urls = mimeData.urls()
         if dropDestItem and isinstance(dropDestItem, ProjectNode):
+            notImported = []
             for i in range(len(urls)):
                 fileUrl = urls[i].toLocalFile()
                 if fileUrl.endswith(".S") and os.path.isfile(fileUrl):
-                    dropDestItem.importFile(fileUrl)
+                    error = dropDestItem.importFile(fileUrl)
+                    if error:
+                        notImported.append(error)
+            self.failedImportsMsg(notImported)
         elif dropDestItem and isinstance(dropDestItem, FileNode):
             project = dropDestItem.parent()
+            notImported = []
             for i in range(len(urls)):
                 fileUrl = urls[i].toLocalFile()
                 if fileUrl.endswith(".S") and os.path.isfile(fileUrl):
-                    project.importFile(fileUrl)
+                    error = project.importFile(fileUrl)
+                    if error:
+                        notImported.append(error)
+            self.failedImportsMsg(notImported)
         else:
             if len(urls) == 1:
                 folderPath = urls[0].toLocalFile()
@@ -121,17 +129,34 @@ class TreeView(QTreeWidget):
                         validUrls.append(url)
             if len(validUrls) == 0:
                 return
-            projectName = validUrls[0][:-2] if len(validUrls) == 1 else "Project"
+            projectName = os.path.basename(validUrls[0])[:-2] if len(validUrls) == 1 else "Project"
             projectPath = os.path.join(self.rootNode.path, projectName)
+            counter = 0
             while os.path.exists(projectPath):
-                projectName += "_1"
-                projectPath = os.path.join(self.rootNode.path, projectName)
+                counter += 1
+                name = projectName + "_" + str(counter)
+                projectPath = os.path.join(self.rootNode.path, name)
             projectNode = self.rootNode.createNewProject(path=projectPath)
-            for fileUrl in validUrls:
-                projectNode.importFile(fileUrl)
+            if projectNode:
+                for fileUrl in validUrls:
+                    projectNode.importFile(fileUrl)
         self.rootNode.saveWorkspace()
         event.acceptProposedAction()
 
+
+    def failedImportsMsg(self, fails):
+        msg = QMessageBox()
+        msg.setStyleSheet("background-color: #2D2D30; color: white;")
+        msg.setModal(True)
+        msg.setIcon(QMessageBox.Critical)
+        message = "Failed to import some files because files with the same name already exist at the project location.\n\nLocation: {}\n\nFiles that were not imported:".format(self.rootNode.path)
+        if fails:
+            for fail in fails:
+                message += "\n" + os.path.basename(fail)
+        msg.setText(message)
+        msg.setWindowTitle("File import error")
+        msg.exec_()
+        return
 
     def showContextMenu(self, pos):
         item = self.itemAt(pos)
