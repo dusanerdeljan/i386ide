@@ -40,6 +40,10 @@ class MenuBar(QMenuBar):
         self.createHelpMenuItemActions()
 
     def createFileMenuItemActions(self):
+        self.quickAssemblyProjectAction = QAction(QIcon(resource_path("resources/new_s.png")), "Quick assembly project", self)
+        self.quickAssemblyProjectAction.setShortcut(QKeySequence("Ctrl+P"))
+        self.file.addAction(self.quickAssemblyProjectAction)
+
         self.newWorkspaceAction = QAction(QIcon(resource_path("resources/new_folder.png")), "New workspace", self)
         self.newWorkspaceAction.setShortcut(QKeySequence("Ctrl+N"))
         self.file.addAction(self.newWorkspaceAction)

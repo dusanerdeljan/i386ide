@@ -292,7 +292,7 @@ class ProjectNode(Node):
             self.proxy.addFile(node.proxy)
             self.connectFileEventHandlers(node)
             if not inSameDir:
-                shutil.copyfile(name, filePath)
+                shutil.copy2(name, filePath)
             self.setExpanded(True)
             self.parent().saveWorkspace()
             self.eventManager.newFile.emit(node.proxy)
@@ -387,9 +387,10 @@ class ProjectNode(Node):
                 node.path = proxy.path
                 node.proxy = proxy
                 try:
-                    with open(proxy.getFilePath(), 'w') as file:
-                        file.write(proxy.text)
-                        proxy.hasUnsavedChanges = False
+                    if proxy.text:
+                        with open(proxy.getFilePath(), 'w') as file:
+                            file.write(proxy.text)
+                            proxy.hasUnsavedChanges = False
                 except:
                     print("Could not write to file {}".format(proxy.getFilePath()))
 
@@ -450,7 +451,7 @@ class ProjectNode(Node):
                     self.proxy.files.append(node.proxy)
                     self.connectFileEventHandlers(node)
                     if sourcePath:
-                        shutil.copyfile(os.path.join(sourcePath, filePath), os.path.join(self.proxy.getProjectPath(), filePath))
+                        shutil.copy2(os.path.join(sourcePath, filePath), os.path.join(self.proxy.getProjectPath(), filePath))
 
 class ProjectEventManager(QObject):
 

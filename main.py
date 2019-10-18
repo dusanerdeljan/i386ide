@@ -293,6 +293,7 @@ class AsemblerIDE(QMainWindow):
         super(AsemblerIDE, self).closeEvent(event)
 
     def addMenuBarEventHandlers(self):
+        self.menuBar.quickAssemblyProjectAction.triggered.connect(self.quickAssemblyProject)
         self.menuBar.newWorkspaceAction.triggered.connect(self.newWorkspaceAction)
         self.menuBar.saveWorkspaceAction.triggered.connect(self.saveWorkpsaceAllFiles)
         self.menuBar.openWorkspaceAction.triggered.connect(self.openWorkspaceAction)
@@ -311,6 +312,10 @@ class AsemblerIDE(QMainWindow):
         self.menuBar.view.addAction(self.help.toggleViewAction())
         self.menuBar.view.addAction(self.ascii.toggleViewAction())
         self.menuBar.view.addAction(self.toolBar.toggleViewAction())
+
+    def quickAssemblyProject(self):
+        if self.workspace:
+            self.workspace.createQuickAssemblyProject()
 
     def showAbout(self):
         dialog = AboutDialog()

@@ -97,6 +97,22 @@ class TerminalConsole(QTextEdit):
         if enterPressed:
             self.outputCommandResult()
 
+    def dragEnterEvent(self, event):
+        event.acceptProposedAction()
+
+    def dragMoveEvent(self, event):
+        event.acceptProposedAction()
+
+    def dragLeaveEvent(self, event):
+        event.accept()
+
+    def dropEvent(self, event):
+        mimeData = event.mimeData()
+        if not mimeData.hasUrls():
+            return
+        self.textCursor().insertText(" ".join([mimeData.urls()[i].toLocalFile() for i in range(len(mimeData.urls()))]))
+        event.acceptProposedAction()
+
     def clearCommand(self):
         self.clear()
         self.insertHtml(self.getPrompt())
