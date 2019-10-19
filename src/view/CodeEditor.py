@@ -93,12 +93,16 @@ class CodeEditor(QPlainTextEdit):
         self.updateRequest.connect(self.updateLineNumberArea)
         self.cursorPositionChanged.connect(self.highlightCurrentLine)
         self.updateLineNumberAreaWidth(0)
-        #self.textChanged.connect(self.setUnsavedChanges)
+        self.textChanged.connect(self.checkForUnsavedChanges)
 
         palette = QToolTip.palette()
         palette.setColor(QPalette.ToolTipBase, QColor("#2D2D30"))
         palette.setColor(QPalette.ToolTipText, QColor("#FFFFFF"))
         QToolTip.setPalette(palette)
+
+    def checkForUnsavedChanges(self):
+        if self.file.text != self.toPlainText():
+            self.setUnsavedChanges()
 
     def setUnsavedChanges(self):
         shoudEmitSignal = False
