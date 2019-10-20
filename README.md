@@ -16,9 +16,9 @@ To run this program from the source code you need **Python 3.6 or higher** and y
 
 ## Download executable file
 ### Ubuntu 18.04 and higher
-[i386ide v1.1.2 for Ubuntu 18.04 and higher](https://i386ide.page.link/download_i386ide_18_04_v112)
+[i386ide v1.2.0 for Ubuntu 18.04 and higher](https://i386ide.page.link/download_i386ide_18_04_v120)
 ### Ubuntu 16.04
-[i386ide v1.1.2 for Ubuntu 16.04](https://i386ide.page.link/download_i386ide_16_04_v112)
+[i386ide v1.2.0 for Ubuntu 16.04](https://i386ide.page.link/download_i386ide_16_04_v120)
 
 ## Installation
 
