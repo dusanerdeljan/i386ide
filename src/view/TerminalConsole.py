@@ -85,7 +85,9 @@ class TerminalConsole(QTextEdit):
                 return
         if event.key() == Qt.Key_Backspace:
             if event.modifiers() == Qt.ControlModifier:
-                return
+                while not self.textCursor().positionInBlock() == self.getPromptCursorPosition():
+                    self.textCursor().deletePreviousChar()
+                self.command = ""
             if self.textCursor().positionInBlock() <= self.getPromptCursorPosition():
                 return
             if len(self.command) == 0:
@@ -110,7 +112,9 @@ class TerminalConsole(QTextEdit):
         mimeData = event.mimeData()
         if not mimeData.hasUrls():
             return
-        self.textCursor().insertText(" ".join([mimeData.urls()[i].toLocalFile() for i in range(len(mimeData.urls()))]))
+        urls = " ".join([mimeData.urls()[i].toLocalFile() for i in range(len(mimeData.urls()))])
+        self.command += urls
+        self.textCursor().insertText(urls)
         event.acceptProposedAction()
 
     def clearCommand(self):
