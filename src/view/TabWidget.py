@@ -18,8 +18,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 """
 
-from PySide2.QtWidgets import QTabWidget, QWidget, QMessageBox, QVBoxLayout
-from PySide2.QtCore import Signal
+from PySide2.QtWidgets import QTabWidget, QWidget, QMessageBox, QVBoxLayout, QMenu, QAction
+from PySide2.QtCore import Signal, Qt
 from src.view.CodeEditor import CodeEditor
 from src.view.FindDialog import FindDialog
 from src.model.FileNode import FileProxy
@@ -79,6 +79,36 @@ class EditorTabWidget(QTabWidget):
         self.setTabsClosable(True)
         self.setMovable(False)
         self.tabCloseRequested.connect(self.closeTab)
+        self.setContextMenuPolicy(Qt.DefaultContextMenu)
+
+    def contextMenuEvent(self, event):
+        index = self.tabBar().tabAt(event.pos())
+        if index < 0:
+            return
+        menu = QMenu(self)
+        closeSelected = QAction("Close", self)
+        closeAllAction = QAction("Close All", self)
+        closeOthersAction = QAction("Close Others", self)
+        closeUnmodified = QAction("Close Unmodified", self)
+        closeSelected.triggered.connect(lambda: self.closeTab(index))
+        closeOthersAction.triggered.connect(lambda: self.closeOthers(index))
+        closeAllAction.triggered.connect(self.closeAllTabs)
+        closeUnmodified.triggered.connect(lambda: self.closeAllTabs(closeUnmodified=True))
+        menu.addAction(closeSelected)
+        menu.addAction(closeOthersAction)
+        menu.addAction(closeAllAction)
+        menu.addAction(closeUnmodified)
+        if index != 0:
+            closeAllToTheLeft = QAction("Close All to the Left", self)
+            closeAllToTheLeft.triggered.connect(lambda: self.closeAllToTheSide(index, "left"))
+            menu.addAction(closeAllToTheLeft)
+        if index != len(self.tabs) - 1:
+            closeAllToTheRight = QAction("Close All to the Right", self)
+            closeAllToTheRight.triggered.connect(lambda: self.closeAllToTheSide(index, "right"))
+            menu.addAction(closeAllToTheRight)
+        menu.exec_(self.mapToGlobal(event.pos()))
+
+
 
     def addNewTab(self, fileProxy, update=True):
         key = "{}/{}".format(fileProxy.parent.path, fileProxy.path)
@@ -121,15 +151,37 @@ class EditorTabWidget(QTabWidget):
                 return self.projectTabs[key]
         return None
 
-    def closeAllTabs(self):
+    def closeAllToTheSide(self, tabIndex, side):
+        if side == "left":
+            for index in range(tabIndex - 1, -1, -1):
+                if not self.closeTab(index):
+                    return False
+            return True
+        if side == "right":
+            for index in range(len(self.tabs)-1, tabIndex, -1):
+                if not self.closeTab(index):
+                    return False
+            return True
+
+    def closeOthers(self, doNotClose):
         for index in range(len(self.tabs)-1, -1, -1):
+            if index == doNotClose:
+                continue
             if not self.closeTab(index):
                 return False
         return True
 
-    def closeTab(self, index, askToSave=True):
+    def closeAllTabs(self, closeUnmodified=False):
+        for index in range(len(self.tabs)-1, -1, -1):
+            if not self.closeTab(index, closeUnmodified=closeUnmodified):
+                return False
+        return True
+
+    def closeTab(self, index, askToSave=True, closeUnmodified=False):
         proxy: FileProxy = self.tabs[index]
         key = "{}/{}".format(proxy.parent.path, proxy.path)
+        if proxy.hasUnsavedChanges and closeUnmodified:
+            return True
         if proxy.hasUnsavedChanges and askToSave:
             msg = QMessageBox()
             msg.setStyleSheet("background-color: #2D2D30; color: white;")

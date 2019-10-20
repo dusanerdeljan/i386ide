@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 """
 
-from PySide2.QtWidgets import QTreeWidget, QTreeWidgetItem, QMenu, QAction, QLabel
+from PySide2.QtWidgets import QTreeWidget, QTreeWidgetItem, QMenu, QAction, QLabel, QMessageBox
 from PySide2.QtCore import Qt, Signal
 from src.model.WorkspaceNode import WorkspaceNode, WorkspaceProxy
 from src.model.FileNode import FileNode, FileProxy
@@ -60,6 +60,7 @@ class TreeView(QTreeWidget):
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.showContextMenu)
         self.rootNode: WorkspaceNode = None
+        self.setAcceptDrops(True)
 
     def mouseDoubleClickEvent(self, event):
         item = self.itemAt(event.pos())
@@ -71,6 +72,91 @@ class TreeView(QTreeWidget):
                 item.eventManager.invalidFile.emit(item)
             else:
                 self.fileDoubleCliked.emit(item.proxy)
+
+    def dragEnterEvent(self, event):
+        event.acceptProposedAction()
+
+    def dragMoveEvent(self, event):
+        event.acceptProposedAction()
+
+    def dragLeaveEvent(self, event):
+        event.accept()
+
+    def dropEvent(self, event):
+        if not os.path.exists(self.rootNode.path):
+            self.rootNode.eventManager.invalidWorkspace.emit(self.rootNode)
+            return
+        mimeData = event.mimeData()
+        position = event.pos()
+        dropDestItem = self.itemAt(position)
+        if not mimeData.hasUrls():
+            return
+        urls = mimeData.urls()
+        if dropDestItem and isinstance(dropDestItem, ProjectNode):
+            notImported = []
+            for i in range(len(urls)):
+                fileUrl = urls[i].toLocalFile()
+                if fileUrl.endswith(".S") and os.path.isfile(fileUrl):
+                    error = dropDestItem.importFile(fileUrl)
+                    if error:
+                        notImported.append(error)
+            self.failedImportsMsg(notImported)
+        elif dropDestItem and isinstance(dropDestItem, FileNode):
+            project = dropDestItem.parent()
+            notImported = []
+            for i in range(len(urls)):
+                fileUrl = urls[i].toLocalFile()
+                if fileUrl.endswith(".S") and os.path.isfile(fileUrl):
+                    error = project.importFile(fileUrl)
+                    if error:
+                        notImported.append(error)
+            self.failedImportsMsg(notImported)
+        else:
+            if len(urls) == 1:
+                folderPath = urls[0].toLocalFile()
+                if os.path.isdir(folderPath):
+                    self.rootNode.importProject(folderPath)
+                    self.rootNode.saveWorkspace()
+                    return
+            answer = QMessageBox.question(None, "Import file(s)", "Do you want to create a project?", QMessageBox.Yes | QMessageBox.No)
+            if not answer == QMessageBox.Yes:
+                return
+            validUrls = []
+            for i in range(len(urls)):
+                url = urls[i].toLocalFile()
+                if url.endswith(".S") or url.endswith(".c"):
+                    if os.path.isfile(url):
+                        validUrls.append(url)
+            if len(validUrls) == 0:
+                return
+            projectName = os.path.basename(validUrls[0])[:-2] if len(validUrls) == 1 else "Project"
+            projectPath = os.path.join(self.rootNode.path, projectName)
+            counter = 0
+            while os.path.exists(projectPath):
+                counter += 1
+                name = projectName + "_" + str(counter)
+                projectPath = os.path.join(self.rootNode.path, name)
+            projectNode = self.rootNode.createNewProject(path=projectPath)
+            if projectNode:
+                for fileUrl in validUrls:
+                    projectNode.importFile(fileUrl)
+        self.rootNode.saveWorkspace()
+        event.acceptProposedAction()
+
+
+    def failedImportsMsg(self, fails):
+        msg = QMessageBox()
+        msg.setStyleSheet("background-color: #2D2D30; color: white;")
+        msg.setModal(True)
+        msg.setIcon(QMessageBox.Critical)
+        message = "Failed to import some files because files with the same name already exist at the project location.\n\nLocation: {}\n\nFiles that were not imported:".format(self.rootNode.path)
+        if fails:
+            for fail in fails:
+                message += "\n" + os.path.basename(fail)
+        msg.setText(message)
+        msg.setWindowTitle("File import error")
+        msg.exec_()
+        return
 
     def showContextMenu(self, pos):
         item = self.itemAt(pos)
