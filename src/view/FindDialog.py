@@ -66,7 +66,7 @@ class FindDialog(QFrame):
         self.hbox = QHBoxLayout()
         self.hbox.addWidget(self.findLabel)
         self.hbox.addWidget(self.replaceLabel)
-        self.replaceAllButton = QPushButton("Repalce all")
+        self.replaceAllButton = QPushButton("Replace all")
         self.replaceAllButton.setStyleSheet("background-color: #232323; color: white;")
         self.replaceAllButton.clicked.connect(self.replaceAllButtonClicked)
         self.hbox.addWidget(self.replaceAllButton)

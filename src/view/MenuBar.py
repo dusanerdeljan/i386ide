@@ -101,6 +101,9 @@ class MenuBar(QMenuBar):
 
 
     def createHelpMenuItemActions(self):
+        self.helpAction = QAction("Getting started", self)
+        self.help.addAction(self.helpAction)
+
         self.aboutAction = QAction("About", self)
         self.help.addAction(self.aboutAction)
 

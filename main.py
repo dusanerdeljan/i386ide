@@ -41,6 +41,7 @@ from src.view.SettingsEditor import SettingsEditor
 from src.view.AboutDialog import AboutDialog
 from src.view.TabSwitcher import TabSwitcher
 from src.view.ProjectSwitcher import ProjectSwitcher
+from src.view.GettingStartedDialog import GettingStartedDialog
 from src.util.AsemblerSintaksa import AsemblerSintaksa
 from src.util.CSyntax import CSyntax
 from src.model.ProjectNode import ProjectNode, ProjectProxy
@@ -118,6 +119,9 @@ class AsemblerIDE(QMainWindow):
         self.terminal.tabSwitchRequested.connect(self.showTabSwitcher)
         self.editorTabs.tabSwitchRequested.connect(self.showTabSwitcher)
         self.editorTabs.projectSwitchRequested.connect(self.showProjectSwitcher)
+
+        self.helpDocsDialog = GettingStartedDialog()
+        self.helpDocsDialog.hide()
 
     def makeBackupSave(self):
         self.workspace.saveBackup()
@@ -259,6 +263,8 @@ class AsemblerIDE(QMainWindow):
     def closeEvent(self, event):
         if self.tabSwitcher.isActiveWindow():
             self.tabSwitcher.hide()
+        if self.helpDocsDialog.isVisible():
+            self.helpDocsDialog.hide()
         for proxy in self.editorTabs.tabs:
             if proxy.hasUnsavedChanges:
                 msg = QMessageBox()
@@ -306,6 +312,7 @@ class AsemblerIDE(QMainWindow):
         self.menuBar.editSettings.triggered.connect(self.editSettings)
 
         self.menuBar.aboutAction.triggered.connect(self.showAbout)
+        self.menuBar.helpAction.triggered.connect(self.showGettingStarted)
 
         self.menuBar.view.addAction(self.terminal.toggleViewAction())
         self.menuBar.view.addAction(self.treeDock.toggleViewAction())
@@ -320,6 +327,10 @@ class AsemblerIDE(QMainWindow):
     def showAbout(self):
         dialog = AboutDialog()
         dialog.exec_()
+
+    def showGettingStarted(self):
+        if self.helpDocsDialog.isHidden():
+            self.helpDocsDialog.show()
 
     def findAction(self):
         currentTab: EditorTabWidget = self.editorTabs.getCurrentTab()
