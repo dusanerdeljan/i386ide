@@ -23,6 +23,7 @@ import os
 import pickle
 import re
 import platform
+import subprocess
 from PySide2.QtWidgets import QMainWindow, QLineEdit, QApplication, QFileDialog, QMessageBox, QDockWidget, QLabel, QInputDialog
 from PySide2.QtCore import Qt, QDir, QTimer
 from PySide2.QtGui import QIcon
@@ -85,7 +86,7 @@ class AsemblerIDE(QMainWindow):
         self.treeDock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
         self.treeDock.setStyleSheet("background-color: #2D2D30; color: white;")
         self.treeDock.setFeatures(QDockWidget.DockWidgetMovable| QDockWidget.DockWidgetClosable)
-        self.treeDock.setWindowTitle("Project explorer")
+        self.treeDock.setWindowTitle("Workspace explorer")
         self.treeDock.setWidget(self.treeView)
         header = QLabel("Workspace explorer")
         # header.setStyleSheet("background-color: #007ACC;")

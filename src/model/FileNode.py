@@ -25,6 +25,8 @@ from src.model.Node import Node, PathManager
 import os
 import re
 import main
+import platform
+import subprocess
 
 class FileProxy(object):
 
@@ -54,6 +56,8 @@ class FileNode(Node):
         self.saveAction = QAction(QIcon(main.resource_path("resources/save_file.png")), "Save file")
         self.renameAction = QAction(QIcon(main.resource_path("resources/rename_file.png")), "Rename file")
         self.deleteAction = QAction(QIcon(main.resource_path("resources/delete_file.png")), "Delete file")
+        self.showInfilesAction = QAction(QIcon(main.resource_path("resources/open_folder.png")), "Show in files")
+        self.menu.addAction(self.showInfilesAction)
         self.menu.addAction(self.saveAction)
         self.menu.addAction(self.renameAction)
         self.menu.addAction(self.deleteAction)
@@ -103,6 +107,16 @@ class FileNode(Node):
         self.deleteAction.triggered.connect(self.deleteActionTriggered)
         self.saveAction.triggered.connect(self.saveFile)
         self.renameAction.triggered.connect(self.renameFile)
+        self.showInfilesAction.triggered.connect(self.openInFileExplorer)
+
+    def openInFileExplorer(self):
+        path = self.getFilePath()
+        if platform.system() == "Windows":
+            os.startfile(path)
+        elif platform.system() == "Darwin":
+            subprocess.Popen(["open", path])
+        else:
+            subprocess.Popen(["nautilus", "--select", path])
 
     def deleteActionTriggered(self):
         if not os.path.exists(self.proxy.getFilePath()):

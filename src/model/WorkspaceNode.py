@@ -30,6 +30,9 @@ import pickle
 import re
 import shutil
 import main
+import platform
+import subprocess
+
 
 class WorkspaceProxy(object):
 
@@ -59,8 +62,10 @@ class WorkspaceNode(Node):
         self.renameAction = QAction(QIcon(main.resource_path("resources/rename_folder.png")), "Rename workspace")
         self.switchAction = QAction(QIcon(main.resource_path("resources/switch_folder.png")), "Switch workspace")
         self.updateAction = QAction(QIcon(main.resource_path("resources/update_folder.png")), "Update workspace")
+        self.showInfilesAction = QAction(QIcon(main.resource_path("resources/open_folder.png")), "Show in files")
         self.menu.addAction(self.newProjectAction)
         self.menu.addAction(self.importProjectAction)
+        self.menu.addAction(self.showInfilesAction)
         self.menu.addSeparator()
         self.menu.addAction(self.quickAssemblyProjectAction)
         self.menu.addAction(self.openFileAsAssemblyProjectAction)
@@ -83,6 +88,16 @@ class WorkspaceNode(Node):
         self.importProjectAction.triggered.connect(self.importProject)
         self.saveAction.triggered.connect(self.saveWorkspace)
         self.updateAction.triggered.connect(self.reloadWorkspace)
+        self.showInfilesAction.triggered.connect(self.openInFileExplorer)
+
+    def openInFileExplorer(self):
+        path = self.path
+        if platform.system() == "Windows":
+            os.startfile(path)
+        elif platform.system() == "Darwin":
+            subprocess.Popen(["open", path])
+        else:
+            subprocess.Popen(["xdg-open", path])
 
     def reloadWorkspace(self):
         if not os.path.exists(self.path):

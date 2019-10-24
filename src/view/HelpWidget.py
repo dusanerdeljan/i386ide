@@ -43,7 +43,7 @@ class HelpWidget(QDockWidget):
         self.searchLabel.setStyleSheet("margin-bottom: 10px; margin-top: 10px;")
         self.setTitleBarWidget(self.searchLabel)
         self.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetClosable)
-        self.setWindowTitle("Help")
+        self.setWindowTitle("Instructions help")
         self.resultBox = QTextEdit()
         self.resultBox.setReadOnly(True)
         self.setWidget(self.resultBox)

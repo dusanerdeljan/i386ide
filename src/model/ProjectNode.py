@@ -31,6 +31,8 @@ import os
 import re
 import shutil
 import main
+import platform
+import subprocess
 
 class ProjectProxy(object):
 
@@ -88,11 +90,13 @@ class ProjectNode(Node):
         self.newFileAction = QAction(QIcon(main.resource_path("resources/new_file.png")), "New file")
         self.importFileAction = QAction(QIcon(main.resource_path("resources/import_file.png")), "Import file")
         self.compilerOptionsAction = QAction(QIcon(main.resource_path("resources/compiler_options.png")), "Compiler options")
+        self.showInFiles = QAction(QIcon(main.resource_path("resources/open_folder.png")), "Show in files")
         self.menu.addAction(self.saveAction)
         self.menu.addAction(self.compilerOptionsAction)
         self.menu.addAction(self.compileAction)
         self.menu.addAction(self.debugAction)
         self.menu.addAction(self.runAction)
+        self.menu.addAction(self.showInFiles)
         self.menu.addSeparator()
         self.menu.addAction(self.newFileAction)
         self.menu.addAction(self.importFileAction)
@@ -126,6 +130,16 @@ class ProjectNode(Node):
         self.compileAction.triggered.connect(self.compileActionTriggered)
         self.debugAction.triggered.connect(self.debugActionTriggered)
         self.runAction.triggered.connect(self.runActionTriggered)
+        self.showInFiles.triggered.connect(self.openInFileExplorer)
+
+    def openInFileExplorer(self):
+        path = self.path
+        if platform.system() == "Windows":
+            os.startfile(path)
+        elif platform.system() == "Darwin":
+            subprocess.Popen(["open", path])
+        else:
+            subprocess.Popen(["xdg-open", path])
 
     def saveProject(self):
         if not os.path.exists(self.proxy.getProjectPath()):
