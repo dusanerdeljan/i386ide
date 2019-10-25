@@ -136,7 +136,7 @@ class ProjectNode(Node):
         if not os.path.exists(self.proxy.getProjectPath()):
             self.eventManager.invalidProject.emit(self)
             return
-        path = self.path
+        path = self.proxy.getProjectPath()
         if platform.system() == "Windows":
             os.startfile(path)
         elif platform.system() == "Darwin":
