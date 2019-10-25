@@ -133,6 +133,9 @@ class ProjectNode(Node):
         self.showInFiles.triggered.connect(self.openInFileExplorer)
 
     def openInFileExplorer(self):
+        if not os.path.exists(self.proxy.getProjectPath()):
+            self.eventManager.invalidProject.emit(self)
+            return
         path = self.path
         if platform.system() == "Windows":
             os.startfile(path)

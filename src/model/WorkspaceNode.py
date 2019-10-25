@@ -91,6 +91,9 @@ class WorkspaceNode(Node):
         self.showInfilesAction.triggered.connect(self.openInFileExplorer)
 
     def openInFileExplorer(self):
+        if not os.path.exists(self.path):
+            self.eventManager.invalidWorkspace.emit(self)
+            return
         path = self.path
         if platform.system() == "Windows":
             os.startfile(path)
