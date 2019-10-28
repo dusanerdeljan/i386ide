@@ -15,10 +15,14 @@ This program is built for Linux operating system (Ubuntu 16.04 or higher) and re
 To run this program from the source code you need **Python 3.6 or higher** and you have to install **PySide2** library. Run command is *python3 main.py*.
 
 ## Download executable file
+### Ubuntu 19.10
+[i386ide v1.4.0 for Ubuntu 19.10](https://i386ide.page.link/download_i386ide_19_10_v140)
 ### Ubuntu 18.04 and higher
-[i386ide v1.2.0 for Ubuntu 18.04 and higher](https://i386ide.page.link/download_i386ide_18_04_v120)
+[i386ide v1.4.0 for Ubuntu 18.04 and higher](https://i386ide.page.link/download_i386ide_18_04_v140)
 ### Ubuntu 16.04
-[i386ide v1.2.0 for Ubuntu 16.04](https://i386ide.page.link/download_i386ide_16_04_v120)
+[i386ide v1.4.0 for Ubuntu 16.04](https://i386ide.page.link/download_i386ide_16_04_v140)
+### Fedora 30.1.2
+[i386ide v1.4.0 for Fedora 30.1.2](https://i386ide.page.link/download_i386ide_Fedora_30_1_2_v140)
 
 ## Installation
 
