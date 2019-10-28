@@ -27,10 +27,8 @@ class Documentation(object):
 
 <h2 id="compatibleoperatingsystems">Compatible operating systems</h2>
 
-<p>Our IDE was designed to run on Ubuntu Linux, but it can also run on many different distributions of Linux. <br />
+<p>Our IDE was designed to run on Ubuntu Linux, but it can also run on many different distributions of Linux. <br /><br />
 For more information, visit the <a style='color: #007ACC;'   href="="https://github.com/dusanerdeljan/i386ide/wiki/Linux">Linux</a> section of this guide.</p>
-
-<p>It was not tested on Windows or Mac OS, and it will most likely not work on those systems out of the box.</p>
 
 <h2 id="additionalrequirements">Additional requirements</h2>
 
