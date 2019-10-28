@@ -27,7 +27,8 @@ class Documentation(object):
 
 <h2 id="compatibleoperatingsystems">Compatible operating systems</h2>
 
-<p>Our IDE was designed to run on Ubuntu Linux, but it could potentially also run on different distributions of Linux with some additional setup.</p>
+<p>Our IDE was designed to run on Ubuntu Linux, but it can also run on many different distributions of Linux. <br />
+For more information, visit the <a style='color: #007ACC;'   href="="https://github.com/dusanerdeljan/i386ide/wiki/Linux">Linux</a> section of this guide.</p>
 
 <p>It was not tested on Windows or Mac OS, and it will most likely not work on those systems out of the box.</p>
 
@@ -44,7 +45,17 @@ class Documentation(object):
 
 <p>Our IDE was designed and tested to work on Linux Ubuntu 16.04 or higher.  </p>
 
-<p>Although we will continue to test i386ide on other Linux distributions, and will update appropriate sections of this guide as the tests continue.</p>
+<p>It was also tested on different Linux distributions, and so far it works on:</p>
+
+<ul>
+<li><a style='color: #007ACC;'   href="https://github.com/dusanerdeljan/i386ide/wiki/Linux#ubuntu">Ubuntu 16.04 and higher</a>  </li>
+
+<li><a style='color: #007ACC;'   href="https://github.com/dusanerdeljan/i386ide/wiki/Linux#debian">Debian 10.1.0</a>  </li>
+
+<li><a style='color: #007ACC;'   href="https://github.com/dusanerdeljan/i386ide/wiki/Linux#mint">Mint 19.2</a>  </li>
+
+<li><a style='color: #007ACC;'   href="https://github.com/dusanerdeljan/i386ide/wiki/Linux#fedora">Fedora 30.1.2</a></li>
+</ul>
 
 <h1 id="ubuntu">UBUNTU</h1>
 
@@ -59,21 +70,21 @@ class Documentation(object):
 <h3 id="gcc">GCC</h3>
 
 <p>To check if you have gcc installed enter this command in the terminal: <br />
-<code style='background-color: grey;'>gcc --version</code> <br />
+<code style='background-color: grey;' style='background-color: grey;'>gcc --version</code> <br />
 It should list the version of the installed gcc, or tell you if it is not installed.
 For 64-bit operating systems gcc-multilib is also needed.</p>
 
 <p>To install gcc enter these commands: <br />
-<code style='background-color: grey;'>sudo apt-get install gcc</code> <br />
-<code style='background-color: grey;'>sudo apt-get install gcc-multilib</code>  </p>
+<code style='background-color: grey;' style='background-color: grey;'>sudo apt-get install gcc</code> <br />
+<code style='background-color: grey;' style='background-color: grey;'>sudo apt-get install gcc-multilib</code>  </p>
 
 <h3 id="ddd">DDD</h3>
 
 <p>To check if you have ddd installed enter this command in the terminal: <br />
-<code style='background-color: grey;'>ddd --version</code>  </p>
+<code style='background-color: grey;' style='background-color: grey;'>ddd --version</code>  </p>
 
-<p>To install gcc enter this command: <br />
-<code style='background-color: grey;'>sudo apt-get install ddd</code>  </p>
+<p>To install ddd enter this command: <br />
+<code style='background-color: grey;' style='background-color: grey;'>sudo apt-get install ddd</code>  </p>
 
 <h2 id="runninganexecutablefile">Running an executable file</h2>
 
@@ -88,7 +99,7 @@ For 64-bit operating systems gcc-multilib is also needed.</p>
 
 <li>Go to permissions tab</li>
 
-<li>Make sure the box is checked next to the <code style='background-color: grey;'>Allow executing file as program</code> option.</li>
+<li>Make sure the box is checked next to the <code style='background-color: grey;' style='background-color: grey;'>Allow executing file as program</code> option.</li>
 </ol>
 
 <h2 id="installinganduninstallingusingscripts">Installing and uninstalling using scripts</h2>
@@ -104,7 +115,7 @@ For 64-bit operating systems gcc-multilib is also needed.</p>
 
 <li>Download and extract the scripts in the same folder where i386ide executable file and the icon are located.</li>
 
-<li>Position yourself in the extracted folder and run <code style='background-color: grey;'>sudo bash install.sh</code> to install the program.   </li>
+<li>Position yourself in the extracted folder and run <code style='background-color: grey;' style='background-color: grey;'>sudo bash install.sh</code> to install the program.   </li>
 </ol>
 
 <p>This will create a desktop entry, and you will be able to run the program from the terminal, or find it when searching for activities in Ubuntu.</p>
@@ -116,21 +127,21 @@ For 64-bit operating systems gcc-multilib is also needed.</p>
 <ol>
 <li>Download and extract the shell scripts <strong>to any location</strong>.</li>
 
-<li>Position yourself in the extracted folder and run <code style='background-color: grey;'>sudo bash uninstall.sh</code></li>
+<li>Position yourself in the extracted folder and run <code style='background-color: grey;' style='background-color: grey;'>sudo bash uninstall.sh</code></li>
 </ol>
 
 <h2 id="runningtheprogramfromthesourcecode">Running the program from the source code</h2>
 
 <p>To run this program from the source code you need Python 3.6 or higher and you have to install PySide2 library. <br />
-Run command is <code style='background-color: grey;'>python3 main.py</code>  </p>
+Run command is <code style='background-color: grey;' style='background-color: grey;'>python3 main.py</code>  </p>
 
 <p>Make sure you have software listed in Common prerequisites installed.</p>
 
 <h3 id="updatingyourfiles">Updating your files</h3>
 
 <p>First you should make sure your files are updated by using these commands: <br />
-<code style='background-color: grey;'>sudo apt-get update</code> <br />
-<code style='background-color: grey;'>sudo apt-get upgrade</code></p>
+<code style='background-color: grey;' style='background-color: grey;'>sudo apt-get update</code> <br />
+<code style='background-color: grey;' style='background-color: grey;'>sudo apt-get upgrade</code></p>
 
 <p>You can also restart your computer to make sure all updates are installed and are being used.</p>
 
@@ -139,27 +150,29 @@ Run command is <code style='background-color: grey;'>python3 main.py</code>  </p
 <p>Python 3.6 should come preinstalled on Ubuntu 18.04.</p>
 
 <p>Make sure python3-dev is installed by running the command: <br />
-<code style='background-color: grey;'>sudo apt install python3-dev</code>  </p>
+<code style='background-color: grey;' style='background-color: grey;'>sudo apt install python3-dev</code>  </p>
 
 <p>It is easy to install Pyside2 using pip.</p>
 
 <h4 id="pip">PIP</h4>
 
 <p>To check if pip is installed for python 3.6 run this command in the terminal: <br />
-<code style='background-color: grey;'>pip3 --version</code> <br />
+<code style='background-color: grey;' style='background-color: grey;'>pip3 --version</code> <br />
 If it is not installed, you should run this command to install it: <br />
-<code style='background-color: grey;'>sudo apt-get install python3-pip</code>  </p>
+<code style='background-color: grey;' style='background-color: grey;'>sudo apt-get install python3-pip</code>  </p>
 
 <p>Now you can use pip3 to install additional libraries.</p>
+
+<p>If you have pip installed for Python2, then run all the commands with <code style='background-color: grey;' style='background-color: grey;'>pip3</code> instad of <code style='background-color: grey;' style='background-color: grey;'>pip</code>.</p>
 
 <h4 id="pyside2">Pyside2</h4>
 
 <p>Now that you have pip3 installed, simply use the following command to install Pyside2: <br />
-<code style='background-color: grey;'>pip3 install pyside2</code></p>
+<code style='background-color: grey;' style='background-color: grey;'>pip3 install pyside2</code></p>
 
 <p>After pyside2 is installed, you should be able to run the program from source code. <br />
 Simply position yourself in the folder that contains the main.py file, and run it by using the command: <br />
-<code style='background-color: grey;'>python3 main.py</code>  </p>
+<code style='background-color: grey;' style='background-color: grey;'>python3 main.py</code>  </p>
 
 <h3 id="ubuntu1604">Ubuntu 16.04</h3>
 
@@ -168,57 +181,60 @@ Simply position yourself in the folder that contains the main.py file, and run i
 <h4 id="installingpython36">Installing python 3.6</h4>
 
 <p>To install python3.6 on Ubuntu 16.04 run the following commands: <br />
-<code style='background-color: grey;'>sudo add-apt-repository ppa:deadsnakes/ppa</code> <br />
-<code style='background-color: grey;'>sudo apt update</code> <br />
-<code style='background-color: grey;'>sudo apt install python3.6</code> <br />
-<code style='background-color: grey;'>sudo apt-get install python3.6-dev</code></p>
+<code style='background-color: grey;' style='background-color: grey;'>sudo add-apt-repository ppa:deadsnakes/ppa</code> <br />
+<code style='background-color: grey;' style='background-color: grey;'>sudo apt update</code> <br />
+<code style='background-color: grey;' style='background-color: grey;'>sudo apt install python3.6</code> <br />
+<code style='background-color: grey;' style='background-color: grey;'>sudo apt-get install python3.6-dev</code></p>
 
 <h4 id="pip-1">PIP</h4>
 
 <p>One way to install pip is by using curl.</p>
 
 <p>First install curl by using: <br />
-<code style='background-color: grey;'>sudo apt install curl</code>  </p>
+<code style='background-color: grey;' style='background-color: grey;'>sudo apt install curl</code>  </p>
 
 <p>After that run the following commands to install pip: <br />
-<code style='background-color: grey;'>sudo su</code> <br />
-<code style='background-color: grey;'>curl https://bootstrap.pypa.io/ez_setup.py -o - | python3.6</code> <br />
-<code style='background-color: grey;'>python3.6 -m easy_install pip</code>  </p>
+<code style='background-color: grey;' style='background-color: grey;'>sudo su</code> <br />
+<code style='background-color: grey;' style='background-color: grey;'>curl https://bootstrap.pypa.io/ez_setup.py -o - | python3.6</code> <br />
+<code style='background-color: grey;' style='background-color: grey;'>python3.6 -m easy_install pip</code>  </p>
 
 <p>To check if pip was installed for python 3.6, enter this command: <br />
-<code style='background-color: grey;'>python3.6 -m pip --version</code> <br />
+<code style='background-color: grey;' style='background-color: grey;'>python3.6 -m pip --version</code> <br />
 or if you don't have pip installed for any other version of python, you can just run: <br />
-<code style='background-color: grey;'>pip --version</code>   </p>
+<code style='background-color: grey;' style='background-color: grey;'>pip --version</code>   </p>
 
 <p>You can then restart your system to make sure everything is loaded.</p>
 
 <h4 id="pyside2-1">Pyside2</h4>
 
 <p>Now you can install Pyside2 with pip by using the command: <br />
-<code style='background-color: grey;'>sudo -H python3.6 -m pip install pyside2</code> <br />
+<code style='background-color: grey;' style='background-color: grey;'>sudo -H python3.6 -m pip install pyside2</code> <br />
 or if you don't have pip installed for any other version of python: <br />
-<code style='background-color: grey;'>sudo -H pip install pyside2</code>  </p>
+<code style='background-color: grey;' style='background-color: grey;'>sudo -H pip install pyside2</code>  </p>
 
 <p>After pyside2 is installed, you should be able to run the program from source code. <br />
 Simply position yourself in the folder that contains the main.py file, and run it by using the command: <br />
-<code style='background-color: grey;'>python3 main.py</code>  </p>
+<code style='background-color: grey;' style='background-color: grey;'>python3 main.py</code>  </p>
 
 <h2 id="makingyourownexecutablewithpyinstaller">Making your own executable with Pyinstaller</h2>
 
 <p>It is possible to make your own executable from the source code by using Pyinstaller.</p>
 
-<p>First follow the steps from <code style='background-color: grey;'>Running the program from the source code</code> section for the appropriate Ubuntu version.</p>
+<p>First follow the steps from <code style='background-color: grey;' style='background-color: grey;'>Running the program from the source code</code> section for the appropriate Ubuntu version.</p>
 
 <h4 id="pyinstallerforubuntu1804orhigher">Pyinstaller for Ubuntu 18.04 or higher</h4>
 
 <p>To install pyinstaller just run the command: <br />
-<code style='background-color: grey;'>pip install pyinstaller</code>  </p>
+<code style='background-color: grey;' style='background-color: grey;'>pip install pyinstaller</code>  </p>
+
+<p>If <code style='background-color: grey;' style='background-color: grey;'>setuptools</code> is missing then run the command:
+<code style='background-color: grey;' style='background-color: grey;'>pip install setuptools</code></p>
 
 <h4 id="pyinstallerforubuntu1604">Pyinstaller for Ubuntu 16.04</h4>
 
-<p>One way of installing Pyinstaller (especially if you followed the instructions from <code style='background-color: grey;'>Running the program from the source code</code> section) is to enter these commands: <br />
-<code style='background-color: grey;'>sudo -H pip install -U pip setuptools</code> <br />
-<code style='background-color: grey;'>sudo -H python3.6 -m pip install pyinstaller</code>  </p>
+<p>One way of installing Pyinstaller (especially if you followed the instructions from <code style='background-color: grey;' style='background-color: grey;'>Running the program from the source code</code> section) is to enter these commands: <br />
+<code style='background-color: grey;' style='background-color: grey;'>sudo -H pip install -U pip setuptools</code> <br />
+<code style='background-color: grey;' style='background-color: grey;'>sudo -H python3.6 -m pip install pyinstaller</code>  </p>
 
 <h3 id="usingthepyinstaller">Using the pyinstaller</h3>
 
@@ -229,25 +245,25 @@ Simply position yourself in the folder that contains the main.py file, and run i
 <h4 id="makeandeditspecfile">Make and edit .spec file</h4>
 
 <p>To pack all resources into one executable file you need to make a .spec file by using: <br />
-<code style='background-color: grey;'>pyinstaller main.py --onefile</code>  </p>
+<code style='background-color: grey;' style='background-color: grey;'>pyinstaller main.py --onefile</code>  </p>
 
 <p>If you instead want to put all the resources into one folder with many files, just create a .spec file with: <br />
-<code style='background-color: grey;'>pyinstaller main.py</code></p>
+<code style='background-color: grey;' style='background-color: grey;'>pyinstaller main.py</code></p>
 
 <p>Alternatively, you can try to create a spec file by using:
-<code style='background-color: grey;'>pyi-makespec main.spec --onefile</code> or <code style='background-color: grey;'>pyi-makespec main.spec</code>   </p>
+<code style='background-color: grey;' style='background-color: grey;'>pyi-makespec main.spec --onefile</code> or <code style='background-color: grey;' style='background-color: grey;'>pyi-makespec main.spec</code>   </p>
 
 <p>After that you need to open the main.spec file and edit some lines.
-In the <code style='background-color: grey;'>a = Analysis</code> section you need to add the following values to the datas item: <br />
-<code style='background-color: grey;'>('./resources/*.png','resources')</code> <br />
-<code style='background-color: grey;'>('./resources/*.ico','resources')</code>  </p>
+In the <code style='background-color: grey;' style='background-color: grey;'>a = Analysis</code> section you need to add the following values to the datas item: <br />
+<code style='background-color: grey;' style='background-color: grey;'>('./resources/*.png','resources')</code> <br />
+<code style='background-color: grey;' style='background-color: grey;'>('./resources/*.ico','resources')</code>  </p>
 
 <p>datas should now look like this: <br />
-<code style='background-color: grey;'>datas=[('./resources/*.png','resources'),('./resources/*.ico','resources')],</code> <br />
+<code style='background-color: grey;' style='background-color: grey;'>datas=[('./resources/*.png','resources'),('./resources/*.ico','resources')],</code> <br />
 That will add the icons to the executable file that will be created.</p>
 
-<p>In the <code style='background-color: grey;'>exe = EXE</code> section, change the name of the program to: <br />
-<code style='background-color: grey;'>name='i386ide',</code> <br />
+<p>In the <code style='background-color: grey;' style='background-color: grey;'>exe = EXE</code> section, change the name of the program to: <br />
+<code style='background-color: grey;' style='background-color: grey;'>name='i386ide',</code> <br />
 That will change the name of the executable file that will be created.</p>
 
 <p>Now save the changes to the main.spec file.</p>
@@ -255,12 +271,12 @@ That will change the name of the executable file that will be created.</p>
 <h4 id="maketheexecutablefileandrunit">Make the executable file and run it</h4>
 
 <p>After that, to finally crate an executable file run the following command: <br />
-<code style='background-color: grey;'>pyinstaller main.spec</code></p>
+<code style='background-color: grey;' style='background-color: grey;'>pyinstaller main.spec</code></p>
 
-<p>When the process is finished, you can find the created file(s) in the <code style='background-color: grey;'>dist</code> folder.</p>
+<p>When the process is finished, you can find the created file(s) in the <code style='background-color: grey;' style='background-color: grey;'>dist</code> folder.</p>
 
-<p>If the spec file was created with the <code style='background-color: grey;'>--onefile</code> option, everything will be packed into one executable file. <br />
-If the spec file was created without the <code style='background-color: grey;'>--onefile</code> option, all files will be placed inside a folder.</p>
+<p>If the spec file was created with the <code style='background-color: grey;' style='background-color: grey;'>--onefile</code> option, everything will be packed into one executable file. <br />
+If the spec file was created without the <code style='background-color: grey;' style='background-color: grey;'>--onefile</code> option, all files will be placed inside a folder.</p>
 
 <p>Now you can double click on the i386ide file in the dist folder to run the program. <br />
 To make sure that the i386ide file can be executed do the following:  </p>
@@ -270,8 +286,116 @@ To make sure that the i386ide file can be executed do the following:  </p>
 
 <li>Go to permissions tab</li>
 
-<li>Make sure the box is checked next to the <code style='background-color: grey;'>Allow executing file as program</code> option.</li>
-</ol>""",
+<li>Make sure the box is checked next to the <code style='background-color: grey;' style='background-color: grey;'>Allow executing file as program</code> option.</li>
+</ol>
+
+<h1 id="debian">Debian</h1>
+
+<p>It is possible to run i386ide on Debian. </p>
+
+<p>It was tested on Debian 10.1.0.</p>
+
+<p>Because of the similarities, you should just follow the guide for <a style='color: #007ACC;'   href="https://github.com/dusanerdeljan/i386ide/wiki/Linux#ubuntu">Ubuntu 18.04</a></p>
+
+<h1 id="mint">Mint</h1>
+
+<p>It is possible to run i386ide on Mint.</p>
+
+<p>It was tested on Mint 19.2.</p>
+
+<p>Because of the similarities, you should just follow the guide for <a style='color: #007ACC;'   href="https://github.com/dusanerdeljan/i386ide/wiki/Linux#ubuntu">Ubuntu 18.04</a></p>
+
+<h1 id="fedora">Fedora</h1>
+
+<p>We managed to get i386ide working on Fedora 30.1.2.  </p>
+
+<p>This guide may not work on earlier versions of Fedora.</p>
+
+<h2 id="commonprerequisites-1">Common prerequisites</h2>
+
+<p>To properly run, compile and debug <a style='color: #007ACC;'   href="https://gcc.gnu.org/">gcc</a> and <a style='color: #007ACC;'   href="https://www.gnu.org/software/ddd/">ddd</a> are required.</p>
+
+<h3 id="gcc-1">GCC</h3>
+
+<p>To check if you have gcc installed enter this command in the terminal: <br />
+<code style='background-color: grey;' style='background-color: grey;'>gcc --version</code> <br />
+It should list the version of the installed gcc, or tell you if it is not installed.
+For 64-bit operating systems gcc-multilib is also needed.</p>
+
+<p>To install gcc enter these commands: <br />
+<code style='background-color: grey;' style='background-color: grey;'>sudo dnf install gcc</code> <br />
+<code style='background-color: grey;' style='background-color: grey;'>sudo yum install gcc gcc-c++</code> <br />
+<code style='background-color: grey;' style='background-color: grey;'>sudo dnf install glibc-devel.i686</code>    </p>
+
+<h3 id="ddd-1">DDD</h3>
+
+<p>To check if you have ddd installed enter this command in the terminal: <br />
+<code style='background-color: grey;' style='background-color: grey;'>ddd --version</code>  </p>
+
+<p>To install ddd enter this command: <br />
+<code style='background-color: grey;' style='background-color: grey;'>sudo dnf install ddd</code>  </p>
+
+<h2 id="runninganexecutablefile-1">Running an executable file</h2>
+
+<p>Same <a style='color: #007ACC;'   href="https://github.com/dusanerdeljan/i386ide/wiki/Linux#running-an-executable-file">procedure for running</a> as it is for Ubuntu.</p>
+
+<h2 id="installinganduninstallingusingscripts-1">Installing and uninstalling using scripts</h2>
+
+<p>Same <a style='color: #007ACC;'   href="https://github.com/dusanerdeljan/i386ide/wiki/Linux#installing-and-uninstalling-using-scripts">procedure for install and uninstall</a> as it is for Ubuntu.</p>
+
+<h2 id="runningtheprogramfromthesourcecode-1">Running the program from the source code</h2>
+
+<p>To run this program from the source code you need Python 3.6 or higher and you have to install PySide2 library. <br />
+Run command is <code style='background-color: grey;' style='background-color: grey;'>python3 main.py</code>  </p>
+
+<p>Make sure you have software listed in Common prerequisites installed.</p>
+
+<h3 id="updatingyourfiles-1">Updating your files</h3>
+
+<p>First you should make sure your files are updated by using these commands: <br />
+<code style='background-color: grey;' style='background-color: grey;'>sudo dnf check-update</code> <br />
+<code style='background-color: grey;' style='background-color: grey;'>sudo dnf upgrade</code>  </p>
+
+<p>You can also restart your computer to make sure all updates are installed and are being used.</p>
+
+<h3 id="fedora3012orhigher">Fedora 30.1.2 or higher</h3>
+
+<p>Python 3.7 should come preinstalled on Fedora 30.1.2.</p>
+
+<p>It is easy to install Pyside2 using pip.</p>
+
+<h4 id="pip-2">PIP</h4>
+
+<p>To check if pip is installed for python 3.7 run this command in the terminal: <br />
+<code style='background-color: grey;' style='background-color: grey;'>pip3 --version</code> <br />
+If it is not installed, you should run this command to install it: <br />
+<code style='background-color: grey;' style='background-color: grey;'>sudo dnf install python3-pip</code>  </p>
+
+<p>Now you can use pip3 to install additional libraries.</p>
+
+<h4 id="pyside2-2">Pyside2</h4>
+
+<p>Now that you have pip3 installed, simply use the following command to install Pyside2: <br />
+<code style='background-color: grey;' style='background-color: grey;'>pip3 install pyside2</code></p>
+
+<p>After pyside2 is installed, you should be able to run the program from source code. <br />
+Simply position yourself in the folder that contains the main.py file, and run it by using the command: <br />
+<code style='background-color: grey;' style='background-color: grey;'>python3 main.py</code>  </p>
+
+<h2 id="makingyourownexecutablewithpyinstaller-1">Making your own executable with Pyinstaller</h2>
+
+<p>It is possible to make your own executable from the source code by using Pyinstaller.</p>
+
+<p>First follow the steps from <code style='background-color: grey;' style='background-color: grey;'>Running the program from the source code</code> section for the Fedora version.</p>
+
+<h4 id="pyinstallerforfedora3012orhigher">Pyinstaller for Fedora 30.1.2 or higher</h4>
+
+<p>To install pyinstaller just run the command: <br />
+<code style='background-color: grey;' style='background-color: grey;'>pip install pyinstaller</code>  </p>
+
+<h3 id="usingthepyinstaller-1">Using the pyinstaller</h3>
+
+<p>It is the same <a style='color: #007ACC;'   href="https://github.com/dusanerdeljan/i386ide/wiki/Linux#using-the-pyinstaller">procedure for using the pyinstaller</a>  as it is for Ubuntu.</p>""",
         'Tips': """<h1 id="tips">Tips</h1>
 
 <p>Some select features of the i386ide are listed here.
@@ -838,7 +962,7 @@ Just position yourself in the project folder by using the <code style='backgroun
 
 <h2 id="manuallyrunthefilefromtheterminal">Manually run the file from the terminal</h2>
 
-<p>To manually run the compiled file just use <code style='background-color: grey;' style='background-color: grey;'>./{name_of_the_file.out}</code>. <br />
+<p>To manually run the compiled file just use <code style='background-color: grey;' style='background-color: grey;'>./{name_of_the_file.out}</code> <br />
 You may want to position yourself in the directory that contains the <code style='background-color: grey;' style='background-color: grey;'>.out</code> file you want to run by using the <code style='background-color: grey;' style='background-color: grey;'>cd</code> commands.</p>""",
         'Integrated terminal': """<h1 id="integratedterminal">Integrated terminal</h1>
 
