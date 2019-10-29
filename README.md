@@ -16,6 +16,10 @@ To run this program from the source code you need **Python 3.6 or higher** and y
 
 For more information visit the [Linux section of the wiki guide](https://github.com/dusanerdeljan/i386ide/wiki/Linux)
 
+## Documentation
+
+[Online documentation](https://github.com/dusanerdeljan/i386ide/wiki)
+
 ## Download executable file
 ### Ubuntu 19.04 and higher
 [i386ide v1.4.0 for Ubuntu 19.04 and higher](https://i386ide.page.link/download_i386ide_19_04_v140)
